@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license-files = ["LICENSE"]
 dependencies = [
+    "docling>=2.52.0",
     "pypdf>=4.0.0",
 ]
 
