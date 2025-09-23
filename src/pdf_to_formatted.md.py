@@ -41,4 +41,4 @@ def pdf_to_md(pdf_path: str, output_path: str, use_document_pipeline=False):
 
 
 if __name__ == "__main__":
-    pdf_to_md("../data/raw/AIACT.pdf", "data/processed/AIACT.md")
+    pdf_to_md("data/raw/AIACT.pdf", "data/processed/AIACT.md")
