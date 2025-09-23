@@ -62,6 +62,12 @@ For example: OS version, programs, libraries, etc.
    uv sync
    ```
 
+1. **Optional: Use conventional commits**:
+   This project supports conventional commit messages. You can use commitizen to help create properly formatted commits:
+   ```sh
+   uv run cz commit
+   ```
+
 <!--
 1. **Configure environment variables**:
     This project uses environment variables for configuration. Copy the example environment file to create your own:
@@ -71,10 +77,6 @@ For example: OS version, programs, libraries, etc.
     Then edit the `.env` file to include your specific configuration settings.
 -->
 
-1. **Set up pre commit** (only for development):
-   ```sh
-   uv run pre-commit install
-   ```
 
 ## Usage
 

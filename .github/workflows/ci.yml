@@ -31,11 +31,6 @@ jobs:
         with:
             enable-cache: true
 
-      - name: Run pre-commit hooks (optional)
-        run: |
-          uv pip install --system pre-commit
-          pre-commit run --all-files || true
-        continue-on-error: true
 
       - name: Install and sync dependencies
         run: |
