@@ -83,3 +83,7 @@ if __name__ == "__main__":
         last_num, last_chunk = articles[-1]
         print("\nLast chunk header number:", last_num)
         print("Last chunk first line:", last_chunk.splitlines()[0] if last_chunk.splitlines() else "<empty>")
+
+    print(articles[0])
+    print(articles[1])
+
