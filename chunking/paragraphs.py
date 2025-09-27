@@ -16,45 +16,55 @@ file_path = os.path.join(parent_dir, 'data', 'processed', 'AIACT.md')
 
 # ---------- 1) Cleaning helpers ----------
 def strip_until_first_paragraph(raw: str) -> str:
-    """Start the document where the first paragraph bullet '- (' appears.
-       Fallback to 'Whereas' if no bullet found."""
-    m = re.search(r'\n\s*-\s*\(', raw)
+    """Start the document where the first paragraph bullet '- (' appears."""
+    # Look for the first recital bullet point
+    m = re.search(r'\n\s*-\s*\(\s*1\s*\)', raw)
     if m:
         return raw[m.start():].strip()
-    m2 = re.search(r'\bWhereas\b[:]?','' if raw is None else raw, flags=re.I)
+    
+    # If not found, look for any recital pattern
+    m = re.search(r'\n\s*-\s*\(\s*\d+\s*\)', raw)
+    if m:
+        return raw[m.start():].strip()
+        
+    # Fallback: start from "Whereas" if present
+    m2 = re.search(r'\bWhereas\b[:]?', raw, flags=re.I)
     if m2:
         return raw[m2.start():].strip()
+    
+    # Final fallback: return the original text
     return raw
 
 def remove_noise_lines(text: str) -> str:
-    """Remove markdown headings, HTML comment tags, standalone numbered footnotes,
-       common header/footer tokens (ELI:, OJ, standalone dates), and short ALL-CAPS headers."""
+    """Remove only obvious noise, be more conservative"""
     out = []
-    for ln in text.splitlines():
+    lines = text.splitlines()
+    
+    for i, ln in enumerate(lines):
         s = ln.strip()
         if not s:
-            out.append("")  # preserve paragraph breaks
+            out.append("")
             continue
-        # HTML comment
+            
+        # Remove HTML comments
         if s.startswith('<!--') and s.endswith('-->'):
             continue
-        # markdown headings
-        if re.match(r'^\s*#{1,6}\s*', ln):
+            
+        # Remove markdown headings that are just numbers or very short
+        if re.match(r'^\s*#{1,6}\s*\d+\s*$', s):  # Only remove headings that are just numbers
             continue
-        # stand-alone footnotes like "( 1 ) ..." or "(1) ..."
-        if re.match(r'^\(\s*\d+\s*\)\s*.*', s):
+            
+        # Remove stand-alone footnotes like "( 1 ) OJ C 517, 22.12.2021, p. 56."
+        if re.match(r'^\(\s*\d+\s*\)\s*OJ\s+[C|L]\s+\d+', s):
             continue
-        # ELI / obvious OJ references or short dates
-        if 'ELI:' in s or re.search(r'\bOJ\b', s) or re.match(r'^\d{1,2}\.\d{1,2}\.\d{4}$', s):
+            
+        # Remove ELI lines
+        if 'ELI:' in s:
             continue
-        # page numbers like "12/144" or "x/144" as isolated or part-of-line
-        if re.search(r'\b\d+\s*/\s*\d+\b', s) or re.search(r'^\(?x/\d+\)?$', s, re.I):
-            continue
-        # short almost-all-caps header line (heuristic)
-        letters = re.sub(r'[^A-Za-z]+', '', s)
-        if letters and len(s) < 70 and sum(1 for c in letters if c.isupper())/len(letters) > 0.6:
-            continue
+            
+        # Keep everything else, including article headers!
         out.append(ln)
+    
     return "\n".join(out).strip()
 
 # ---------- 2a) Chunking recitals (bullets) ----------
@@ -93,64 +103,47 @@ def chunk_recitals(text: str) -> List[Dict]:
 
 # ---------- 2b) Chunking chapters & articles ----------
 def chunk_chapters_and_articles(text: str) -> List[Dict]:
-    """
-    Chunk chapters, sections, and articles.
-    - Walk the document sequentially and detect CHAPTER / SECTION / Article headers.
-    - For each Article, extract the article body (from header end to next header).
-    - If the article body contains numbered paragraphs (1., 2., ...), split into one chunk per numbered paragraph.
-    - If the article body DOES NOT contain numbered paragraphs, treat the whole article body (including (a),(b),...) as a single paragraph chunk.
-    """
+    """Simplified article chunking that's more robust"""
     chunks: List[Dict] = []
-
-    # Combined header regex (multiline) - FIXED for AI Act format
-    header_re = re.compile(
-        r'^\s*##\s*CHAPTER\s+(?P<chap_num>[IVXLC]+)\s*$\s*^\s*##\s*(?P<chap_name>.*)$|'  # CHAPTER header
-        r'^\s*##\s*SECTION\s+(?P<sec_num>\d+)\s*$\s*^\s*##\s*(?P<sec_name>.*)$|'  # SECTION header  
-        r'^\s*##\s*Article\s+(?P<art_num>\d+)\s*$\s*^\s*##\s*(?P<art_name>.*)$',  # ARTICLE header
-        flags=re.M | re.I
-    )
-
-    # Also try a simpler pattern for articles that might be on single lines
-    simple_article_re = re.compile(
-        r'^\s*##\s*Article\s+(?P<art_num>\d+)\s*$\s*^\s*##\s*(?P<art_name>[^\n]+)$',
-        flags=re.M | re.I
-    )
-
+    
+    if not text or len(text.strip()) < 100:
+        print("Warning: Text too short for article chunking")
+        return chunks
+    
+    # Find all article positions
+    article_pattern = re.compile(r'^\s*##\s*Article\s+(\d+)\s*$', re.M | re.I)
+    article_matches = list(article_pattern.finditer(text))
+    
+    print(f"Found {len(article_matches)} article header matches")
+    
+    if not article_matches:
+        # Try alternative pattern
+        article_pattern2 = re.compile(r'^\s*Article\s+(\d+)\s*$', re.M | re.I)
+        article_matches = list(article_pattern2.finditer(text))
+        print(f"Found {len(article_matches)} article header matches with alternative pattern")
+    
+    # Also find chapters
+    chapter_pattern = re.compile(r'^\s*##\s*CHAPTER\s+([IVXLC]+)\s*$', re.M | re.I)
+    chapter_matches = list(chapter_pattern.finditer(text))
+    
     current_chapter = None
     current_chapter_name = None
-    current_section = None
-    current_section_name = None
-
-    # First, let's find all the article headers using a simpler approach
-    article_pattern = re.compile(
-        r'^\s*##\s*Article\s+(\d+)\s*$.*?^\s*##\s*(.*?)\s*$',
-        flags=re.M | re.I | re.DOTALL
-    )
     
-    # Also find chapter headers
-    chapter_pattern = re.compile(
-        r'^\s*##\s*CHAPTER\s+([IVXLC]+)\s*$.*?^\s*##\s*(.*?)\s*$',
-        flags=re.M | re.I | re.DOTALL
-    )
-    
-    # Section headers
-    section_pattern = re.compile(
-        r'^\s*##\s*SECTION\s+(\d+)\s*$.*?^\s*##\s*(.*?)\s*$', 
-        flags=re.M | re.I | re.DOTALL
-    )
-
-    # Find chapters first
-    chapter_matches = list(chapter_pattern.finditer(text))
+    # Process chapters first
     for chap_match in chapter_matches:
         chap_num = chap_match.group(1)
-        chap_name = chap_match.group(2).strip()
-        
-        # Skip Chapter XIII completely
+        # Skip Chapter XIII
         if chap_num == "XIII":
             continue
             
+        # Try to get chapter name (next line after CHAPTER header)
+        chap_start = chap_match.end()
+        next_line_match = re.search(r'^\s*##\s*(.+?)\s*$', text[chap_start:], re.M)
+        chap_name = next_line_match.group(1).strip() if next_line_match else f"Chapter {chap_num}"
+        
         current_chapter = chap_num
         current_chapter_name = chap_name
+        
         chunks.append({
             "id": f"chapter-{chap_num}",
             "text": chap_name,
@@ -170,137 +163,52 @@ def chunk_chapters_and_articles(text: str) -> List[Dict]:
                 "annex_name": None
             }
         })
-
-    # Find sections
-    section_matches = list(section_pattern.finditer(text))
-    for sec_match in section_matches:
-        sec_num = sec_match.group(1)
-        sec_name = sec_match.group(2).strip()
-        current_section = sec_num
-        current_section_name = sec_name
-        chunks.append({
-            "id": f"section-{sec_num}",
-            "text": sec_name,
-            "metadata": {
-                "paragraph_number": None,
-                "subparagraph": None,
-                "subsubparagraph": None,
-                "page": None,
-                "type": "section",
-                "chapter_number": current_chapter,
-                "chapter_name": current_chapter_name,
-                "section_number": sec_num,
-                "section_name": sec_name,
-                "article_number": None,
-                "article_name": None,
-                "annex_number": None,
-                "annex_name": None
-            }
-        })
-
-    # Find articles - use a more robust pattern
-    # Articles are typically formatted as:
-    # ## Article  1
-    # ## Subject matter
-    article_header_pattern = re.compile(
-        r'^\s*##\s*Article\s+(\d+)\s*$(?:\s*^\s*##\s*([^\n]+))?',
-        flags=re.M | re.I
-    )
     
-    # Find all article starting positions
-    article_starts = []
-    for match in re.finditer(r'^\s*##\s*Article\s+(\d+)', text, flags=re.M | re.I):
-        article_starts.append(match.start())
-    
-    # Add the end of text as the last boundary
-    article_starts.append(len(text))
-    
-    # Process each article
-    for i in range(len(article_starts) - 1):
-        start_pos = article_starts[i]
-        end_pos = article_starts[i + 1]
-        article_block = text[start_pos:end_pos]
-        
-        # Extract article number and name
-        art_match = re.search(r'^\s*##\s*Article\s+(\d+)\s*$', article_block, flags=re.M | re.I)
-        if not art_match:
-            continue
-            
+    # Process articles
+    for i, art_match in enumerate(article_matches):
         art_num = art_match.group(1)
         
-        # Try to find article name (usually on next line after Article header)
-        name_match = re.search(r'^\s*##\s*Article\s+\d+\s*$\s*^\s*##\s*([^\n]+)', article_block, flags=re.M | re.I)
+        # Find the start of this article's content
+        art_start = art_match.end()
+        
+        # Find the end (start of next article or end of text)
+        art_end = article_matches[i + 1].start() if i + 1 < len(article_matches) else len(text)
+        
+        article_block = text[art_start:art_end]
+        
+        # Extract article name (usually the next line after "Article X")
+        name_match = re.search(r'^\s*##\s*(.+?)\s*$', article_block, re.M)
         art_name = name_match.group(1).strip() if name_match else f"Article {art_num}"
         
-        # Extract article body (everything after the article name line)
-        body_start = name_match.end() if name_match else art_match.end()
-        art_body = article_block[body_start:].strip()
+        # The actual article content starts after the name line
+        content_start = name_match.end() if name_match else 0
+        art_body = article_block[content_start:].strip()
         
-        # Skip if it's just "HAVE ADOPTED THIS REGULATION:" or similar transitional text
-        if any(phrase in art_body.upper() for phrase in ["HAVE ADOPTED", "GENERAL PROVISIONS", "CHAPTER"]):
-            continue
-            
-        # Clean up the article body
-        art_body = re.sub(r'^\s*`', '', art_body)  # Remove leading backticks
+        # Clean up the body
         art_body = re.sub(r'\s+', ' ', art_body).strip()
         
-        if not art_body or len(art_body) < 10:  # Skip very short articles
-            continue
-            
-        # Check if article has numbered paragraphs
-        para_patt = re.compile(r'(?m)^\s*(\d+)\.\s+(.*?)(?=(?:^\s*\d+\.\s)|\Z)', re.S)
-        paras = list(para_patt.finditer(art_body))
-        
-        if paras:
-            # Article has numbered paragraphs -> create chunk per numbered paragraph
-            for pm in paras:
-                para_num = pm.group(1)
-                para_text = re.sub(r'\s+', ' ', pm.group(2)).strip()
-                chunks.append({
-                    "id": f"article-{art_num}-para-{para_num}",
-                    "text": para_text,
-                    "metadata": {
-                        "paragraph_number": str(para_num),
-                        "subparagraph": None,
-                        "subsubparagraph": None,
-                        "page": None,
-                        "type": "article-paragraph",
-                        "chapter_number": current_chapter,
-                        "chapter_name": current_chapter_name,
-                        "section_number": current_section,
-                        "section_name": current_section_name,
-                        "article_number": art_num,
-                        "article_name": art_name,
-                        "annex_number": None,
-                        "annex_name": None
-                    }
-                })
-        else:
-            # No numbered paragraphs -> treat ENTIRE article body as single paragraph chunk
-            text_to_use = art_body if art_body else art_name
-            text_to_use = text_to_use.strip()
-            
-            if text_to_use:  # Only add if there's actual content
-                chunks.append({
-                    "id": f"article-{art_num}-para-1",
-                    "text": text_to_use,
-                    "metadata": {
-                        "paragraph_number": "1",
-                        "subparagraph": None,
-                        "subsubparagraph": None,
-                        "page": None,
-                        "type": "article-paragraph",
-                        "chapter_number": current_chapter,
-                        "chapter_name": current_chapter_name,
-                        "section_number": current_section,
-                        "section_name": current_section_name,
-                        "article_number": art_num,
-                        "article_name": art_name,
-                        "annex_number": None,
-                        "annex_name": None
-                    }
-                })
-
+        if art_body and len(art_body) > 10:
+            # For now, treat each article as a single chunk
+            chunks.append({
+                "id": f"article-{art_num}",
+                "text": f"{art_name}: {art_body}",
+                "metadata": {
+                    "paragraph_number": None,
+                    "subparagraph": None,
+                    "subsubparagraph": None,
+                    "page": None,
+                    "type": "article",
+                    "chapter_number": current_chapter,
+                    "chapter_name": current_chapter_name,
+                    "section_number": None,
+                    "section_name": None,
+                    "article_number": art_num,
+                    "article_name": art_name,
+                    "annex_number": None,
+                    "annex_name": None
+                }
+            })
+    
     return chunks
 
 # ---------- 3) Putting it together ----------
