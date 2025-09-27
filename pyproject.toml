@@ -7,7 +7,14 @@ requires-python = ">=3.12"
 license-files = ["LICENSE"]
 dependencies = [
     "docling>=2.52.0",
+    "docling-core>=2.48.1",
+    "docling-ibm-models>=3.9.1",
+    "mlx>=0.29.2",
+    "mlx-vlm>=0.3.3",
     "pypdf>=4.0.0",
+    "torch>=2.8.0",
+    "torchaudio>=2.8.0",
+    "torchvision>=0.23.0",
 ]
 
 
