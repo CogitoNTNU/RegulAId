@@ -65,6 +65,8 @@ def chunk_recitals(text: str) -> List[Dict]:
     chunks = []
     for m in patt.finditer(text):
         num = int(m.group(1))
+        if num > 178:  # stop after recital 180
+            break
         body = m.group(2).strip()
         body = re.sub(r'\s+', ' ', body)  # normalize whitespace
         meta = {
@@ -100,129 +102,185 @@ def chunk_chapters_and_articles(text: str) -> List[Dict]:
     """
     chunks: List[Dict] = []
 
-    # combined header regex (multiline)
+    # Combined header regex (multiline) - FIXED for AI Act format
     header_re = re.compile(
-        r'^(?P<chapter>CHAPTER\s+(?P<chap_num>[IVXLC\d]+)\s+(?P<chap_name>.+))$|'
-        r'^(?P<section>SECTION\s+(?P<sec_num>\d+)\s+(?P<sec_name>.+))$|'
-        r'^(?P<article>Article\s+(?P<art_num>\d+)\s*(?P<art_name>.*))$',
-        flags=re.M
+        r'^\s*##\s*CHAPTER\s+(?P<chap_num>[IVXLC]+)\s*$\s*^\s*##\s*(?P<chap_name>.*)$|'  # CHAPTER header
+        r'^\s*##\s*SECTION\s+(?P<sec_num>\d+)\s*$\s*^\s*##\s*(?P<sec_name>.*)$|'  # SECTION header  
+        r'^\s*##\s*Article\s+(?P<art_num>\d+)\s*$\s*^\s*##\s*(?P<art_name>.*)$',  # ARTICLE header
+        flags=re.M | re.I
     )
 
-    matches = list(header_re.finditer(text))
+    # Also try a simpler pattern for articles that might be on single lines
+    simple_article_re = re.compile(
+        r'^\s*##\s*Article\s+(?P<art_num>\d+)\s*$\s*^\s*##\s*(?P<art_name>[^\n]+)$',
+        flags=re.M | re.I
+    )
+
     current_chapter = None
     current_chapter_name = None
     current_section = None
     current_section_name = None
 
-    for idx, m in enumerate(matches):
-        # CHAPTER
-        if m.group('chapter'):
-            chap_num = m.group('chap_num')
-            chap_name = m.group('chap_name').strip()
+    # First, let's find all the article headers using a simpler approach
+    article_pattern = re.compile(
+        r'^\s*##\s*Article\s+(\d+)\s*$.*?^\s*##\s*(.*?)\s*$',
+        flags=re.M | re.I | re.DOTALL
+    )
+    
+    # Also find chapter headers
+    chapter_pattern = re.compile(
+        r'^\s*##\s*CHAPTER\s+([IVXLC]+)\s*$.*?^\s*##\s*(.*?)\s*$',
+        flags=re.M | re.I | re.DOTALL
+    )
+    
+    # Section headers
+    section_pattern = re.compile(
+        r'^\s*##\s*SECTION\s+(\d+)\s*$.*?^\s*##\s*(.*?)\s*$', 
+        flags=re.M | re.I | re.DOTALL
+    )
 
-            # Skip Chapter XIII completely (do not even add header)
-            if chap_num == "XIII":
-                current_chapter = chap_num
-                current_chapter_name = chap_name
-                continue
-
-            current_chapter = chap_num
-            current_chapter_name = chap_name
-            chunks.append({
-                "id": f"chapter-{chap_num}",
-                "text": chap_name,
-                "metadata": {
-                    "paragraph_number": None,
-                    "subparagraph": None,
-                    "subsubparagraph": None,
-                    "page": None,
-                    "type": "chapter",
-                    "chapter_number": chap_num,
-                    "chapter_name": chap_name,
-                    "section_number": None,
-                    "section_name": None,
-                    "article_number": None,
-                    "article_name": None,
-                    "annex_number": None,
-                    "annex_name": None
-                }
-            })
+    # Find chapters first
+    chapter_matches = list(chapter_pattern.finditer(text))
+    for chap_match in chapter_matches:
+        chap_num = chap_match.group(1)
+        chap_name = chap_match.group(2).strip()
+        
+        # Skip Chapter XIII completely
+        if chap_num == "XIII":
             continue
+            
+        current_chapter = chap_num
+        current_chapter_name = chap_name
+        chunks.append({
+            "id": f"chapter-{chap_num}",
+            "text": chap_name,
+            "metadata": {
+                "paragraph_number": None,
+                "subparagraph": None,
+                "subsubparagraph": None,
+                "page": None,
+                "type": "chapter",
+                "chapter_number": chap_num,
+                "chapter_name": chap_name,
+                "section_number": None,
+                "section_name": None,
+                "article_number": None,
+                "article_name": None,
+                "annex_number": None,
+                "annex_name": None
+            }
+        })
 
-        # SECTION
-        if m.group('section'):
-            sec_num = m.group('sec_num')
-            sec_name = m.group('sec_name').strip()
-            current_section = sec_num
-            current_section_name = sec_name
-            chunks.append({
-                "id": f"section-{sec_num}",
-                "text": sec_name,
-                "metadata": {
-                    "paragraph_number": None,
-                    "subparagraph": None,
-                    "subsubparagraph": None,
-                    "page": None,
-                    "type": "section",
-                    "chapter_number": current_chapter,
-                    "chapter_name": current_chapter_name,
-                    "section_number": sec_num,
-                    "section_name": sec_name,
-                    "article_number": None,
-                    "article_name": None,
-                    "annex_number": None,
-                    "annex_name": None
-                }
-            })
+    # Find sections
+    section_matches = list(section_pattern.finditer(text))
+    for sec_match in section_matches:
+        sec_num = sec_match.group(1)
+        sec_name = sec_match.group(2).strip()
+        current_section = sec_num
+        current_section_name = sec_name
+        chunks.append({
+            "id": f"section-{sec_num}",
+            "text": sec_name,
+            "metadata": {
+                "paragraph_number": None,
+                "subparagraph": None,
+                "subsubparagraph": None,
+                "page": None,
+                "type": "section",
+                "chapter_number": current_chapter,
+                "chapter_name": current_chapter_name,
+                "section_number": sec_num,
+                "section_name": sec_name,
+                "article_number": None,
+                "article_name": None,
+                "annex_number": None,
+                "annex_name": None
+            }
+        })
+
+    # Find articles - use a more robust pattern
+    # Articles are typically formatted as:
+    # ## Article  1
+    # ## Subject matter
+    article_header_pattern = re.compile(
+        r'^\s*##\s*Article\s+(\d+)\s*$(?:\s*^\s*##\s*([^\n]+))?',
+        flags=re.M | re.I
+    )
+    
+    # Find all article starting positions
+    article_starts = []
+    for match in re.finditer(r'^\s*##\s*Article\s+(\d+)', text, flags=re.M | re.I):
+        article_starts.append(match.start())
+    
+    # Add the end of text as the last boundary
+    article_starts.append(len(text))
+    
+    # Process each article
+    for i in range(len(article_starts) - 1):
+        start_pos = article_starts[i]
+        end_pos = article_starts[i + 1]
+        article_block = text[start_pos:end_pos]
+        
+        # Extract article number and name
+        art_match = re.search(r'^\s*##\s*Article\s+(\d+)\s*$', article_block, flags=re.M | re.I)
+        if not art_match:
             continue
-
-        # ARTICLE
-        if m.group('article'):
-            art_num = m.group('art_num')
-            art_name = m.group('art_name').strip()
-            # article body: from end of this match to start of next match (or end of text)
-            start = m.end()
-            end = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
-            art_body = text[start:end].strip()
-
-            # Normalize whitespace in article body but keep internal punctuation / parenthesis intact
-            art_body_norm = re.sub(r'\s+', ' ', art_body).strip()
-
-            # paragraph pattern: lines that start with '1.' '2.' ... (multiline)
-            para_patt = re.compile(r'(?m)^\s*(\d+)\.\s+(.*?)(?=(?:^\s*\d+\.\s)|\Z)', re.S)
-
-            paras = list(para_patt.finditer(art_body))
-            if paras:
-                # Article has numbered paragraphs -> create chunk per numbered paragraph
-                for pm in paras:
-                    para_num = pm.group(1)
-                    para_text = re.sub(r'\s+', ' ', pm.group(2)).strip()
-                    chunks.append({
-                        "id": f"article-{art_num}-para-{para_num}",
-                        "text": para_text,
-                        "metadata": {
-                            "paragraph_number": str(para_num),
-                            "subparagraph": None,
-                            "subsubparagraph": None,
-                            "page": None,
-                            "type": "article-paragraph",
-                            "chapter_number": current_chapter,
-                            "chapter_name": current_chapter_name,
-                            "section_number": current_section,
-                            "section_name": current_section_name,
-                            "article_number": art_num,
-                            "article_name": art_name,
-                            "annex_number": None,
-                            "annex_name": None
-                        }
-                    })
-            else:
-                # No numbered paragraphs -> treat ENTIRE article body as single paragraph chunk.
-                # Keep the article_name in metadata; for text prefer the article body if present,
-                # otherwise use the article name (some docs put the whole sentence in the header).
-                text_to_use = art_body_norm if art_body_norm else art_name
-                text_to_use = text_to_use.strip()
-                # If both art_name (a short title) and art_body exist, keep art_body as the text (it contains the substantive clause/list).
+            
+        art_num = art_match.group(1)
+        
+        # Try to find article name (usually on next line after Article header)
+        name_match = re.search(r'^\s*##\s*Article\s+\d+\s*$\s*^\s*##\s*([^\n]+)', article_block, flags=re.M | re.I)
+        art_name = name_match.group(1).strip() if name_match else f"Article {art_num}"
+        
+        # Extract article body (everything after the article name line)
+        body_start = name_match.end() if name_match else art_match.end()
+        art_body = article_block[body_start:].strip()
+        
+        # Skip if it's just "HAVE ADOPTED THIS REGULATION:" or similar transitional text
+        if any(phrase in art_body.upper() for phrase in ["HAVE ADOPTED", "GENERAL PROVISIONS", "CHAPTER"]):
+            continue
+            
+        # Clean up the article body
+        art_body = re.sub(r'^\s*`', '', art_body)  # Remove leading backticks
+        art_body = re.sub(r'\s+', ' ', art_body).strip()
+        
+        if not art_body or len(art_body) < 10:  # Skip very short articles
+            continue
+            
+        # Check if article has numbered paragraphs
+        para_patt = re.compile(r'(?m)^\s*(\d+)\.\s+(.*?)(?=(?:^\s*\d+\.\s)|\Z)', re.S)
+        paras = list(para_patt.finditer(art_body))
+        
+        if paras:
+            # Article has numbered paragraphs -> create chunk per numbered paragraph
+            for pm in paras:
+                para_num = pm.group(1)
+                para_text = re.sub(r'\s+', ' ', pm.group(2)).strip()
+                chunks.append({
+                    "id": f"article-{art_num}-para-{para_num}",
+                    "text": para_text,
+                    "metadata": {
+                        "paragraph_number": str(para_num),
+                        "subparagraph": None,
+                        "subsubparagraph": None,
+                        "page": None,
+                        "type": "article-paragraph",
+                        "chapter_number": current_chapter,
+                        "chapter_name": current_chapter_name,
+                        "section_number": current_section,
+                        "section_name": current_section_name,
+                        "article_number": art_num,
+                        "article_name": art_name,
+                        "annex_number": None,
+                        "annex_name": None
+                    }
+                })
+        else:
+            # No numbered paragraphs -> treat ENTIRE article body as single paragraph chunk
+            text_to_use = art_body if art_body else art_name
+            text_to_use = text_to_use.strip()
+            
+            if text_to_use:  # Only add if there's actual content
                 chunks.append({
                     "id": f"article-{art_num}-para-1",
                     "text": text_to_use,
