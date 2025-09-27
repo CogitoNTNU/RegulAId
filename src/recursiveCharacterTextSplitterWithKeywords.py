@@ -4,6 +4,7 @@ import unicodedata
 from collections import Counter
 from typing import List, Tuple
 
+
 def load_text(path: str) -> str:
     with open(path, "r", encoding="utf-8") as f:
         text = f.read()
@@ -12,12 +13,16 @@ def load_text(path: str) -> str:
     text = text.replace("\u00A0", " ")
     return text
 
+
 def split_articles_by_header(text: str) -> List[Tuple[int, str]]:
     """
     Return list of (article_number, chunk_text).
     The header regex is anchored to line-start (MULTILINE) to avoid accidental matches inside paragraphs.
     """
-    header_re = re.compile(r'^\s*##\s*Article\s*(\d+)\b', flags=re.I | re.M)
+
+    # header_re = re.compile(r'\nArticle\s*(\d+)\n | ##\s*Article\s*(\d+)\n', flags=re.I | re.M)
+
+    header_re = re.compile(r'(?:\n|##\s*)Article\s*(\d+)\s*\n', flags=re.I | re.M)
     matches = list(header_re.finditer(text))
     if not matches:
         return []
@@ -26,10 +31,11 @@ def split_articles_by_header(text: str) -> List[Tuple[int, str]]:
     for i, m in enumerate(matches):
         num = int(m.group(1))
         start = m.start()
-        end = matches[i+1].start() if i + 1 < len(matches) else len(text)
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
         chunk = text[start:end].rstrip()
         articles.append((num, chunk))
     return articles
+
 
 def verify_articles(articles: List[Tuple[int, str]]):
     if not articles:
@@ -59,10 +65,12 @@ def verify_articles(articles: List[Tuple[int, str]]):
         print("Order problems (chunk_index, previous_number -> current_number):")
         for idx, prev, cur in order_issues[:50]:
             prev_title = articles[idx - 1][1].splitlines()[0][:80]
-            cur_title  = articles[idx][1].splitlines()[0][:80]
-            print(f"  chunk {idx}: {prev} -> {cur}; prev header starts: {prev_title!r}; cur header starts: {cur_title!r}")
+            cur_title = articles[idx][1].splitlines()[0][:80]
+            print(
+                f"  chunk {idx}: {prev} -> {cur}; prev header starts: {prev_title!r}; cur header starts: {cur_title!r}")
     if not (duplicates or missing or order_issues):
         print("All article headers look sequential and in order.")
+
 
 if __name__ == "__main__":
     path = "../data/processed/AIACT.md"
