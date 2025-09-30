@@ -20,6 +20,14 @@ documents_from_db: List[Document] = []  # TODO This should be saved in the datab
 load_dotenv()
 
 
+def pg_connection_string() -> str:
+    return f"postgresql+psycopg://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+
+
+def psycopg_connection_string() -> str:
+    return f"dbname='{os.getenv('DB_NAME')}' user='{os.getenv('DB_USER')}' password='{os.getenv('DB_PASSWORD')}' host='{os.getenv('DB_HOST')}' port='{os.getenv('DB_PORT')}'"
+
+
 class DocumentMetadata(BaseModel):
     """
     Metadata for each chunk
@@ -61,7 +69,7 @@ def get_vector_store() -> PGVector:
     return PGVector(
         embeddings=embeddings,
         collection_name=os.getenv("COLLECTION_NAME"),
-        connection=os.getenv("pg_connection_string"),
+        connection=pg_connection_string(),
         use_jsonb=True
     )
 
@@ -73,12 +81,16 @@ def add_documents(documents: List[Document]) -> list[str]:
     langchain_docs = []
     ids = []
     for doc in documents:
+        article_id = doc.metadata.get("article_id", "unknown")
+        chunk_id = doc.metadata.get("chunk_id", "unknown")
+        doc_id = f"{article_id}_{chunk_id}"
+
         langchain_docs.append(Document(
-            id=doc.metadata.id,
+            id=doc_id,
             page_content=doc.page_content,
-            metadata=doc.metadata.model_dump(exclude_unset=True)
+            metadata=doc.metadata
         ))
-        ids.append(doc.metadata.id)
+        ids.append(doc_id)
 
     return vector_store.add_documents(langchain_docs, ids=ids)
 
@@ -99,7 +111,7 @@ def get_similar_documents(query_request: QueryParams) -> tuple[Any, List[dict[st
     return retrieved_docs, sources
 
 
-def articles_to_chunks(articles):
+def articles_to_chunks(articles) -> List[Document]:
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=350, chunk_overlap=0)
 
     chunks: List[Document] = []  # This is the list of chunks of the whole document
@@ -161,15 +173,8 @@ def split_articles_by_header(text: str) -> List[Tuple[int, str]]:
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
         chunk = text[start:end].rstrip()
         articles.append((num, chunk))
+
     return articles
-
-
-def pg_connection_string() -> str:
-    return f"postgresql+psycopg://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-
-
-def psycopg_connection_string() -> str:
-    return f"dbname='{os.getenv('DB_NAME')}' user='{os.getenv('DB_USER')}' password='{os.getenv('DB_PASSWORD')}' host='{os.getenv('DB_HOST')}' port='{os.getenv('DB_PORT')}'"
 
 
 def check_database_connection():
@@ -231,13 +236,13 @@ if __name__ == "__main__":
         print("\nLast chunk header number:", last_num)
         print("Last chunk first line:", last_chunk.splitlines()[0] if last_chunk.splitlines() else "<empty>")
 
-    documents_from_db: List[Document] = articles_to_chunks(articles)  # TODO This should be saved in the database
+        documents_from_db: List[Document] = articles_to_chunks(articles)  # TODO This should be saved in the database
 
-    print(bf25("Regulation applies"))
+        print(bf25("Regulation applies"))
 
-    print("Starting embedding")
-    add_documents(documents_from_db)
-    print("Finished embedding")
+        print("Starting embedding")
+        add_documents(documents_from_db)
+        print("Finished embedding")
 
-    qurey = QueryParams(query="Regulation applies")
-    print(get_similar_documents(qurey))
+        qurey = QueryParams(query="Regulation applies")
+        print(get_similar_documents(qurey))
