@@ -153,7 +153,7 @@ def load_text(path: str) -> str:
     return text
 
 
-def split_articles_by_header(text: str) -> List[Tuple[int, str]]:
+def split_articles_by_header(text: str) -> List[Tuple[int, str]]:  # TODO add Ines and Ingunn's code
     """
     Return list of (article_number, chunk_text).
     The header regex is anchored to line-start (MULTILINE) to avoid accidental matches inside paragraphs.
