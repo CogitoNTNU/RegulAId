@@ -155,6 +155,23 @@ def split_articles_by_header(text: str) -> List[Tuple[int, str]]:
     return articles
 
 
+def pg_connection_string() -> str:
+    return f"postgresql+psycopg://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+
+
+def psycopg_connection_string() -> str:
+    return f"dbname='{os.getenv('DB_NAME')}' user='{os.getenv('DB_USER')}' password='{os.getenv('DB_PASSWORD')}' host='{os.getenv('DB_HOST')}' port='{os.getenv('DB_PORT')}'"
+
+
+def check_database_connection():
+    try:
+        conn = psycopg.connect(psycopg_connection_string())
+        conn.close()
+        print("Database connection was successful")
+    except Exception as e:
+        print('Database Connection Error:', str(e))
+
+
 def verify_articles(articles: List[Tuple[int, str]]):
     if not articles:
         print("No article headers found.")
@@ -192,6 +209,9 @@ def verify_articles(articles: List[Tuple[int, str]]):
 
 if __name__ == "__main__":
     path = "../data/processed/AIACT-Serina.md"
+
+    check_database_connection()
+
     text = load_text(path)
     articles = split_articles_by_header(text)
     verify_articles(articles)
