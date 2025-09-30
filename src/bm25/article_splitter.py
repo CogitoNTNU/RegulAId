@@ -11,10 +11,13 @@ from langchain_core.documents import Document
 from langchain_ollama import OllamaEmbeddings
 from langchain_postgres import PGVector
 import psycopg
+from dotenv import load_dotenv
 
 from pydantic import BaseModel, Field
 
 documents_from_db: List[Document] = []  # TODO This should be saved in the database
+
+load_dotenv()
 
 
 class DocumentMetadata(BaseModel):
@@ -34,8 +37,14 @@ class QueryParams(BaseModel):
 def get_vector_store() -> PGVector:
     # https://huggingface.co/spaces/mteb/leaderboard
 
+    """
+    print(f"OLLAMA_API_BASE_URL{os.getenv('EMBEDDING_API_BASE_URL')}")
+    print(f"EMBEDDING_MODEL_NAME{os.getenv('EMBEDDING_MODEL_NAME')}")
+
+    """
+
     embeddings = OllamaEmbeddings(
-        base_url=os.getenv("OLLAMA_API_BASE_URL"),
+        base_url=os.getenv("EMBEDDING_API_BASE_URL"),
         model=os.getenv("EMBEDDING_MODEL_NAME"),
     )
 
