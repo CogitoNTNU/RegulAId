@@ -3063,21 +3063,6 @@
       "text": "This Regulation does not apply to AI systems released under free and open-source licences, unless they are placed on\nthe market or put into service as high-risk AI systems or as an AI system that falls under Article 5 or 50."
     },
     {
-      "id": "article-3",
-      "type": "article",
-      "paragraph_number": null,
-      "page_range": "46/144",
-      "chapter_number": "I",
-      "chapter_name": null,
-      "section_number": null,
-      "section_name": null,
-      "article_number": 3,
-      "article_name": "Definitions",
-      "annex_number": null,
-      "annex_name": null,
-      "text": "For the purposes of this Regulation, the following definitions apply:"
-    },
-    {
       "id": "article-3-para-1",
       "type": "article",
       "paragraph_number": 1,
@@ -3087,7 +3072,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘AI system’ means a machine-based system that is designed to operate with varying levels of autonomy and that may\nexhibit adaptiveness after deployment, and that, for explicit or implicit objectives, infers, from the input it receives,\nhow to generate outputs such as predictions, content, recommendations, or decisions that can influence physical or\nvirtual environments;"
@@ -3102,7 +3087,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘risk’ means the combination of the probability of an occurrence of harm and the severity of that harm;"
@@ -3117,7 +3102,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘provider’ means a natural or legal person, public authority, agency or other body that develops an AI system or\na general-purpose AI model or that has an AI system or a general-purpose AI model developed and places it on the\nmarket or puts the AI system into service under its own name or trademark, whether for payment or free of charge;"
@@ -3132,7 +3117,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘deployer’ means a natural or legal person, public authority, agency or other body using an AI system under its\nauthority except where the AI system is used in the course of a personal non-professional activity;"
@@ -3147,7 +3132,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘authorised representative’ means a natural or legal person located or established in the Union who has received and\naccepted a written mandate from a provider of an AI system or a general-purpose AI model to, respectively, perform\nand carry out on its behalf the obligations and procedures established by this Regulation;"
@@ -3162,7 +3147,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘importer’ means a natural or legal person located or established in the Union that places on the market an AI system\nthat bears the name or trademark of a natural or legal person established in a third country;\n46/144"
@@ -3177,7 +3162,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘placing on the market’ means the first making available of an AI system or a general-purpose AI model on the Union\nmarket;"
@@ -3192,7 +3177,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘making available on the market’ means the supply of an AI system or a general-purpose AI model for distribution or\nuse on the Union market in the course of a commercial activity, whether in return for payment or free of charge;"
@@ -3207,7 +3192,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘putting into service’ means the supply of an AI system for first use directly to the deployer or for own use in the Union\nfor its intended purpose;"
@@ -3222,7 +3207,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘intended purpose’ means the use for which an AI system is intended by the provider, including the specific context\nand conditions of use, as specified in the information supplied by the provider in the instructions for use, promotional\nor sales materials and statements, as well as in the technical documentation;"
@@ -3237,7 +3222,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘reasonably foreseeable misuse’ means the use of an AI system in a way that is not in accordance with its intended\npurpose, but which may result from reasonably foreseeable human behaviour or interaction with other systems,\nincluding other AI systems;"
@@ -3252,7 +3237,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘safety component’ means a component of a product or of an AI system which fulfils a safety function for that product\nor AI system, or the failure or malfunctioning of which endangers the health and safety of persons or property;"
@@ -3267,7 +3252,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘instructions for use’ means the information provided by the provider to inform the deployer of, in particular, an AI\nsystem’s intended purpose and proper use;"
@@ -3282,7 +3267,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘recall of an AI system’ means any measure aiming to achieve the return to the provider or taking out of service or\ndisabling the use of an AI system made available to deployers;"
@@ -3297,7 +3282,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘withdrawal of an AI system’ means any measure aiming to prevent an AI system in the supply chain being made\navailable on the market;"
@@ -3312,7 +3297,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘performance of an AI system’ means the ability of an AI system to achieve its intended purpose;"
@@ -3327,7 +3312,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘notifying authority’ means the national authority responsible for setting up and carrying out the necessary procedures\nfor the assessment, designation and notification of conformity assessment bodies and for their monitoring;"
@@ -3342,7 +3327,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘conformity assessment’ means the process of demonstrating whether the requirements set out in Chapter III, Section 2\nrelating to a high-risk AI system have been fulfilled;"
@@ -3357,7 +3342,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘conformity assessment body’ means a body that performs third-party conformity assessment activities, including\ntesting, certification and inspection;"
@@ -3372,7 +3357,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘law enforcement authority’ means:\n(a) any public authority competent for the prevention, investigation, detection or prosecution of criminal offences or\nthe execution of criminal penalties, including the safeguarding against and the prevention of threats to public\nsecurity; or\n(b) any other body or entity entrusted by Member State law to exercise public authority and public powers for the\npurposes of the prevention, investigation, detection or prosecution of criminal offences or the execution of\ncriminal penalties, including the safeguarding against and the prevention of threats to public security;"
@@ -3387,7 +3372,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘law enforcement’ means activities carried out by law enforcement authorities or on their behalf for the prevention,\ninvestigation, detection or prosecution of criminal offences or the execution of criminal penalties, including\nsafeguarding against and preventing threats to public security;"
@@ -3402,7 +3387,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘AI Office’ means the Commission’s function of contributing to the implementation, monitoring and supervision of AI\n2024; references in this Regulation to the AI Office shall be construed as references to the Commission;"
@@ -3417,7 +3402,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘national competent authority’ means a notifying authority or a market surveillance authority; as regards AI systems\nput into service or used by Union institutions, agencies, offices and bodies, references to national competent\nauthorities or market surveillance authorities in this Regulation shall be construed as references to the European Data\nProtection Supervisor;"
@@ -3432,7 +3417,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘serious incident’ means an incident or malfunctioning of an AI system that directly or indirectly leads to any of the\nfollowing:\n(a) the death of a person, or serious harm to a person’s health;\n(b) a serious and irreversible disruption of the management or operation of critical infrastructure;\n(c) the infringement of obligations under Union law intended to protect fundamental rights;\n(d) serious harm to property or the environment;"
@@ -3447,7 +3432,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘testing in real-world conditions’ means the temporary testing of an AI system for its intended purpose in real-world\nconditions outside a laboratory or otherwise simulated environment, with a view to gathering reliable and robust data\nand to assessing and verifying the conformity of the AI system with the requirements of this Regulation and it does\nnot qualify as placing the AI system on the market or putting it into service within the meaning of this Regulation,\nprovided that all the conditions laid down in Article 57 or 60 are fulfilled;"
@@ -3462,7 +3447,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘subject’, for the purpose of real-world testing, means a natural person who participates in testing in real-world\nconditions;"
@@ -3477,7 +3462,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘informed consent’ means a subject’s freely given, specific, unambiguous and voluntary expression of his or her\nwillingness to participate in a particular testing in real-world conditions, after having been informed of all aspects of\nthe testing that are relevant to the subject’s decision to participate;"
@@ -3492,7 +3477,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘deep fake’ means AI-generated or manipulated image, audio or video content that resembles existing persons, objects,\nplaces, entities or events and would falsely appear to a person to be authentic or truthful;"
@@ -3507,7 +3492,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 3,
-      "article_name": "Definitions",
+      "article_name": "Definitions For the purposes of this Regulation, the following definitions apply:",
       "annex_number": null,
       "annex_name": null,
       "text": "‘widespread infringement’ means any act or omission contrary to Union law protecting the interest of individuals,\nwhich:\n(a) has harmed or is likely to harm the collective interests of individuals residing in at least two Member States other\nthan the Member State in which:\n(i) the act or omission originated or took place;\n(ii) the provider concerned, or, where applicable, its authorised representative is located or established; or\n(iii) the deployer is established, when the infringement is committed by the deployer;\n(b) has caused, causes or is likely to cause harm to the collective interests of individuals and has common features,\nincluding the same unlawful practice or the same interest being infringed, and is occurring concurrently,\ncommitted by the same operator, in at least three Member States;"
@@ -3522,10 +3507,10 @@
       "section_number": null,
       "section_name": null,
       "article_number": 4,
-      "article_name": "AI literacy",
+      "article_name": "AI literacy Providers and deployers of AI systems shall take measures to ensure, to their best extent, a sufficient level of AI literacy of",
       "annex_number": null,
       "annex_name": null,
-      "text": "Providers and deployers of AI systems shall take measures to ensure, to their best extent, a sufficient level of AI literacy of\ntheir staff and other persons dealing with the operation and use of AI systems on their behalf, taking into account their\ntechnical knowledge, experience, education and training and the context the AI systems are to be used in, and considering\nthe persons or groups of persons on whom the AI systems are to be used."
+      "text": "their staff and other persons dealing with the operation and use of AI systems on their behalf, taking into account their\ntechnical knowledge, experience, education and training and the context the AI systems are to be used in, and considering\nthe persons or groups of persons on whom the AI systems are to be used."
     },
     {
       "id": "article-4",
@@ -3537,7 +3522,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 4,
-      "article_name": "AI literacy",
+      "article_name": "AI literacy Providers and deployers of AI systems shall take measures to ensure, to their best extent, a sufficient level of AI literacy of",
       "annex_number": null,
       "annex_name": null,
       "text": "PROHIBITED AI PRACTICES"
@@ -3828,6 +3813,21 @@
       "text": "The Commission is empowered to adopt delegated acts in accordance with Article 97 to amend the list in Annex III\nby removing high-risk AI systems where both of the following conditions are fulfilled:\n(a) the high-risk AI system concerned no longer poses any significant risks to fundamental rights, health or safety, taking\ninto account the criteria listed in paragraph 2;\n(b) the deletion does not decrease the overall level of protection of health, safety and fundamental rights under Union law."
     },
     {
+      "id": "article-8",
+      "type": "article",
+      "paragraph_number": null,
+      "page_range": "55/144",
+      "chapter_number": "III",
+      "chapter_name": null,
+      "section_number": 2,
+      "section_name": "Requirements for high-risk AI systems",
+      "article_number": 8,
+      "article_name": null,
+      "annex_number": null,
+      "annex_name": null,
+      "text": "55/144"
+    },
+    {
       "id": "article-8-para-2",
       "type": "article",
       "paragraph_number": 2,
@@ -3837,7 +3837,7 @@
       "section_number": 2,
       "section_name": "Requirements for high-risk AI systems",
       "article_number": 8,
-      "article_name": "55/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Where a product contains an AI system, to which the requirements of this Regulation as well as requirements of the\nUnion harmonisation legislation listed in Section A of Annex I apply, providers shall be responsible for ensuring that their\nproduct is fully compliant with all applicable requirements under applicable Union harmonisation legislation. In ensuring\nthe compliance of high-risk AI systems referred to in paragraph 1 with the requirements set out in this Section, and in order\nto ensure consistency, avoid duplication and minimise additional burdens, providers shall have a choice of integrating, as\nappropriate, the necessary testing and reporting processes, information and documentation they provide with regard to\ntheir product into documentation and procedures that already exist and are required under the Union harmonisation\nlegislation listed in Section A of Annex I."
@@ -4347,10 +4347,10 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 16,
-      "article_name": "Obligations of providers of high-risk AI systems",
+      "article_name": "Obligations of providers of high-risk AI systems Providers of high-risk AI systems shall:",
       "annex_number": null,
       "annex_name": null,
-      "text": "Providers of high-risk AI systems shall:\n(a) ensure that their high-risk AI systems are compliant with the requirements set out in Section 2;\n(b) indicate on the high-risk AI system or, where that is not possible, on its packaging or its accompanying documentation,\nas applicable, their name, registered trade name or registered trade mark, the address at which they can be contacted;\n(c) have a quality management system in place which complies with Article 17;\n(d) keep the documentation referred to in Article 18;\n(e) when under their control, keep the logs automatically generated by their high-risk AI systems as referred to in\nArticle 19;\n(f) ensure that the high-risk AI system undergoes the relevant conformity assessment procedure as referred to in Article 43,\nprior to its being placed on the market or put into service;\n(g) draw up an EU declaration of conformity in accordance with Article 47;\n(h) affix the CE marking to the high-risk AI system or, where that is not possible, on its packaging or its accompanying\ndocumentation, to indicate conformity with this Regulation, in accordance with Article 48;\n(i) comply with the registration obligations referred to in Article 49(1);\n(j) take the necessary corrective actions and provide information as required in Article 20;\n(k) upon a reasoned request of a national competent authority, demonstrate the conformity of the high-risk AI system with\nthe requirements set out in Section 2;\n(l) ensure that the high-risk AI system complies with accessibility requirements in accordance with Directives (EU)\n2016/2102 and (EU) 2019/882."
+      "text": "(a) ensure that their high-risk AI systems are compliant with the requirements set out in Section 2;\n(b) indicate on the high-risk AI system or, where that is not possible, on its packaging or its accompanying documentation,\nas applicable, their name, registered trade name or registered trade mark, the address at which they can be contacted;\n(c) have a quality management system in place which complies with Article 17;\n(d) keep the documentation referred to in Article 18;\n(e) when under their control, keep the logs automatically generated by their high-risk AI systems as referred to in\nArticle 19;\n(f) ensure that the high-risk AI system undergoes the relevant conformity assessment procedure as referred to in Article 43,\nprior to its being placed on the market or put into service;\n(g) draw up an EU declaration of conformity in accordance with Article 47;\n(h) affix the CE marking to the high-risk AI system or, where that is not possible, on its packaging or its accompanying\ndocumentation, to indicate conformity with this Regulation, in accordance with Article 48;\n(i) comply with the registration obligations referred to in Article 49(1);\n(j) take the necessary corrective actions and provide information as required in Article 20;\n(k) upon a reasoned request of a national competent authority, demonstrate the conformity of the high-risk AI system with\nthe requirements set out in Section 2;\n(l) ensure that the high-risk AI system complies with accessibility requirements in accordance with Directives (EU)\n2016/2102 and (EU) 2019/882."
     },
     {
       "id": "article-17-para-1",
@@ -4863,6 +4863,21 @@
       "text": "Paragraphs 2 and 3 are without prejudice to the need to observe and protect intellectual property rights, confidential\nbusiness information and trade secrets in accordance with Union and national law."
     },
     {
+      "id": "article-26",
+      "type": "article",
+      "paragraph_number": null,
+      "page_range": "67/144",
+      "chapter_number": "III",
+      "chapter_name": null,
+      "section_number": 3,
+      "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
+      "article_number": 26,
+      "article_name": null,
+      "annex_number": null,
+      "annex_name": null,
+      "text": "67/144"
+    },
+    {
       "id": "article-26-para-2",
       "type": "article",
       "paragraph_number": 2,
@@ -4872,7 +4887,7 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 26,
-      "article_name": "67/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Deployers shall assign human oversight to natural persons who have the necessary competence, training and\nauthority, as well as the necessary support."
@@ -4887,7 +4902,7 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 26,
-      "article_name": "67/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "The obligations set out in paragraphs 1 and 2, are without prejudice to other deployer obligations under Union or\nnational law and to the deployer’s freedom to organise its own resources and activities for the purpose of implementing the\nhuman oversight measures indicated by the provider."
@@ -4902,7 +4917,7 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 26,
-      "article_name": "67/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Without prejudice to paragraphs 1 and 2, to the extent the deployer exercises control over the input data, that\ndeployer shall ensure that input data is relevant and sufficiently representative in view of the intended purpose of the\nhigh-risk AI system."
@@ -4917,7 +4932,7 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 26,
-      "article_name": "67/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Deployers shall monitor the operation of the high-risk AI system on the basis of the instructions for use and, where\nrelevant, inform providers in accordance with Article 72. Where deployers have reason to consider that the use of the\nhigh-risk AI system in accordance with the instructions may result in that AI system presenting a risk within the meaning of\nArticle 79(1), they shall, without undue delay, inform the provider or distributor and the relevant market surveillance\nauthority, and shall suspend the use of that system. Where deployers have identified a serious incident, they shall also\nimmediately inform first the provider, and then the importer or distributor and the relevant market surveillance authorities\nof that incident. If the deployer is not able to reach the provider, Article 73 shall apply mutatis mutandis. This obligation\nshall not cover sensitive operational data of deployers of AI systems which are law enforcement authorities.\nFor deployers that are financial institutions subject to requirements regarding their internal governance, arrangements or\nprocesses under Union financial services law, the monitoring obligation set out in the first subparagraph shall be deemed to\nbe fulfilled by complying with the rules on internal governance arrangements, processes and mechanisms pursuant to the\nrelevant financial service law."
@@ -4932,7 +4947,7 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 26,
-      "article_name": "67/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Deployers of high-risk AI systems shall keep the logs automatically generated by that high-risk AI system to the extent\nsuch logs are under their control, for a period appropriate to the intended purpose of the high-risk AI system, of at least six\nmonths, unless provided otherwise in applicable Union or national law, in particular in Union law on the protection of\npersonal data.\nDeployers that are financial institutions subject to requirements regarding their internal governance, arrangements or\nprocesses under Union financial services law shall maintain the logs as part of the documentation kept pursuant to the\nrelevant Union financial service law."
@@ -4947,7 +4962,7 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 26,
-      "article_name": "67/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Before putting into service or using a high-risk AI system at the workplace, deployers who are employers shall inform\nworkers’ representatives and the affected workers that they will be subject to the use of the high-risk AI system. This\ninformation shall be provided, where applicable, in accordance with the rules and procedures laid down in Union and\nnational law and practice on information of workers and their representatives."
@@ -4962,7 +4977,7 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 26,
-      "article_name": "67/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Deployers of high-risk AI systems that are public authorities, or Union institutions, bodies, offices or agencies shall\ncomply with the registration obligations referred to in Article 49. When such deployers find that the high-risk AI system\nthat they envisage using has not been registered in the EU database referred to in Article 71, they shall not use that system\nand shall inform the provider or the distributor."
@@ -4977,7 +4992,7 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 26,
-      "article_name": "67/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Where applicable, deployers of high-risk AI systems shall use the information provided under Article 13 of this\nRegulation to comply with their obligation to carry out a data protection impact assessment under Article 35 of Regulation\n(EU) 2016/679 or Article 27 of Directive (EU) 2016/680."
@@ -4992,7 +5007,7 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 26,
-      "article_name": "67/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Without prejudice to Directive (EU) 2016/680, in the framework of an investigation for the targeted search of\na person suspected or convicted of having committed a criminal offence, the deployer of a high-risk AI system for\npost-remote biometric identification shall request an authorisation, ex ante, or without undue delay and no later than 48\nhours, by a judicial authority or an administrative authority whose decision is binding and subject to judicial review, for the\nuse of that system, except when it is used for the initial identification of a potential suspect based on objective and verifiable\nfacts directly linked to the offence. Each use shall be limited to what is strictly necessary for the investigation of a specific\ncriminal offence.\n68/144\nIn no case shall such high-risk AI system for post-remote biometric identification be used for law enforcement purposes in\nan untargeted way, without any link to a criminal offence, a criminal proceeding, a genuine and present or genuine and\nforeseeable threat of a criminal offence, or the search for a specific missing person. It shall be ensured that no decision that\nproduces an adverse legal effect on a person may be taken by the law enforcement authorities based solely on the output of\nsuch post-remote biometric identification systems.\nThis paragraph is without prejudice to Article 9 of Regulation (EU) 2016/679 and Article 10 of Directive (EU) 2016/680\nfor the processing of biometric data.\nRegardless of the purpose or deployer, each use of such high-risk AI systems shall be documented in the relevant police file\nand shall be made available to the relevant market surveillance authority and the national data protection authority upon\nrequest, excluding the disclosure of sensitive operational data related to law enforcement. This subparagraph shall be\nwithout prejudice to the powers conferred by Directive (EU) 2016/680 on supervisory authorities.\nDeployers shall submit annual reports to the relevant market surveillance and national data protection authorities on their\nuse of post-remote biometric identification systems, excluding the disclosure of sensitive operational data related to law\nenforcement. The reports may be aggregated to cover more than one deployment.\nMember States may introduce, in accordance with Union law, more restrictive laws on the use of post-remote biometric\nidentification systems."
@@ -5007,7 +5022,7 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 26,
-      "article_name": "67/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Without prejudice to Article 50 of this Regulation, deployers of high-risk AI systems referred to in Annex III that\nmake decisions or assist in making decisions related to natural persons shall inform the natural persons that they are subject\nto the use of the high-risk AI system. For high-risk AI systems used for law enforcement purposes Article 13 of Directive\n(EU) 2016/680 shall apply."
@@ -5022,7 +5037,7 @@
       "section_number": 3,
       "section_name": "Obligations of providers and deployers of high-risk AI systems and other parties",
       "article_number": 26,
-      "article_name": "67/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Deployers shall cooperate with the relevant competent authorities in any action those authorities take in relation to\nthe high-risk AI system in order to implement this Regulation."
@@ -5208,6 +5223,21 @@
       "text": "Notifying authorities shall have an adequate number of competent personnel at their disposal for the proper\nperformance of their tasks. Competent personnel shall have the necessary expertise, where applicable, for their function, in\nfields such as information technologies, AI and law, including the supervision of fundamental rights."
     },
     {
+      "id": "article-29",
+      "type": "article",
+      "paragraph_number": null,
+      "page_range": "70/144",
+      "chapter_number": "III",
+      "chapter_name": null,
+      "section_number": 4,
+      "section_name": "Notifying authorities and notified bodies",
+      "article_number": 29,
+      "article_name": null,
+      "annex_number": null,
+      "annex_name": null,
+      "text": "70/144"
+    },
+    {
       "id": "article-29-para-2",
       "type": "article",
       "paragraph_number": 2,
@@ -5217,7 +5247,7 @@
       "section_number": 4,
       "section_name": "Notifying authorities and notified bodies",
       "article_number": 29,
-      "article_name": "70/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "The application for notification shall be accompanied by a description of the conformity assessment activities, the\nconformity assessment module or modules and the types of AI systems for which the conformity assessment body claims\nto be competent, as well as by an accreditation certificate, where one exists, issued by a national accreditation body attesting\nthat the conformity assessment body fulfils the requirements laid down in Article 31.\nAny valid document related to existing designations of the applicant notified body under any other Union harmonisation\nlegislation shall be added."
@@ -5232,7 +5262,7 @@
       "section_number": 4,
       "section_name": "Notifying authorities and notified bodies",
       "article_number": 29,
-      "article_name": "70/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Where the conformity assessment body concerned cannot provide an accreditation certificate, it shall provide the\nnotifying authority with all the documentary evidence necessary for the verification, recognition and regular monitoring of\nits compliance with the requirements laid down in Article 31."
@@ -5247,7 +5277,7 @@
       "section_number": 4,
       "section_name": "Notifying authorities and notified bodies",
       "article_number": 29,
-      "article_name": "70/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "For notified bodies which are designated under any other Union harmonisation legislation, all documents and\ncertificates linked to those designations may be used to support their designation procedure under this Regulation, as\nappropriate. The notified body shall update the documentation referred to in paragraphs 2 and 3 of this Article whenever\nrelevant changes occur, in order to enable the authority responsible for notified bodies to monitor and verify continuous\ncompliance with all the requirements laid down in Article 31."
@@ -5847,10 +5877,10 @@
       "section_number": 4,
       "section_name": "Notifying authorities and notified bodies",
       "article_number": 39,
-      "article_name": "Conformity assessment bodies of third countries",
+      "article_name": "Conformity assessment bodies of third countries Conformity assessment bodies established under the law of a third country with which the Union has concluded an",
       "annex_number": null,
       "annex_name": null,
-      "text": "Conformity assessment bodies established under the law of a third country with which the Union has concluded an\nagreement may be authorised to carry out the activities of notified bodies under this Regulation, provided that they meet\nthe requirements laid down in Article 31 or they ensure an equivalent level of compliance."
+      "text": "agreement may be authorised to carry out the activities of notified bodies under this Regulation, provided that they meet\nthe requirements laid down in Article 31 or they ensure an equivalent level of compliance."
     },
     {
       "id": "article-40-para-1",
@@ -7383,21 +7413,6 @@
       "text": "Where national competent authorities consider authorising testing in real world conditions supervised within the\nframework of an AI regulatory sandbox to be established under this Article, they shall specifically agree the terms and\nconditions of such testing and, in particular, the appropriate safeguards with the participants, with a view to protecting\nfundamental rights, health and safety. Where appropriate, they shall cooperate with other national competent authorities\nwith a view to ensuring consistent practices across the Union."
     },
     {
-      "id": "article-59",
-      "type": "article",
-      "paragraph_number": null,
-      "page_range": "91/144",
-      "chapter_number": "VI",
-      "chapter_name": null,
-      "section_number": null,
-      "section_name": null,
-      "article_number": 59,
-      "article_name": "Further processing of personal data for developing certain AI systems in the public interest in the AI regulatory",
-      "annex_number": null,
-      "annex_name": null,
-      "text": "sandbox"
-    },
-    {
       "id": "article-59-para-1",
       "type": "article",
       "paragraph_number": 1,
@@ -7407,7 +7422,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 59,
-      "article_name": "Further processing of personal data for developing certain AI systems in the public interest in the AI regulatory",
+      "article_name": "Further processing of personal data for developing certain AI systems in the public interest in the AI regulatory sandbox",
       "annex_number": null,
       "annex_name": null,
       "text": "In the AI regulatory sandbox, personal data lawfully collected for other purposes may be processed solely for the\npurpose of developing, training and testing certain AI systems in the sandbox when all of the following conditions are met:\n(a) AI systems shall be developed for safeguarding substantial public interest by a public authority or another natural or\nlegal person and in one or more of the following areas:\n(i) public safety and public health, including disease detection, diagnosis prevention, control and treatment and\nimprovement of health care systems;\n(ii) a high level of protection and improvement of the quality of the environment, protection of biodiversity, protection\nagainst pollution, green transition measures, climate change mitigation and adaptation measures;\n(iii) energy sustainability;\n(iv) safety and resilience of transport systems and mobility, critical infrastructure and networks;\n(v) efficiency and quality of public administration and public services;\n(b) the data processed are necessary for complying with one or more of the requirements referred to in Chapter III,\nSection 2 where those requirements cannot effectively be fulfilled by processing anonymised, synthetic or other\nnon-personal data;\n(c) there are effective monitoring mechanisms to identify if any high risks to the rights and freedoms of the data subjects, as\nreferred to in Article 35 of Regulation (EU) 2016/679 and in Article 39 of Regulation (EU) 2018/1725, may arise\nduring the sandbox experimentation, as well as response mechanisms to promptly mitigate those risks and, where\nnecessary, stop the processing;\n(d) any personal data to be processed in the context of the sandbox are in a functionally separate, isolated and protected\ndata processing environment under the control of the prospective provider and only authorised persons have access to\nthose data;\n(e) providers can further share the originally collected data only in accordance with Union data protection law; any\npersonal data created in the sandbox cannot be shared outside the sandbox;\n(f) any processing of personal data in the context of the sandbox neither leads to measures or decisions affecting the data\nsubjects nor does it affect the application of their rights laid down in Union law on the protection of personal data;\n(g) any personal data processed in the context of the sandbox are protected by means of appropriate technical and\norganisational measures and deleted once the participation in the sandbox has terminated or the personal data has\nreached the end of its retention period;\n(h) the logs of the processing of personal data in the context of the sandbox are kept for the duration of the participation in\n91/144\n(j) a short summary of the AI project developed in the sandbox, its objectives and expected results is published on the\nwebsite of the competent authorities; this obligation shall not cover sensitive operational data in relation to the activities\nof law enforcement, border control, immigration or asylum authorities."
@@ -7422,7 +7437,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 59,
-      "article_name": "Further processing of personal data for developing certain AI systems in the public interest in the AI regulatory",
+      "article_name": "Further processing of personal data for developing certain AI systems in the public interest in the AI regulatory sandbox",
       "annex_number": null,
       "annex_name": null,
       "text": "For the purposes of the prevention, investigation, detection or prosecution of criminal offences or the execution of\ncriminal penalties, including safeguarding against and preventing threats to public security, under the control and\nresponsibility of law enforcement authorities, the processing of personal data in AI regulatory sandboxes shall be based on\na specific Union or national law and subject to the same cumulative conditions as referred to in paragraph 1."
@@ -7437,7 +7452,7 @@
       "section_number": null,
       "section_name": null,
       "article_number": 59,
-      "article_name": "Further processing of personal data for developing certain AI systems in the public interest in the AI regulatory",
+      "article_name": "Further processing of personal data for developing certain AI systems in the public interest in the AI regulatory sandbox",
       "annex_number": null,
       "annex_name": null,
       "text": "Paragraph 1 is without prejudice to Union or national law which excludes processing of personal data for other\npurposes than those explicitly mentioned in that law, as well as to Union or national law laying down the basis for the\nprocessing of personal data which is necessary for the purpose of developing, testing or training of innovative AI systems or\nany other legal basis, in compliance with Union law on the protection of personal data."
@@ -7842,10 +7857,10 @@
       "section_number": 1,
       "section_name": "Governance at Union level",
       "article_number": 66,
-      "article_name": "Tasks of the Board",
+      "article_name": "Tasks of the Board The Board shall advise and assist the Commission and the Member States in order to facilitate the consistent and effective",
       "annex_number": null,
       "annex_name": null,
-      "text": "The Board shall advise and assist the Commission and the Member States in order to facilitate the consistent and effective\napplication of this Regulation. To that end, the Board may in particular:\n(a)\ncontribute to the coordination among national competent authorities responsible for the application of this Regulation\nand, in cooperation with and subject to the agreement of the market surveillance authorities concerned, support joint\nactivities of market surveillance authorities referred to in Article 74(11);\n(b) collect and share technical and regulatory expertise and best practices among Member States;\n(c)\nprovide advice on the implementation of this Regulation, in particular as regards the enforcement of rules on\ngeneral-purpose AI models;\n(d) contribute to the harmonisation of administrative practices in the Member States, including in relation to the\nderogation from the conformity assessment procedures referred to in Article 46, the functioning of AI regulatory\nsandboxes, and testing in real world conditions referred to in Articles 57, 59 and 60;\n(e)\nat the request of the Commission or on its own initiative, issue recommendations and written opinions on any relevant\nmatters related to the implementation of this Regulation and to its consistent and effective application, including:\n(i) on the development and application of codes of conduct and codes of practice pursuant to this Regulation, as well\nas of the Commission’s guidelines;\n(ii) the evaluation and review of this Regulation pursuant to Article 112, including as regards the serious incident\nreports referred to in Article 73, and the functioning of the EU database referred to in Article 71, the preparation\n96/144\n(iv) on the use of harmonised standards or common specifications referred to in Articles 40 and 41;\n(v) trends, such as European global competitiveness in AI, the uptake of AI in the Union, and the development of\ndigital skills;\n(vi) trends on the evolving typology of AI value chains, in particular on the resulting implications in terms of\naccountability;\n(vii) on the potential need for amendment to Annex III in accordance with Article 7, and on the potential need for\npossible revision of Article 5 pursuant to Article 112, taking into account relevant available evidence and the\nlatest developments in technology;\n(f)\nsupport the Commission in promoting AI literacy, public awareness and understanding of the benefits, risks,\nsafeguards and rights and obligations in relation to the use of AI systems;\n(g) facilitate the development of common criteria and a shared understanding among market operators and competent\nauthorities of the relevant concepts provided for in this Regulation, including by contributing to the development of\nbenchmarks;\n(h) cooperate, as appropriate, with other Union institutions, bodies, offices and agencies, as well as relevant Union expert\ngroups and networks, in particular in the fields of product safety, cybersecurity, competition, digital and media services,\nfinancial services, consumer protection, data and fundamental rights protection;\n(i)\ncontribute to effective cooperation with the competent authorities of third countries and with international\norganisations;\n(j)\nassist national competent authorities and the Commission in developing the organisational and technical expertise\nrequired for the implementation of this Regulation, including by contributing to the assessment of training needs for\nstaff of Member States involved in implementing this Regulation;\n(k) assist the AI Office in supporting national competent authorities in the establishment and development of AI\nregulatory sandboxes, and facilitate cooperation and information-sharing among AI regulatory sandboxes;\n(l)\ncontribute to, and provide relevant advice on, the development of guidance documents;\n(m) advise the Commission in relation to international matters on AI;\n(n) provide opinions to the Commission on the qualified alerts regarding general-purpose AI models;\n(o) receive opinions by the Member States on qualified alerts regarding general-purpose AI models, and on national\nexperiences and practices on the monitoring and enforcement of AI systems, in particular systems integrating the\ngeneral-purpose AI models."
+      "text": "application of this Regulation. To that end, the Board may in particular:\n(a)\ncontribute to the coordination among national competent authorities responsible for the application of this Regulation\nand, in cooperation with and subject to the agreement of the market surveillance authorities concerned, support joint\nactivities of market surveillance authorities referred to in Article 74(11);\n(b) collect and share technical and regulatory expertise and best practices among Member States;\n(c)\nprovide advice on the implementation of this Regulation, in particular as regards the enforcement of rules on\ngeneral-purpose AI models;\n(d) contribute to the harmonisation of administrative practices in the Member States, including in relation to the\nderogation from the conformity assessment procedures referred to in Article 46, the functioning of AI regulatory\nsandboxes, and testing in real world conditions referred to in Articles 57, 59 and 60;\n(e)\nat the request of the Commission or on its own initiative, issue recommendations and written opinions on any relevant\nmatters related to the implementation of this Regulation and to its consistent and effective application, including:\n(i) on the development and application of codes of conduct and codes of practice pursuant to this Regulation, as well\nas of the Commission’s guidelines;\n(ii) the evaluation and review of this Regulation pursuant to Article 112, including as regards the serious incident\nreports referred to in Article 73, and the functioning of the EU database referred to in Article 71, the preparation\n96/144\n(iv) on the use of harmonised standards or common specifications referred to in Articles 40 and 41;\n(v) trends, such as European global competitiveness in AI, the uptake of AI in the Union, and the development of\ndigital skills;\n(vi) trends on the evolving typology of AI value chains, in particular on the resulting implications in terms of\naccountability;\n(vii) on the potential need for amendment to Annex III in accordance with Article 7, and on the potential need for\npossible revision of Article 5 pursuant to Article 112, taking into account relevant available evidence and the\nlatest developments in technology;\n(f)\nsupport the Commission in promoting AI literacy, public awareness and understanding of the benefits, risks,\nsafeguards and rights and obligations in relation to the use of AI systems;\n(g) facilitate the development of common criteria and a shared understanding among market operators and competent\nauthorities of the relevant concepts provided for in this Regulation, including by contributing to the development of\nbenchmarks;\n(h) cooperate, as appropriate, with other Union institutions, bodies, offices and agencies, as well as relevant Union expert\ngroups and networks, in particular in the fields of product safety, cybersecurity, competition, digital and media services,\nfinancial services, consumer protection, data and fundamental rights protection;\n(i)\ncontribute to effective cooperation with the competent authorities of third countries and with international\norganisations;\n(j)\nassist national competent authorities and the Commission in developing the organisational and technical expertise\nrequired for the implementation of this Regulation, including by contributing to the assessment of training needs for\nstaff of Member States involved in implementing this Regulation;\n(k) assist the AI Office in supporting national competent authorities in the establishment and development of AI\nregulatory sandboxes, and facilitate cooperation and information-sharing among AI regulatory sandboxes;\n(l)\ncontribute to, and provide relevant advice on, the development of guidance documents;\n(m) advise the Commission in relation to international matters on AI;\n(n) provide opinions to the Commission on the qualified alerts regarding general-purpose AI models;\n(o) receive opinions by the Member States on qualified alerts regarding general-purpose AI models, and on national\nexperiences and practices on the monitoring and enforcement of AI systems, in particular systems integrating the\ngeneral-purpose AI models."
     },
     {
       "id": "article-67-para-1",
@@ -8403,6 +8418,21 @@
       "text": "For high-risk AI systems covered by the Union harmonisation legislation listed in Section A of Annex I, where\na post-market monitoring system and plan are already established under that legislation, in order to ensure consistency,\navoid duplications and minimise additional burdens, providers shall have a choice of integrating, as appropriate, the\nnecessary elements described in paragraphs 1, 2 and 3 using the template referred in paragraph 3 into systems and plans\nalready existing under that legislation, provided that it achieves an equivalent level of protection.\nThe first subparagraph of this paragraph shall also apply to high-risk AI systems referred to in point 5 of Annex III placed\non the market or put into service by financial institutions that are subject to requirements under Union financial services\nlaw regarding their internal governance, arrangements or processes."
     },
     {
+      "id": "article-73",
+      "type": "article",
+      "paragraph_number": null,
+      "page_range": "101/144",
+      "chapter_number": "IX",
+      "chapter_name": null,
+      "section_number": 2,
+      "section_name": "Sharing of information on serious incidents",
+      "article_number": 73,
+      "article_name": null,
+      "annex_number": null,
+      "annex_name": null,
+      "text": "101/144"
+    },
+    {
       "id": "article-73-para-2",
       "type": "article",
       "paragraph_number": 2,
@@ -8412,7 +8442,7 @@
       "section_number": 2,
       "section_name": "Sharing of information on serious incidents",
       "article_number": 73,
-      "article_name": "101/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "The report referred to in paragraph 1 shall be made immediately after the provider has established a causal link\nbetween the AI system and the serious incident or the reasonable likelihood of such a link, and, in any event, not later than\n15 days after the provider or, where applicable, the deployer, becomes aware of the serious incident.\nThe period for the reporting referred to in the first subparagraph shall take account of the severity of the serious incident."
@@ -8427,7 +8457,7 @@
       "section_number": 2,
       "section_name": "Sharing of information on serious incidents",
       "article_number": 73,
-      "article_name": "101/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Notwithstanding paragraph 2 of this Article, in the event of a widespread infringement or a serious incident as\ndefined in Article 3, point (49)(b), the report referred to in paragraph 1 of this Article shall be provided immediately, and\nnot later than two days after the provider or, where applicable, the deployer becomes aware of that incident."
@@ -8442,7 +8472,7 @@
       "section_number": 2,
       "section_name": "Sharing of information on serious incidents",
       "article_number": 73,
-      "article_name": "101/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Notwithstanding paragraph 2, in the event of the death of a person, the report shall be provided immediately after the\nprovider or the deployer has established, or as soon as it suspects, a causal relationship between the high-risk AI system and\nthe serious incident, but not later than 10 days after the date on which the provider or, where applicable, the deployer\nbecomes aware of the serious incident."
@@ -8457,7 +8487,7 @@
       "section_number": 2,
       "section_name": "Sharing of information on serious incidents",
       "article_number": 73,
-      "article_name": "101/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Where necessary to ensure timely reporting, the provider or, where applicable, the deployer, may submit an initial\nreport that is incomplete, followed by a complete report."
@@ -8472,7 +8502,7 @@
       "section_number": 2,
       "section_name": "Sharing of information on serious incidents",
       "article_number": 73,
-      "article_name": "101/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Following the reporting of a serious incident pursuant to paragraph 1, the provider shall, without delay, perform the\nnecessary investigations in relation to the serious incident and the AI system concerned. This shall include a risk assessment\nof the incident, and corrective action.\nThe provider shall cooperate with the competent authorities, and where relevant with the notified body concerned, during\nthe investigations referred to in the first subparagraph, and shall not perform any investigation which involves altering the\nAI system concerned in a way which may affect any subsequent evaluation of the causes of the incident, prior to informing\nthe competent authorities of such action."
@@ -8487,7 +8517,7 @@
       "section_number": 2,
       "section_name": "Sharing of information on serious incidents",
       "article_number": 73,
-      "article_name": "101/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Upon receiving a notification related to a serious incident referred to in Article 3, point (49)(c), the relevant market\nsurveillance authority shall inform the national public authorities or bodies referred to in Article 77(1). The Commission\nshall develop dedicated guidance to facilitate compliance with the obligations set out in paragraph 1 of this Article. That\nguidance shall be issued by 2 August 2025, and shall be assessed regularly."
@@ -8502,7 +8532,7 @@
       "section_number": 2,
       "section_name": "Sharing of information on serious incidents",
       "article_number": 73,
-      "article_name": "101/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "The market surveillance authority shall take appropriate measures, as provided for in Article 19 of Regulation (EU)\n2019/1020, within seven days from the date it received the notification referred to in paragraph 1 of this Article, and shall\nfollow the notification procedures as provided in that Regulation."
@@ -8517,7 +8547,7 @@
       "section_number": 2,
       "section_name": "Sharing of information on serious incidents",
       "article_number": 73,
-      "article_name": "101/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "For high-risk AI systems referred to in Annex III that are placed on the market or put into service by providers that are\nsubject to Union legislative instruments laying down reporting obligations equivalent to those set out in this Regulation, the\nnotification of serious incidents shall be limited to those referred to in Article 3, point (49)(c)."
@@ -8532,7 +8562,7 @@
       "section_number": 2,
       "section_name": "Sharing of information on serious incidents",
       "article_number": 73,
-      "article_name": "101/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "For high-risk AI systems which are safety components of devices, or are themselves devices, covered by Regulations\n(EU) 2017/745 and (EU) 2017/746, the notification of serious incidents shall be limited to those referred to in Article 3,\npoint (49)(c) of this Regulation, and shall be made to the national competent authority chosen for that purpose by the\nMember States where the incident occurred."
@@ -8547,7 +8577,7 @@
       "section_number": 2,
       "section_name": "Sharing of information on serious incidents",
       "article_number": 73,
-      "article_name": "101/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "National competent authorities shall immediately notify the Commission of any serious incident, whether or not\nthey have taken action on it, in accordance with Article 20 of Regulation (EU) 2019/1020."
@@ -8556,16 +8586,16 @@
       "id": "article-74",
       "type": "article",
       "paragraph_number": null,
-      "page_range": "103/144",
+      "page_range": "102-103/144",
       "chapter_number": "IX",
       "chapter_name": null,
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
-      "text": "(a) any reference to an economic operator under Regulation (EU) 2019/1020 shall be understood as including all operators\nidentified in Article 2(1) of this Regulation;\n(b) any reference to a product under Regulation (EU) 2019/1020 shall be understood as including all AI systems falling\nwithin the scope of this Regulation."
+      "text": "102/144\n(a) any reference to an economic operator under Regulation (EU) 2019/1020 shall be understood as including all operators\nidentified in Article 2(1) of this Regulation;\n(b) any reference to a product under Regulation (EU) 2019/1020 shall be understood as including all AI systems falling\nwithin the scope of this Regulation."
     },
     {
       "id": "article-74-para-2",
@@ -8577,7 +8607,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "As part of their reporting obligations under Article 34(4) of Regulation (EU) 2019/1020, the market surveillance\nauthorities shall report annually to the Commission and relevant national competition authorities any information\nidentified in the course of market surveillance activities that may be of potential interest for the application of Union law on\ncompetition rules. They shall also annually report to the Commission about the use of prohibited practices that occurred\nduring that year and about the measures taken."
@@ -8592,7 +8622,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "For high-risk AI systems related to products covered by the Union harmonisation legislation listed in Section A of\nAnnex I, the market surveillance authority for the purposes of this Regulation shall be the authority responsible for market\nsurveillance activities designated under those legal acts.\nBy derogation from the first subparagraph, and in appropriate circumstances, Member States may designate another\nrelevant authority to act as a market surveillance authority, provided they ensure coordination with the relevant sectoral\nmarket surveillance authorities responsible for the enforcement of the Union harmonisation legislation listed in Annex I."
@@ -8607,7 +8637,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "The procedures referred to in Articles 79 to 83 of this Regulation shall not apply to AI systems related to products\ncovered by the Union harmonisation legislation listed in section A of Annex I, where such legal acts already provide for\nprocedures ensuring an equivalent level of protection and having the same objective. In such cases, the relevant sectoral\nprocedures shall apply instead."
@@ -8622,7 +8652,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Without prejudice to the powers of market surveillance authorities under Article 14 of Regulation (EU) 2019/1020,\nfor the purpose of ensuring the effective enforcement of this Regulation, market surveillance authorities may exercise the\npowers referred to in Article 14(4), points (d) and (j), of that Regulation remotely, as appropriate."
@@ -8637,7 +8667,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "For high-risk AI systems placed on the market, put into service, or used by financial institutions regulated by Union\nfinancial services law, the market surveillance authority for the purposes of this Regulation shall be the relevant national\nauthority responsible for the financial supervision of those institutions under that legislation in so far as the placing on the\nmarket, putting into service, or the use of the AI system is in direct connection with the provision of those financial\nservices."
@@ -8652,7 +8682,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "By way of derogation from paragraph 6, in appropriate circumstances, and provided that coordination is ensured,\nanother relevant authority may be identified by the Member State as market surveillance authority for the purposes of this\nRegulation.\nwithout delay, to the European Central Bank any information identified in the course of their market surveillance activities\nthat may be of potential interest for the prudential supervisory tasks of the European Central Bank specified in that\nRegulation."
@@ -8667,7 +8697,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "For high-risk AI systems listed in point 1 of Annex III to this Regulation, in so far as the systems are used for law\nenforcement purposes, border management and justice and democracy, and for high-risk AI systems listed in points 6, 7\nand 8 of Annex III to this Regulation, Member States shall designate as market surveillance authorities for the purposes of\nthis Regulation either the competent data protection supervisory authorities under Regulation (EU) 2016/679 or Directive\n(EU) 2016/680, or any other authority designated pursuant to the same conditions laid down in Articles 41 to 44 of\nDirective (EU) 2016/680. Market surveillance activities shall in no way affect the independence of judicial authorities, or\notherwise interfere with their activities when acting in their judicial capacity."
@@ -8682,7 +8712,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Where Union institutions, bodies, offices or agencies fall within the scope of this Regulation, the European Data\nProtection Supervisor shall act as their market surveillance authority, except in relation to the Court of Justice of the\nEuropean Union acting in its judicial capacity.\n103/144"
@@ -8697,7 +8727,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Market surveillance authorities and the Commission shall be able to propose joint activities, including joint\ninvestigations, to be conducted by either market surveillance authorities or market surveillance authorities jointly with the\nCommission, that have the aim of promoting compliance, identifying non-compliance, raising awareness or providing\nguidance in relation to this Regulation with respect to specific categories of high-risk AI systems that are found to present\na serious risk across two or more Member States in accordance with Article 9 of Regulation (EU) 2019/1020. The AI Office\nshall provide coordination support for joint investigations."
@@ -8712,7 +8742,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Without prejudice to the powers provided for under Regulation (EU) 2019/1020, and where relevant and limited to\nwhat is necessary to fulfil their tasks, the market surveillance authorities shall be granted full access by providers to the\ndocumentation as well as the training, validation and testing data sets used for the development of high-risk AI systems,\nincluding, where appropriate and subject to security safeguards, through application programming interfaces (API) or other\nrelevant technical means and tools enabling remote access."
@@ -8727,7 +8757,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Market surveillance authorities shall be granted access to the source code of the high-risk AI system upon a reasoned\nrequest and only when both of the following conditions are fulfilled:\n(a) access to source code is necessary to assess the conformity of a high-risk AI system with the requirements set out in\nChapter III, Section 2; and\n(b) testing or auditing procedures and verifications based on the data and documentation provided by the provider have\nbeen exhausted or proved insufficient."
@@ -8742,7 +8772,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 74,
-      "article_name": "102/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Any information or documentation obtained by market surveillance authorities shall be treated in accordance with\nthe confidentiality obligations set out in Article 78."
@@ -8793,6 +8823,21 @@
       "text": "Where a market surveillance authority is unable to conclude its investigation of the high-risk AI system because of its\ninability to access certain information related to the general-purpose AI model despite having made all appropriate efforts\nto obtain that information, it may submit a reasoned request to the AI Office, by which access to that information shall be\nenforced. In that case, the AI Office shall supply to the applicant authority without delay, and in any event within 30 days,\nany information that the AI Office considers to be relevant in order to establish whether a high-risk AI system is\nnon-compliant. Market surveillance authorities shall safeguard the confidentiality of the information that they obtain in\naccordance with Article 78 of this Regulation. The procedure provided for in Chapter VI of Regulation (EU) 2019/1020\nshall apply mutatis mutandis."
     },
     {
+      "id": "article-76",
+      "type": "article",
+      "paragraph_number": null,
+      "page_range": "104/144",
+      "chapter_number": "IX",
+      "chapter_name": null,
+      "section_number": 3,
+      "section_name": "Enforcement",
+      "article_number": 76,
+      "article_name": null,
+      "annex_number": null,
+      "annex_name": null,
+      "text": "104/144"
+    },
+    {
       "id": "article-76-para-2",
       "type": "article",
       "paragraph_number": 2,
@@ -8802,7 +8847,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 76,
-      "article_name": "104/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Where testing in real world conditions is conducted for AI systems that are supervised within an AI regulatory\nsandbox under Article 58, the market surveillance authorities shall verify the compliance with Article 60 as part of their\nsupervisory role for the AI regulatory sandbox. Those authorities may, as appropriate, allow the testing in real world\nconditions to be conducted by the provider or prospective provider, in derogation from the conditions set out in Article\n60(4), points (f) and (g)."
@@ -8817,7 +8862,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 76,
-      "article_name": "104/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Where a market surveillance authority has been informed by the prospective provider, the provider or any third party\nof a serious incident or has other grounds for considering that the conditions set out in Articles 60 and 61 are not met, it\nmay take either of the following decisions on its territory, as appropriate:\n(a) to suspend or terminate the testing in real world conditions;\n(b) to require the provider or prospective provider and the deployer or prospective deployer to modify any aspect of the\ntesting in real world conditions."
@@ -8832,7 +8877,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 76,
-      "article_name": "104/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Where a market surveillance authority has taken a decision referred to in paragraph 3 of this Article, or has issued an\nobjection within the meaning of Article 60(4), point (b), the decision or the objection shall indicate the grounds therefor\nand how the provider or prospective provider can challenge the decision or objection."
@@ -8847,7 +8892,7 @@
       "section_number": 3,
       "section_name": "Enforcement",
       "article_number": 76,
-      "article_name": "104/144",
+      "article_name": null,
       "annex_number": null,
       "annex_name": null,
       "text": "Where applicable, where a market surveillance authority has taken a decision referred to in paragraph 3, it shall\ncommunicate the grounds therefor to the market surveillance authorities of other Member States in which the AI system\nhas been tested in accordance with the testing plan."
@@ -9417,10 +9462,10 @@
       "section_number": 4,
       "section_name": "Remedies",
       "article_number": 85,
-      "article_name": "Right to lodge a complaint with a market surveillance authority",
+      "article_name": "Right to lodge a complaint with a market surveillance authority Without prejudice to other administrative or judicial remedies, any natural or legal person having grounds to consider that",
       "annex_number": null,
       "annex_name": null,
-      "text": "Without prejudice to other administrative or judicial remedies, any natural or legal person having grounds to consider that\nthere has been an infringement of the provisions of this Regulation may submit complaints to the relevant market\nsurveillance authority.\nIn accordance with Regulation (EU) 2019/1020, such complaints shall be taken into account for the purpose of conducting\nmarket surveillance activities, and shall be handled in line with the dedicated procedures established therefor by the market\nsurveillance authorities."
+      "text": "there has been an infringement of the provisions of this Regulation may submit complaints to the relevant market\nsurveillance authority.\nIn accordance with Regulation (EU) 2019/1020, such complaints shall be taken into account for the purpose of conducting\nmarket surveillance activities, and shall be handled in line with the dedicated procedures established therefor by the market\nsurveillance authorities."
     },
     {
       "id": "article-86-para-1",
@@ -9477,10 +9522,10 @@
       "section_number": 4,
       "section_name": "Remedies",
       "article_number": 87,
-      "article_name": "Reporting of infringements and protection of reporting persons",
+      "article_name": "Reporting of infringements and protection of reporting persons Directive (EU) 2019/1937 shall apply to the reporting of infringements of this Regulation and the protection of persons",
       "annex_number": null,
       "annex_name": null,
-      "text": "Directive (EU) 2019/1937 shall apply to the reporting of infringements of this Regulation and the protection of persons\nreporting such infringements."
+      "text": "reporting such infringements."
     },
     {
       "id": "article-88-para-1",
@@ -9792,10 +9837,10 @@
       "section_number": 5,
       "section_name": "Supervision, investigation, enforcement and monitoring in respect of providers of general-purpose AI models",
       "article_number": 94,
-      "article_name": "Procedural rights of economic operators of the general-purpose AI model",
+      "article_name": "Procedural rights of economic operators of the general-purpose AI model Article 18 of Regulation (EU) 2019/1020 shall apply mutatis mutandis to the providers of the general-purpose AI model,",
       "annex_number": null,
       "annex_name": null,
-      "text": "Article 18 of Regulation (EU) 2019/1020 shall apply mutatis mutandis to the providers of the general-purpose AI model,\nwithout prejudice to more specific procedural rights provided for in this Regulation."
+      "text": "without prejudice to more specific procedural rights provided for in this Regulation."
     },
     {
       "id": "article-94",
@@ -9807,7 +9852,7 @@
       "section_number": 5,
       "section_name": "Supervision, investigation, enforcement and monitoring in respect of providers of general-purpose AI models",
       "article_number": 94,
-      "article_name": "Procedural rights of economic operators of the general-purpose AI model",
+      "article_name": "Procedural rights of economic operators of the general-purpose AI model Article 18 of Regulation (EU) 2019/1020 shall apply mutatis mutandis to the providers of the general-purpose AI model,",
       "annex_number": null,
       "annex_name": null,
       "text": "CODES OF CONDUCT AND GUIDELINES"
@@ -10370,7 +10415,7 @@
     {
       "id": "annex-II-para-126",
       "type": "annex",
-      "paragraph_number": "126",
+      "paragraph_number": 126,
       "page_range": "126/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10385,7 +10430,7 @@
     {
       "id": "annex-III-para-1",
       "type": "annex",
-      "paragraph_number": "1",
+      "paragraph_number": 1,
       "page_range": "127/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10400,7 +10445,7 @@
     {
       "id": "annex-III-para-2",
       "type": "annex",
-      "paragraph_number": "2",
+      "paragraph_number": 2,
       "page_range": "127/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10415,7 +10460,7 @@
     {
       "id": "annex-III-para-3",
       "type": "annex",
-      "paragraph_number": "3",
+      "paragraph_number": 3,
       "page_range": "127/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10430,7 +10475,7 @@
     {
       "id": "annex-III-para-4",
       "type": "annex",
-      "paragraph_number": "4",
+      "paragraph_number": 4,
       "page_range": "127/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10445,7 +10490,7 @@
     {
       "id": "annex-III-para-5",
       "type": "annex",
-      "paragraph_number": "5",
+      "paragraph_number": 5,
       "page_range": "127/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10460,7 +10505,7 @@
     {
       "id": "annex-III-para-127",
       "type": "annex",
-      "paragraph_number": "127",
+      "paragraph_number": 127,
       "page_range": "127/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10475,7 +10520,7 @@
     {
       "id": "annex-III-para-6",
       "type": "annex",
-      "paragraph_number": "6",
+      "paragraph_number": 6,
       "page_range": "127-128/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10490,7 +10535,7 @@
     {
       "id": "annex-III-para-7",
       "type": "annex",
-      "paragraph_number": "7",
+      "paragraph_number": 7,
       "page_range": "128/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10505,7 +10550,7 @@
     {
       "id": "annex-III-para-8",
       "type": "annex",
-      "paragraph_number": "8",
+      "paragraph_number": 8,
       "page_range": "128/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10520,7 +10565,7 @@
     {
       "id": "annex-III-para-128",
       "type": "annex",
-      "paragraph_number": "128",
+      "paragraph_number": 128,
       "page_range": "128/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10535,7 +10580,7 @@
     {
       "id": "annex-III-para-129",
       "type": "annex",
-      "paragraph_number": "129",
+      "paragraph_number": 129,
       "page_range": "128-129/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10550,7 +10595,7 @@
     {
       "id": "annex-IV-para-1",
       "type": "annex",
-      "paragraph_number": "1",
+      "paragraph_number": 1,
       "page_range": "130/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10565,7 +10610,7 @@
     {
       "id": "annex-IV-para-2",
       "type": "annex",
-      "paragraph_number": "2",
+      "paragraph_number": 2,
       "page_range": "130/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10580,7 +10625,7 @@
     {
       "id": "annex-IV-para-130",
       "type": "annex",
-      "paragraph_number": "130",
+      "paragraph_number": 130,
       "page_range": "130/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10595,7 +10640,7 @@
     {
       "id": "annex-IV-para-3",
       "type": "annex",
-      "paragraph_number": "3",
+      "paragraph_number": 3,
       "page_range": "130-131/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10610,7 +10655,7 @@
     {
       "id": "annex-IV-para-4",
       "type": "annex",
-      "paragraph_number": "4",
+      "paragraph_number": 4,
       "page_range": "131/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10625,7 +10670,7 @@
     {
       "id": "annex-IV-para-5",
       "type": "annex",
-      "paragraph_number": "5",
+      "paragraph_number": 5,
       "page_range": "131/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10640,7 +10685,7 @@
     {
       "id": "annex-IV-para-6",
       "type": "annex",
-      "paragraph_number": "6",
+      "paragraph_number": 6,
       "page_range": "131/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10655,7 +10700,7 @@
     {
       "id": "annex-IV-para-7",
       "type": "annex",
-      "paragraph_number": "7",
+      "paragraph_number": 7,
       "page_range": "131/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10670,7 +10715,7 @@
     {
       "id": "annex-IV-para-8",
       "type": "annex",
-      "paragraph_number": "8",
+      "paragraph_number": 8,
       "page_range": "131/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10685,7 +10730,7 @@
     {
       "id": "annex-IV-para-9",
       "type": "annex",
-      "paragraph_number": "9",
+      "paragraph_number": 9,
       "page_range": "131/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10700,7 +10745,7 @@
     {
       "id": "annex-IV-para-131",
       "type": "annex",
-      "paragraph_number": "131",
+      "paragraph_number": 131,
       "page_range": "131/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10715,7 +10760,7 @@
     {
       "id": "annex-V-para-1",
       "type": "annex",
-      "paragraph_number": "1",
+      "paragraph_number": 1,
       "page_range": "132/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10730,7 +10775,7 @@
     {
       "id": "annex-V-para-2",
       "type": "annex",
-      "paragraph_number": "2",
+      "paragraph_number": 2,
       "page_range": "132/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10745,7 +10790,7 @@
     {
       "id": "annex-V-para-3",
       "type": "annex",
-      "paragraph_number": "3",
+      "paragraph_number": 3,
       "page_range": "132/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10760,7 +10805,7 @@
     {
       "id": "annex-V-para-4",
       "type": "annex",
-      "paragraph_number": "4",
+      "paragraph_number": 4,
       "page_range": "132/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10775,7 +10820,7 @@
     {
       "id": "annex-V-para-5",
       "type": "annex",
-      "paragraph_number": "5",
+      "paragraph_number": 5,
       "page_range": "132/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10790,7 +10835,7 @@
     {
       "id": "annex-V-para-6",
       "type": "annex",
-      "paragraph_number": "6",
+      "paragraph_number": 6,
       "page_range": "132/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10805,7 +10850,7 @@
     {
       "id": "annex-V-para-7",
       "type": "annex",
-      "paragraph_number": "7",
+      "paragraph_number": 7,
       "page_range": "132/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10820,7 +10865,7 @@
     {
       "id": "annex-V-para-8",
       "type": "annex",
-      "paragraph_number": "8",
+      "paragraph_number": 8,
       "page_range": "132/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10835,7 +10880,7 @@
     {
       "id": "annex-V-para-132",
       "type": "annex",
-      "paragraph_number": "132",
+      "paragraph_number": 132,
       "page_range": "132/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10850,7 +10895,7 @@
     {
       "id": "annex-VI-para-2",
       "type": "annex",
-      "paragraph_number": "2",
+      "paragraph_number": 2,
       "page_range": "133/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10865,7 +10910,7 @@
     {
       "id": "annex-VI-para-3",
       "type": "annex",
-      "paragraph_number": "3",
+      "paragraph_number": 3,
       "page_range": "133/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10880,7 +10925,7 @@
     {
       "id": "annex-VI-para-4",
       "type": "annex",
-      "paragraph_number": "4",
+      "paragraph_number": 4,
       "page_range": "133/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10895,7 +10940,7 @@
     {
       "id": "annex-VI-para-133",
       "type": "annex",
-      "paragraph_number": "133",
+      "paragraph_number": 133,
       "page_range": "133/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10910,7 +10955,7 @@
     {
       "id": "annex-VII-para-1",
       "type": "annex",
-      "paragraph_number": "1",
+      "paragraph_number": 1,
       "page_range": "134/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10925,7 +10970,7 @@
     {
       "id": "annex-VII-para-2",
       "type": "annex",
-      "paragraph_number": "2",
+      "paragraph_number": 2,
       "page_range": "134/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -10940,7 +10985,7 @@
     {
       "id": "annex-VII-para-3",
       "type": "annex",
-      "paragraph_number": "3",
+      "paragraph_number": 3,
       "page_range": "134/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11015,7 +11060,7 @@
     {
       "id": "annex-VII-para-4",
       "type": "annex",
-      "paragraph_number": "4",
+      "paragraph_number": 4,
       "page_range": "134/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11060,7 +11105,7 @@
     {
       "id": "annex-VII-para-134",
       "type": "annex",
-      "paragraph_number": "134",
+      "paragraph_number": 134,
       "page_range": "134/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11150,7 +11195,7 @@
     {
       "id": "annex-VII-para-5",
       "type": "annex",
-      "paragraph_number": "5",
+      "paragraph_number": 5,
       "page_range": "135/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11210,7 +11255,7 @@
     {
       "id": "annex-VII-para-135",
       "type": "annex",
-      "paragraph_number": "135",
+      "paragraph_number": 135,
       "page_range": "135/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11225,7 +11270,7 @@
     {
       "id": "annex-IX-para-1",
       "type": "annex",
-      "paragraph_number": "1",
+      "paragraph_number": 1,
       "page_range": "138/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11240,7 +11285,7 @@
     {
       "id": "annex-IX-para-2",
       "type": "annex",
-      "paragraph_number": "2",
+      "paragraph_number": 2,
       "page_range": "138/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11255,7 +11300,7 @@
     {
       "id": "annex-IX-para-3",
       "type": "annex",
-      "paragraph_number": "3",
+      "paragraph_number": 3,
       "page_range": "138/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11270,7 +11315,7 @@
     {
       "id": "annex-IX-para-4",
       "type": "annex",
-      "paragraph_number": "4",
+      "paragraph_number": 4,
       "page_range": "138/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11285,7 +11330,7 @@
     {
       "id": "annex-IX-para-5",
       "type": "annex",
-      "paragraph_number": "5",
+      "paragraph_number": 5,
       "page_range": "138/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11300,7 +11345,7 @@
     {
       "id": "annex-IX-para-138",
       "type": "annex",
-      "paragraph_number": "138",
+      "paragraph_number": 138,
       "page_range": "138/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11315,7 +11360,7 @@
     {
       "id": "annex-XII-para-1",
       "type": "annex",
-      "paragraph_number": "1",
+      "paragraph_number": 1,
       "page_range": "143/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11330,7 +11375,7 @@
     {
       "id": "annex-XII-para-2",
       "type": "annex",
-      "paragraph_number": "2",
+      "paragraph_number": 2,
       "page_range": "143/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11345,7 +11390,7 @@
     {
       "id": "annex-XII-para-143",
       "type": "annex",
-      "paragraph_number": "143",
+      "paragraph_number": 143,
       "page_range": "143/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11360,7 +11405,7 @@
     {
       "id": "annex-XIII-para-144",
       "type": "annex",
-      "paragraph_number": "144",
+      "paragraph_number": 144,
       "page_range": "144/144",
       "chapter_number": null,
       "chapter_name": null,
@@ -11373,7 +11418,7 @@
       "text": "For the purpose of determining that a general-purpose AI model has capabilities or an impact equivalent to those set out in\nArticle 51(1), point (a), the Commission shall take into account the following criteria:\n(a)\nthe number of parameters of the model;\n(b)\nthe quality or size of the data set, for example measured through tokens;\n(c)\nthe amount of computation used for training the model, measured in floating point operations or indicated by\na combination of other variables such as estimated cost of training, estimated time required for the training, or\nestimated energy consumption for the training;\n(d)\nthe input and output modalities of the model, such as text to text (large language models), text to image,\nmulti-modality, and the state of the art thresholds for determining high-impact capabilities for each modality, and\nthe specific type of inputs and outputs (e.g. biological sequences);\n(e)\nthe benchmarks and evaluations of capabilities of the model, including considering the number of tasks without\nadditional training, adaptability to learn new, distinct tasks, its level of autonomy and scalability, the tools it has\naccess to;\n(f)\nwhether it has a high impact on the internal market due to its reach, which shall be presumed when it has been\nmade available to at least 10 000 registered business users established in the Union;\n(g)\nthe number of registered end-users."
     },
     {
-      "id": "annex-828",
+      "id": "annex-829",
       "type": "annex",
       "paragraph_number": null,
       "page_range": "144/144",

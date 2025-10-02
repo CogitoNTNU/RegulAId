@@ -348,7 +348,7 @@ def parse_pdf_to_chunks(pdf_path, output_json):
                 try:
                     current_annex_num = int(m_sec.group(1))
                 except ValueError:
-                    current_annex_num = current_annex_num  # keep as string if not int
+                    current_annex_num = None  # keep as string if not int
                 current_annex_section_name = m_sec.group(2).strip() if m_sec.group(2) else None
                 if not current_annex_section_name and i + 1 < len(stream):
                     next_line = stream[i+1][1].strip()
@@ -363,11 +363,24 @@ def parse_pdf_to_chunks(pdf_path, output_json):
                 except ValueError:
                     current_section_num = current_section_num  # keep as string if not int
                 current_section_name = m_sec.group(2).strip() if m_sec.group(2) else None
-                if not current_section_name and i + 1 < len(stream):
-                    next_line = stream[i+1][1].strip()
-                    if next_line and not RE_ARTICLE.match(next_line):
-                        current_section_name = next_line
-                        i += 1
+                if not current_section_name:
+                    title_lines = []
+                    j = i + 1
+                    while j < len(stream):
+                        nxt = stream[j][1].strip()
+                        if not nxt:
+                            j += 1
+                            continue
+                        if RE_ARTICLE.match(nxt) or re.match(r'^\d+/\d+$', nxt):
+                            break
+                        title_lines.append(nxt)
+                        j += 1
+                        if len(title_lines) >= 2:
+                            break
+                    if title_lines:
+                        current_section_name = " ".join(title_lines).strip()
+                    i = j - 1
+
 
             mode = "section"
             skipping_block = False
@@ -399,13 +412,27 @@ def parse_pdf_to_chunks(pdf_path, output_json):
 
             # Peek at the next line: sometimes the article title is on its own line
             if i + 1 < len(stream):
-                next_line = stream[i+1][1].strip()
-                if next_line and not RE_ARTICLE_PARAGRAPH.match(next_line) and not RE_ARTICLE_PAREN_NUM.match(next_line):
-                    # use next line as article_name if not already set
-                    if not current_article_name:
-                        current_article_name = next_line
-                    # skip this line from being added to text
-                    i += 1  # advance one extra to consume it
+                # Collect possible multi-line title (stop if we hit numbering or page markers)
+                title_lines = []
+                j = i + 1
+                while j < len(stream):
+                    nxt = stream[j][1].strip()
+                    if not nxt:
+                        j += 1
+                        continue
+                    if RE_ARTICLE_PARAGRAPH.match(nxt) or RE_ARTICLE_PAREN_NUM.match(nxt):
+                        break
+                    if re.match(r'^\d+/\d+$', nxt):  # page number like "67/144"
+                        break
+                    title_lines.append(nxt)
+                    j += 1
+                    # Stop after 2 lines (most titles are 1–2 lines)
+                    if len(title_lines) >= 2:
+                        break
+                if title_lines and not current_article_name:
+                    current_article_name = " ".join(title_lines).strip()
+                i = j - 1  # advance to last consumed
+
 
             current_article_buf_meta = {
                 "id": f"article-{current_article_num}",
@@ -490,7 +517,7 @@ def parse_pdf_to_chunks(pdf_path, output_json):
             if pm:
                 para_no = pm.group(1) or pm.group(2)
                 try:
-                    para_no = int(para_no) if pm.group(1) else para_no  # keep "3.1" etc. as string
+                    para_no = int(para_no)
                 except ValueError:
                     para_no = para_no
                 if buf_lines:
