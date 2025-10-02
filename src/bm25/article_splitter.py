@@ -2,6 +2,7 @@
 import os
 import re
 import unicodedata
+import json
 from collections import Counter
 from typing import List, Tuple, Optional, Dict, Any
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -9,7 +10,6 @@ from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
 
 from langchain_ollama import OllamaEmbeddings
-from langchain_postgres import PGVector
 import psycopg
 from dotenv import load_dotenv
 
@@ -42,7 +42,7 @@ class QueryParams(BaseModel):
     query: str = Field(..., description="The query to process against the document")
 
 
-def get_vector_store() -> PGVector:
+def get_vector_store() -> OllamaEmbeddings:
     # https://huggingface.co/spaces/mteb/leaderboard
 
     """
@@ -66,49 +66,63 @@ def get_vector_store() -> PGVector:
         })
     """
 
-    return PGVector(
-        embeddings=embeddings,
-        collection_name=os.getenv("COLLECTION_NAME"),
-        connection=pg_connection_string(),
-        use_jsonb=True
-    )
+    return embeddings
 
 
 vector_store = get_vector_store()
 
 
-def add_documents(documents: List[Document]) -> list[str]:
-    langchain_docs = []
-    ids = []
-    for doc in documents:
-        article_id = doc.metadata.get("article_id", "unknown")
-        chunk_id = doc.metadata.get("chunk_id", "unknown")
-        doc_id = f"{article_id}_{chunk_id}"
+def add_documents(documents: List[Document], table_name=None, column_name="embedding") -> None:
+    """
+    Insert documents and their embeddings into the database using raw SQL.
+    """
+    if table_name is None:
+        table_name = os.getenv("COLLECTION_NAME")
+    # Get embedding model
+    embeddings = get_vector_store()
+    try:
+        with psycopg.connect(psycopg_connection_string()) as conn:
+            with conn.cursor() as cur:
+                for doc in documents:
+                    embedding = embeddings.embed_query(doc.page_content)
+                    embedding_str = str(embedding)
+                    metadata_json = json.dumps(doc.metadata)  # Convert metadata to valid JSON
+                    # Insert document and embedding
+                    cur.execute(
+                        f"INSERT INTO {table_name} (page_content, metadata, {column_name}) VALUES (%s, %s, %s)",
+                        (doc.page_content, metadata_json, embedding_str)
+                    )
+                conn.commit()
+        print(f"Inserted {len(documents)} documents into {table_name}.")
+    except Exception as e:
+        print("Error inserting documents:", str(e))
 
-        langchain_docs.append(Document(
-            id=doc_id,
-            page_content=doc.page_content,
-            metadata=doc.metadata
-        ))
-        ids.append(doc_id)
 
-    return vector_store.add_documents(langchain_docs, ids=ids)
+def get_similar_documents(query_request: QueryParams, table_name=None, column_name="embedding",
+                          metric_operator="<=>") -> list:
+    """
+    Perform similarity search using ParadeDB's vector operator and HNSW index via raw SQL.
+    """
+    if table_name is None:
+        table_name = os.getenv("COLLECTION_NAME")
 
-
-def get_similar_documents(query_request: QueryParams) -> tuple[Any, List[dict[str, Any]]]:
-    retrieved_docs = vector_store.similarity_search_with_relevance_scores(query=query_request.query,
-                                                                          k=query_request.k,
-                                                                          filter=query_request.filter)
-
-    sources = []
-    for doc, score in retrieved_docs:
-        sources.append({
-            "score": score,
-            "article_id": doc.metadata.get('article_id', 'unknown'),
-            "chunk_id": doc.metadata.get('chunk_id', 'unknown')
-        })
-
-    return retrieved_docs, sources
+    embedding = get_vector_store().embed_query(query_request.query)
+    embedding_str = str(embedding)
+    sql = f"""
+        SELECT *, {column_name} {metric_operator} %s AS similarity
+        FROM {table_name}
+        ORDER BY {column_name} {metric_operator} %s
+        LIMIT %s
+    """
+    try:
+        with psycopg.connect(psycopg_connection_string()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, (embedding_str, embedding_str, query_request.k))
+                results = cur.fetchall()
+        return results
+    except Exception as e:
+        print("Error in ParadeDB similarity search:", str(e))
+        return []
 
 
 def articles_to_chunks(articles) -> List[Document]:
@@ -221,22 +235,97 @@ def verify_articles(articles: List[Tuple[int, str]]):
         print("All article headers look sequential and in order.")
 
 
+def create_hnsw_index(table_name=None, column_name="embedding", metric="vector_cosine_ops", m=16, ef_construction=64):
+    """
+    Create HNSW index for fast vector search in ParadeDB.
+    """
+    if table_name is None:
+        table_name = os.getenv("COLLECTION_NAME")
+    query = f"""
+        CREATE INDEX IF NOT EXISTS ON {table_name}
+        USING hnsw ({column_name} {metric})
+        WITH (m = {m}, ef_construction = {ef_construction});
+    """
+    try:
+        with psycopg.connect(psycopg_connection_string()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(query)
+                conn.commit()
+        print(f"HNSW index created (if not exists) on {table_name}.{column_name} with metric {metric}.")
+    except Exception as e:
+        print("Error creating HNSW index:", str(e))
+
+
+def create_collection_table(table_name=None, column_name="embedding"):
+    """
+    Create the collection table if it does not exist, with a vector column for ParadeDB.
+    """
+    if table_name is None:
+        table_name = os.getenv("COLLECTION_NAME")
+    # Use jsonb for metadata if supported, otherwise text
+    sql = f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            id SERIAL PRIMARY KEY,
+            page_content TEXT NOT NULL,
+            metadata JSONB,
+            {column_name} VECTOR
+        );
+    """
+    try:
+        with psycopg.connect(psycopg_connection_string()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql)
+                conn.commit()
+        print(f"Table '{table_name}' ensured.")
+    except Exception as e:
+        print("Error creating table:", str(e))
+
+
+def parade_similarity_search(query_text: str, k: int = 5, table_name=None, column_name="embedding",
+                             metric_operator="<=>") -> list:
+    """
+    Perform similarity search using ParadeDB's vector operator and HNSW index.
+    """
+    if table_name is None:
+        table_name = os.getenv("COLLECTION_NAME")
+    # Get embedding for the query
+    embedding = vector_store.embed_query(query_text)
+    # ParadeDB expects embedding as a string representation of a vector
+    embedding_str = str(embedding)
+    sql = f"""
+        SELECT *, {column_name} {metric_operator} %s AS similarity
+        FROM {table_name}
+        ORDER BY {column_name} {metric_operator} %s
+        LIMIT %s
+    """
+    try:
+        with psycopg.connect(psycopg_connection_string()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, (embedding_str, embedding_str, k))
+                results = cur.fetchall()
+        return results
+    except Exception as e:
+        print("Error in ParadeDB similarity search:", str(e))
+        return []
+
+
 if __name__ == "__main__":
     path = "../data/processed/AIACT-Serina.md"
 
     check_database_connection()
+    create_collection_table()  # Ensure table exists
+    create_hnsw_index()  # Ensure HNSW index exists
 
     text = load_text(path)
     articles = split_articles_by_header(text)
     verify_articles(articles)
 
-    # optional: show the last chunk header and first line for quick inspection
     if articles:
         last_num, last_chunk = articles[-1]
         print("\nLast chunk header number:", last_num)
         print("Last chunk first line:", last_chunk.splitlines()[0] if last_chunk.splitlines() else "<empty>")
 
-        documents_from_db: List[Document] = articles_to_chunks(articles)  # TODO This should be saved in the database
+        documents_from_db: List[Document] = articles_to_chunks(articles)
 
         print(bf25("Regulation applies"))
 
@@ -246,3 +335,5 @@ if __name__ == "__main__":
 
         qurey = QueryParams(query="Regulation applies")
         print(get_similar_documents(qurey))
+        print("ParadeDB HNSW similarity search:")
+        print(parade_similarity_search("Regulation applies", k=5))
