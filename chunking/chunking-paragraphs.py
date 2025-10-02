@@ -73,8 +73,9 @@ def extract_pages(pdf_path):
     pages = []
     for i in range(doc.page_count):
         page = doc.load_page(i)
-        txt = page.get_text("text")
-        pages.append({"page_num": i + 1, "text": txt})
+        text = page.get_text("text")
+        dict_blocks = page.get_text("dict")  # keep full metadata
+        pages.append({"page_num": i + 1, "text": text, "dict": dict_blocks})
     return pages, doc.page_count
 
 def guess_headers_footers(pages):
@@ -177,6 +178,21 @@ def roman_upper(s):
     if s is None:
         return None
     return s.strip().upper()
+
+def is_bold_line(line_text, page_dict):
+    """Return True if the entire line is bold in the PDF."""
+    line_text = line_text.strip()
+    if not line_text:
+        return False
+
+    for block in page_dict["blocks"]:
+        for l in block.get("lines", []):
+            span_texts = " ".join([s["text"].strip() for s in l.get("spans", []) if s["text"].strip()])
+            if span_texts.strip() == line_text:
+                # True if all spans in line use a bold font
+                return all("Bold" in s["font"] for s in l["spans"] if s["text"].strip())
+    return False
+
 
 # ---------- Main parsing function ----------
 def parse_pdf_to_chunks(pdf_path, output_json):
@@ -324,6 +340,22 @@ def parse_pdf_to_chunks(pdf_path, output_json):
 
             current_chapter_num = roman_upper(m_ch.group(1))
             current_chapter_name = m_ch.group(2).strip() if m_ch.group(2) else None
+            
+            if not current_chapter_name:
+                title_lines = []
+                j = i + 1
+                while j < len(stream):
+                    next_line = stream[j][1].strip()
+                    page_dict = pages[page_num-1]["dict"]
+                    if next_line and is_bold_line(next_line, page_dict):
+                        title_lines.append(next_line)
+                        j += 1
+                    else:
+                        break
+                if title_lines:
+                    current_chapter_name = " ".join(title_lines)
+                i = j - 1
+            
             current_section_num = None
             current_section_name = None
 
@@ -350,11 +382,20 @@ def parse_pdf_to_chunks(pdf_path, output_json):
                 except ValueError:
                     current_annex_num = None  # keep as string if not int
                 current_annex_section_name = m_sec.group(2).strip() if m_sec.group(2) else None
-                if not current_annex_section_name and i + 1 < len(stream):
-                    next_line = stream[i+1][1].strip()
-                    if next_line and not RE_PARAGRAPH_NUMBER.match(next_line):
-                        current_annex_section_name = next_line
-                        i += 1
+                if not current_annex_name:
+                    title_lines = []
+                    j = i + 1
+                    while j < len(stream):
+                        next_line = stream[j][1].strip()
+                        page_dict = pages[page_num-1]["dict"]
+                        if next_line and is_bold_line(next_line, page_dict):
+                            title_lines.append(next_line)
+                            j += 1
+                        else:
+                            break
+                    if title_lines:
+                        current_annex_name = " ".join(title_lines)
+                    i = j - 1
             else:
                 # Normal chapter section
                 current_section_num = m_sec.group(1)
@@ -367,18 +408,15 @@ def parse_pdf_to_chunks(pdf_path, output_json):
                     title_lines = []
                     j = i + 1
                     while j < len(stream):
-                        nxt = stream[j][1].strip()
-                        if not nxt:
+                        next_line = stream[j][1].strip()
+                        page_dict = pages[page_num-1]["dict"]
+                        if next_line and is_bold_line(next_line, page_dict):
+                            title_lines.append(next_line)
                             j += 1
-                            continue
-                        if RE_ARTICLE.match(nxt) or re.match(r'^\d+/\d+$', nxt):
-                            break
-                        title_lines.append(nxt)
-                        j += 1
-                        if len(title_lines) >= 2:
+                        else:
                             break
                     if title_lines:
-                        current_section_name = " ".join(title_lines).strip()
+                        current_section_name = " ".join(title_lines)
                     i = j - 1
 
 
@@ -391,7 +429,7 @@ def parse_pdf_to_chunks(pdf_path, output_json):
 
         # ARTICLE
         m_art = RE_ARTICLE.match(stripped)
-        if m_art:
+        if m_art and mode != "annex":
             # finalize previous article if any
             if buf_lines and (current_article_buf_meta.get("article_number") is not None):
                 emit_chunk("article", buf_lines, buf_pages, current_article_buf_meta)
@@ -410,28 +448,21 @@ def parse_pdf_to_chunks(pdf_path, output_json):
             current_article_num = int(m_art.group(1))
             current_article_name = m_art.group(2).strip() if m_art.group(2) else None
 
-            # Peek at the next line: sometimes the article title is on its own line
-            if i + 1 < len(stream):
-                # Collect possible multi-line title (stop if we hit numbering or page markers)
+            if not current_article_name:
                 title_lines = []
                 j = i + 1
                 while j < len(stream):
-                    nxt = stream[j][1].strip()
-                    if not nxt:
+                    next_line = stream[j][1].strip()
+                    page_dict = pages[page_num-1]["dict"]
+                    if next_line and is_bold_line(next_line, page_dict):
+                        title_lines.append(next_line)
                         j += 1
-                        continue
-                    if RE_ARTICLE_PARAGRAPH.match(nxt) or RE_ARTICLE_PAREN_NUM.match(nxt):
+                    else:
                         break
-                    if re.match(r'^\d+/\d+$', nxt):  # page number like "67/144"
-                        break
-                    title_lines.append(nxt)
-                    j += 1
-                    # Stop after 2 lines (most titles are 1–2 lines)
-                    if len(title_lines) >= 2:
-                        break
-                if title_lines and not current_article_name:
-                    current_article_name = " ".join(title_lines).strip()
-                i = j - 1  # advance to last consumed
+                if title_lines:
+                    current_article_name = " ".join(title_lines)
+                i = j - 1
+
 
 
             current_article_buf_meta = {
