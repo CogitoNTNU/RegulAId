@@ -66,6 +66,7 @@ RE_OJ_LINE = re.compile(r'(OJ\s+L\b|Official Journal|Regulation\s*\(EU\)\s*No|Di
 RE_ELI = re.compile(r'ELI\s*:\s*http[s]?:\/\/', re.IGNORECASE)
 RE_INLINE_REF_NUMBER_ONLY = re.compile(r'^\s*\(\s*\d+\s*\)\s*$')  # standalone "(5)" lines
 RE_LONG_REG_REF = re.compile(r'(Regulation\s*\(EU\).*?OJ\s+L\s*\d+\,\s*\d+\.\d+\.\d+|\bDirective\s*\(\s*EU\s*\).+OJ)', re.IGNORECASE | re.DOTALL)
+RE_PAGE_NUMBER = re.compile(r'^\d*/\d+$')  
 
 # ---------- Utility helpers ----------
 def extract_pages(pdf_path):
@@ -241,7 +242,11 @@ def parse_pdf_to_chunks(pdf_path, output_json):
         cleaned = remove_footnotes(cleaned) 
         # keep page-number tokens if present (do not remove a '1/144' lone line) — they can be used to compute page ranges
         for ln in cleaned.splitlines():
-            stream.append((p["page_num"], ln.rstrip()))
+            s = ln.strip()
+            if RE_PAGE_NUMBER.match(s):
+                continue  # skip page number lines completely
+            stream.append((p["page_num"], s))
+
 
     # helper to finalize chunk
     def emit_chunk(kind, text_lines, pages_set, meta):
