@@ -193,6 +193,24 @@ def is_bold_line(line_text, page_dict):
                 return all("Bold" in s["font"] for s in l["spans"] if s["text"].strip())
     return False
 
+def collect_bold_title_lines(start_index, stream, pages):
+    """Collect consecutive bold lines from stream[start_index:] and merge them into a single string.
+       Returns (title_string, new_index).
+    """
+    title_lines = []
+    j = start_index
+    while j < len(stream):
+        page_num, candidate = stream[j]
+        page_dict = pages[page_num - 1]["dict"]
+        if candidate.strip() and is_bold_line(candidate.strip(), page_dict):
+            title_lines.append(candidate.strip())
+            j += 1
+        else:
+            break
+    if title_lines:
+        return " ".join(title_lines), j - 1
+    return None, start_index
+
 
 # ---------- Main parsing function ----------
 def parse_pdf_to_chunks(pdf_path, output_json):
@@ -307,12 +325,11 @@ def parse_pdf_to_chunks(pdf_path, output_json):
             current_annex_section_num = None
             current_annex_section_name = None
 
-            # look ahead for annex name on next line
-            if not current_annex_name and i + 1 < len(stream):
-                next_line = stream[i+1][1].strip()
-                if next_line and not RE_SECTION.match(next_line) and not RE_CHAPTER.match(next_line):
-                    current_annex_name = next_line
-                    i += 1  # consume that line
+            if not current_annex_name:
+                title, new_i = collect_bold_title_lines(i + 1, stream, pages)
+                if title:
+                    current_annex_name = title
+                    i = new_i                    
 
             mode = "annex"
             skipping_block = current_annex_num in ANNEXES_TO_DROP
@@ -342,19 +359,10 @@ def parse_pdf_to_chunks(pdf_path, output_json):
             current_chapter_name = m_ch.group(2).strip() if m_ch.group(2) else None
             
             if not current_chapter_name:
-                title_lines = []
-                j = i + 1
-                while j < len(stream):
-                    next_line = stream[j][1].strip()
-                    page_dict = pages[page_num-1]["dict"]
-                    if next_line and is_bold_line(next_line, page_dict):
-                        title_lines.append(next_line)
-                        j += 1
-                    else:
-                        break
-                if title_lines:
-                    current_chapter_name = " ".join(title_lines)
-                i = j - 1
+                title, new_i = collect_bold_title_lines(i + 1, stream, pages)
+                if title:
+                    current_chapter_name = title
+                    i = new_i
             
             current_section_num = None
             current_section_name = None
@@ -383,19 +391,11 @@ def parse_pdf_to_chunks(pdf_path, output_json):
                     current_annex_num = None  # keep as string if not int
                 current_annex_section_name = m_sec.group(2).strip() if m_sec.group(2) else None
                 if not current_annex_name:
-                    title_lines = []
-                    j = i + 1
-                    while j < len(stream):
-                        next_line = stream[j][1].strip()
-                        page_dict = pages[page_num-1]["dict"]
-                        if next_line and is_bold_line(next_line, page_dict):
-                            title_lines.append(next_line)
-                            j += 1
-                        else:
-                            break
-                    if title_lines:
-                        current_annex_name = " ".join(title_lines)
-                    i = j - 1
+                    title, new_i = collect_bold_title_lines(i + 1, stream, pages)
+                    if title:
+                        current_annex_name = title
+                        i = new_i
+
             else:
                 # Normal chapter section
                 current_section_num = m_sec.group(1)
@@ -404,20 +404,12 @@ def parse_pdf_to_chunks(pdf_path, output_json):
                 except ValueError:
                     current_section_num = current_section_num  # keep as string if not int
                 current_section_name = m_sec.group(2).strip() if m_sec.group(2) else None
+
                 if not current_section_name:
-                    title_lines = []
-                    j = i + 1
-                    while j < len(stream):
-                        next_line = stream[j][1].strip()
-                        page_dict = pages[page_num-1]["dict"]
-                        if next_line and is_bold_line(next_line, page_dict):
-                            title_lines.append(next_line)
-                            j += 1
-                        else:
-                            break
-                    if title_lines:
-                        current_section_name = " ".join(title_lines)
-                    i = j - 1
+                    title, new_i = collect_bold_title_lines(i + 1, stream, pages)
+                    if title:
+                        current_section_name = title
+                        i = new_i
 
 
             mode = "section"
@@ -449,20 +441,10 @@ def parse_pdf_to_chunks(pdf_path, output_json):
             current_article_name = m_art.group(2).strip() if m_art.group(2) else None
 
             if not current_article_name:
-                title_lines = []
-                j = i + 1
-                while j < len(stream):
-                    next_line = stream[j][1].strip()
-                    page_dict = pages[page_num-1]["dict"]
-                    if next_line and is_bold_line(next_line, page_dict):
-                        title_lines.append(next_line)
-                        j += 1
-                    else:
-                        break
-                if title_lines:
-                    current_article_name = " ".join(title_lines)
-                i = j - 1
-
+                title, new_i = collect_bold_title_lines(i + 1, stream, pages)
+                if title:
+                    current_article_name = title
+                    i = new_i
 
 
             current_article_buf_meta = {

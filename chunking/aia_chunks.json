@@ -10803,21 +10803,6 @@
       "text": ".\nThe provider also verifies that the design and development process of the AI system and its post-market monitoring\nas referred to in Article 72 is consistent with the technical documentation."
     },
     {
-      "id": "annex-VII-para-1",
-      "type": "annex",
-      "paragraph_number": 1,
-      "page_range": "134/144",
-      "chapter_number": null,
-      "chapter_name": null,
-      "section_number": null,
-      "section_name": null,
-      "article_number": null,
-      "article_name": null,
-      "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
-      "text": "technical documentation"
-    },
-    {
       "id": "annex-VII-para-2",
       "type": "annex",
       "paragraph_number": 2,
@@ -10829,7 +10814,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nIntroduction\nConformity based on an assessment of the quality management system and an assessment of the technical\ndocumentation is the conformity assessment procedure based on points 2 to 5."
     },
     {
@@ -10844,7 +10829,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nOverview\nThe approved quality management system for the design, development and testing of AI systems pursuant to\nArticle 17 shall be examined in accordance with point 3 and shall be subject to surveillance as specified in point 5.\nThe technical documentation of the AI system shall be examined in accordance with point 4."
     },
     {
@@ -10859,7 +10844,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nQuality management system"
     },
     {
@@ -10874,7 +10859,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nThe application of the provider shall include:\n(a) the name and address of the provider and, if the application is lodged by an authorised representative, also their\nname and address;\n(b) the list of AI systems covered under the same quality management system;\n(c) the technical documentation for each AI system covered under the same quality management system;\n(d) the documentation concerning the quality management system which shall cover all the aspects listed under\nArticle 17;\n(e) a description of the procedures in place to ensure that the quality management system remains adequate and\neffective;\n(f) a written declaration that the same application has not been lodged with any other notified body."
     },
     {
@@ -10889,7 +10874,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nThe quality management system shall be assessed by the notified body, which shall determine whether it satisfies the\nrequirements referred to in Article 17.\nThe decision shall be notified to the provider or its authorised representative.\nThe notification shall contain the conclusions of the assessment of the quality management system and the reasoned\nassessment decision."
     },
     {
@@ -10904,7 +10889,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nThe quality management system as approved shall continue to be implemented and maintained by the provider so\nthat it remains adequate and efficient."
     },
     {
@@ -10919,7 +10904,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nAny intended change to the approved quality management system or the list of AI systems covered by the latter shall\nbe brought to the attention of the notified body by the provider.\nThe proposed changes shall be examined by the notified body, which shall decide whether the modified quality\nmanagement system continues to satisfy the requirements referred to in point 3.2 or whether a reassessment is\nnecessary.\nThe notified body shall notify the provider of its decision. The notification shall contain the conclusions of the\nexamination of the changes and the reasoned assessment decision."
     },
     {
@@ -10934,7 +10919,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nControl of the technical documentation."
     },
     {
@@ -10949,7 +10934,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nIn addition to the application referred to in point 3, an application with a notified body of their choice shall be\nlodged by the provider for the assessment of the technical documentation relating to the AI system which the\nprovider intends to place on the market or put into service and which is covered by the quality management system\nreferred to under point 3."
     },
     {
@@ -10964,7 +10949,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nThe application shall include:"
     },
     {
@@ -10979,7 +10964,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": "/144"
     },
     {
@@ -10994,7 +10979,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nThe technical documentation shall be examined by the notified body. Where relevant, and limited to what is\nnecessary to fulfil its tasks, the notified body shall be granted full access to the training, validation, and testing data\nsets used, including, where appropriate and subject to security safeguards, through API or other relevant technical\nmeans and tools enabling remote access."
     },
     {
@@ -11009,7 +10994,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nIn examining the technical documentation, the notified body may require that the provider supply further evidence\nor carry out further tests so as to enable a proper assessment of the conformity of the AI system with the\nrequirements set out in Chapter III, Section 2. Where the notified body is not satisfied with the tests carried out by\nthe provider, the notified body shall itself directly carry out adequate tests, as appropriate."
     },
     {
@@ -11024,7 +11009,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nWhere necessary to assess the conformity of the high-risk AI system with the requirements set out in Chapter III,\nSection 2, after all other reasonable means to verify conformity have been exhausted and have proven to be\ninsufficient, and upon a reasoned request, the notified body shall also be granted access to the training and trained\nmodels of the AI system, including its relevant parameters. Such access shall be subject to existing Union law on the\nprotection of intellectual property and trade secrets."
     },
     {
@@ -11039,7 +11024,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nThe decision of the notified body shall be notified to the provider or its authorised representative. The notification\nshall contain the conclusions of the assessment of the technical documentation and the reasoned assessment\ndecision.\nWhere the AI system is in conformity with the requirements set out in Chapter III, Section 2, the notified body shall\nissue a Union technical documentation assessment certificate. The certificate shall indicate the name and address of\nthe provider, the conclusions of the examination, the conditions (if any) for its validity and the data necessary for the\nidentification of the AI system.\nThe certificate and its annexes shall contain all relevant information to allow the conformity of the AI system to be\nevaluated, and to allow for control of the AI system while in use, where applicable.\nWhere the AI system is not in conformity with the requirements set out in Chapter III, Section 2, the notified body\nshall refuse to issue a Union technical documentation assessment certificate and shall inform the applicant\naccordingly, giving detailed reasons for its refusal.\nWhere the AI system does not meet the requirement relating to the data used to train it, re-training of the AI system\nwill be needed prior to the application for a new conformity assessment. In this case, the reasoned assessment\ndecision of the notified body refusing to issue the Union technical documentation assessment certificate shall\ncontain specific considerations on the quality data used to train the AI system, in particular on the reasons for\nnon-compliance."
     },
     {
@@ -11054,7 +11039,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nAny change to the AI system that could affect the compliance of the AI system with the requirements or its intended\npurpose shall be assessed by the notified body which issued the Union technical documentation assessment\ncertificate. The provider shall inform such notified body of its intention to introduce any of the abovementioned\nchanges, or if it otherwise becomes aware of the occurrence of such changes. The intended changes shall be assessed\nby the notified body, which shall decide whether those changes require a new conformity assessment in accordance\nwith Article 43(4) or whether they could be addressed by means of a supplement to the Union technical\ndocumentation assessment certificate. In the latter case, the notified body shall assess the changes, notify the\nprovider of its decision and, where the changes are approved, issue to the provider a supplement to the Union\ntechnical documentation assessment certificate."
     },
     {
@@ -11069,7 +11054,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nSurveillance of the approved quality management system."
     },
     {
@@ -11084,7 +11069,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nThe purpose of the surveillance carried out by the notified body referred to in Point 3 is to make sure that the\nprovider duly complies with the terms and conditions of the approved quality management system."
     },
     {
@@ -11099,7 +11084,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nFor assessment purposes, the provider shall allow the notified body to access the premises where the design,\ndevelopment, testing of the AI systems is taking place. The provider shall further share with the notified body all\nnecessary information."
     },
     {
@@ -11114,7 +11099,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VII",
-      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the",
+      "annex_name": "Conformity based on an assessment of the quality management system and an assessment of the technical documentation",
       "text": ".\nThe notified body shall carry out periodic audits to make sure that the provider maintains and applies the quality\nmanagement system and shall provide the provider with an audit report. In the context of those audits, the notified\nbody may carry out additional tests of the AI systems for which a Union technical documentation assessment\ncertificate was issued."
     },
     {
@@ -11129,8 +11114,8 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
-      "text": "Article 49\nSection A — Information to be submitted by providers of high-risk AI systems in accordance with Article 49(1)\nThe following information shall be provided and thereafter kept up to date with regard to high-risk AI systems to be\nregistered in accordance with Article 49(1):"
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
+      "text": "Section A — Information to be submitted by providers of high-risk AI systems in accordance with Article 49(1)\nThe following information shall be provided and thereafter kept up to date with regard to high-risk AI systems to be\nregistered in accordance with Article 49(1):"
     },
     {
       "id": "annex-VIII-para-2",
@@ -11144,7 +11129,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe name, address and contact details of the provider;"
     },
     {
@@ -11159,7 +11144,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nWhere submission of information is carried out by another person on behalf of the provider, the name, address and\ncontact details of that person;"
     },
     {
@@ -11174,7 +11159,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe name, address and contact details of the authorised representative, where applicable;"
     },
     {
@@ -11189,7 +11174,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe AI system trade name and any additional unambiguous reference allowing the identification and traceability of\nthe AI system;"
     },
     {
@@ -11204,7 +11189,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nA description of the intended purpose of the AI system and of the components and functions supported through\nthis AI system;"
     },
     {
@@ -11219,7 +11204,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nA basic and concise description of the information used by the system (data, inputs) and its operating logic;"
     },
     {
@@ -11234,7 +11219,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe status of the AI system (on the market, or in service; no longer placed on the market/in service, recalled);"
     },
     {
@@ -11249,7 +11234,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe type, number and expiry date of the certificate issued by the notified body and the name or identification\nnumber of that notified body, where applicable;"
     },
     {
@@ -11264,7 +11249,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nA scanned copy of the certificate referred to in point 8, where applicable;"
     },
     {
@@ -11279,7 +11264,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nAny Member States in which the AI system has been placed on the market, put into service or made available in the\nUnion;"
     },
     {
@@ -11294,7 +11279,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nA copy of the EU declaration of conformity referred to in Article 47;"
     },
     {
@@ -11309,7 +11294,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nElectronic instructions for use; this information shall not be provided for high-risk AI systems in the areas of law\nenforcement or migration, asylum and border control management referred to in Annex III, points 1, 6 and 7;"
     },
     {
@@ -11324,7 +11309,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nA URL for additional information (optional).\nSection B — Information to be submitted by providers of high-risk AI systems in accordance with Article 49(2)\nThe following information shall be provided and thereafter kept up to date with regard to AI systems to be registered in\naccordance with Article 49(2):"
     },
     {
@@ -11339,7 +11324,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe name, address and contact details of the provider;"
     },
     {
@@ -11354,7 +11339,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nWhere submission of information is carried out by another person on behalf of the provider, the name, address and\ncontact details of that person;"
     },
     {
@@ -11369,7 +11354,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe name, address and contact details of the authorised representative, where applicable;"
     },
     {
@@ -11384,7 +11369,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe AI system trade name and any additional unambiguous reference allowing the identification and traceability of\nthe AI system;"
     },
     {
@@ -11399,7 +11384,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nA description of the intended purpose of the AI system;"
     },
     {
@@ -11414,7 +11399,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe condition or conditions under Article 6(3)based on which the AI system is considered to be not-high-risk;"
     },
     {
@@ -11429,7 +11414,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nA short summary of the grounds on which the AI system is considered to be not-high-risk in application of the\nprocedure under Article 6(3);"
     },
     {
@@ -11444,7 +11429,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": "/144\nSection C — Information to be submitted by deployers of high-risk AI systems in accordance with Article 49(3)\nThe following information shall be provided and thereafter kept up to date with regard to high-risk AI systems to be\nregistered in accordance with Article 49(3):"
     },
     {
@@ -11459,7 +11444,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe name, address and contact details of the deployer;"
     },
     {
@@ -11474,7 +11459,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe name, address and contact details of the person submitting information on behalf of the deployer;"
     },
     {
@@ -11489,7 +11474,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nThe URL of the entry of the AI system in the EU database by its provider;"
     },
     {
@@ -11504,7 +11489,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nA summary of the findings of the fundamental rights impact assessment conducted in accordance with Article 27;"
     },
     {
@@ -11519,7 +11504,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": ".\nA summary of the data protection impact assessment carried out in accordance with Article 35 of Regulation (EU)"
     },
     {
@@ -11534,7 +11519,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "VIII",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
       "text": "/679 or Article 27 of Directive (EU) 2016/680 as specified in Article 26(8) of this Regulation, where\napplicable."
     },
     {
@@ -11549,8 +11534,8 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "IX",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in",
-      "text": "relation to testing in real world conditions in accordance with Article 60\nThe following information shall be provided and thereafter kept up to date with regard to testing in real world conditions to\nbe registered in accordance with Article 60:"
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in relation to testing in real world conditions in accordance with Article 60",
+      "text": "The following information shall be provided and thereafter kept up to date with regard to testing in real world conditions to\nbe registered in accordance with Article 60:"
     },
     {
       "id": "annex-IX-para-2",
@@ -11564,7 +11549,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "IX",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in relation to testing in real world conditions in accordance with Article 60",
       "text": ".\nA Union-wide unique single identification number of the testing in real world conditions;"
     },
     {
@@ -11579,7 +11564,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "IX",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in relation to testing in real world conditions in accordance with Article 60",
       "text": ".\nThe name and contact details of the provider or prospective provider and of the deployers involved in the testing in\nreal world conditions;"
     },
     {
@@ -11594,7 +11579,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "IX",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in relation to testing in real world conditions in accordance with Article 60",
       "text": ".\nA brief description of the AI system, its intended purpose, and other information necessary for the identification of\nthe system;"
     },
     {
@@ -11609,7 +11594,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "IX",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in relation to testing in real world conditions in accordance with Article 60",
       "text": ".\nA summary of the main characteristics of the plan for testing in real world conditions;"
     },
     {
@@ -11624,7 +11609,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "IX",
-      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in",
+      "annex_name": "Information to be submitted upon the registration of high-risk AI systems listed in Annex III in relation to testing in real world conditions in accordance with Article 60",
       "text": ".\nInformation on the suspension or termination of the testing in real world conditions."
     },
     {
@@ -11639,8 +11624,8 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "XII",
-      "annex_name": "Transparency information referred to in Article 53(1), point (b) — technical documentation for",
-      "text": "providers of general-purpose AI models to downstream providers that integrate the model into their\nAI system\nThe information referred to in Article 53(1), point (b) shall contain at least the following:"
+      "annex_name": "Transparency information referred to in Article 53(1), point (b) — technical documentation for providers of general-purpose AI models to downstream providers that integrate the model into their AI system",
+      "text": "The information referred to in Article 53(1), point (b) shall contain at least the following:"
     },
     {
       "id": "annex-XII-para-2",
@@ -11654,7 +11639,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "XII",
-      "annex_name": "Transparency information referred to in Article 53(1), point (b) — technical documentation for",
+      "annex_name": "Transparency information referred to in Article 53(1), point (b) — technical documentation for providers of general-purpose AI models to downstream providers that integrate the model into their AI system",
       "text": ".\nA general description of the general-purpose AI model including:\n(a) the tasks that the model is intended to perform and the type and nature of AI systems into which it can be\nintegrated;\n(b) the acceptable use policies applicable;\n(c) the date of release and methods of distribution;\n(d) how the model interacts, or can be used to interact, with hardware or software that is not part of the model\nitself, where applicable;\n(e) the versions of relevant software related to the use of the general-purpose AI model, where applicable;\n(f) the architecture and number of parameters;\n(g) the modality (e.g. text, image) and format of inputs and outputs;\n(h) the licence for the model."
     },
     {
@@ -11669,7 +11654,7 @@
       "article_number": null,
       "article_name": null,
       "annex_number": "XII",
-      "annex_name": "Transparency information referred to in Article 53(1), point (b) — technical documentation for",
+      "annex_name": "Transparency information referred to in Article 53(1), point (b) — technical documentation for providers of general-purpose AI models to downstream providers that integrate the model into their AI system",
       "text": ".\nA description of the elements of the model and of the process for its development, including:\n(a) the technical means (e.g. instructions for use, infrastructure, tools) required for the general-purpose AI model to\nbe integrated into AI systems;\n(b) the modality (e.g. text, image, etc.) and format of the inputs and outputs and their maximum size (e.g. context\nwindow length, etc.);\n(c) information on the data used for training, testing and validation, where applicable, including the type and\nprovenance of data and curation methodologies."
     },
     {
@@ -11688,7 +11673,7 @@
       "text": "For the purpose of determining that a general-purpose AI model has capabilities or an impact equivalent to those set out in\nArticle 51(1), point (a), the Commission shall take into account the following criteria:\n(a)\nthe number of parameters of the model;\n(b)\nthe quality or size of the data set, for example measured through tokens;\n(c)\nthe amount of computation used for training the model, measured in floating point operations or indicated by\na combination of other variables such as estimated cost of training, estimated time required for the training, or\nestimated energy consumption for the training;\n(d)\nthe input and output modalities of the model, such as text to text (large language models), text to image,\nmulti-modality, and the state of the art thresholds for determining high-impact capabilities for each modality, and\nthe specific type of inputs and outputs (e.g. biological sequences);\n(e)\nthe benchmarks and evaluations of capabilities of the model, including considering the number of tasks without\nadditional training, adaptability to learn new, distinct tasks, its level of autonomy and scalability, the tools it has\naccess to;\n(f)\nwhether it has a high impact on the internal market due to its reach, which shall be presumed when it has been\nmade available to at least 10 000 registered business users established in the Union;\n(g)\nthe number of registered end-users."
     },
     {
-      "id": "annex-823",
+      "id": "annex-821",
       "type": "annex",
       "paragraph_number": null,
       "page_range": "144/144",
