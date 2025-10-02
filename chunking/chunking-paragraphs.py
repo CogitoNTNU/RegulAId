@@ -345,6 +345,10 @@ def parse_pdf_to_chunks(pdf_path, output_json):
             if mode == "annex":
                 # Annex section
                 current_annex_section_num = m_sec.group(1)
+                try:
+                    current_annex_num = int(m_sec.group(1))
+                except ValueError:
+                    current_annex_num = current_annex_num  # keep as string if not int
                 current_annex_section_name = m_sec.group(2).strip() if m_sec.group(2) else None
                 if not current_annex_section_name and i + 1 < len(stream):
                     next_line = stream[i+1][1].strip()
@@ -354,6 +358,10 @@ def parse_pdf_to_chunks(pdf_path, output_json):
             else:
                 # Normal chapter section
                 current_section_num = m_sec.group(1)
+                try:
+                    current_section_num = int(m_sec.group(1))
+                except ValueError:
+                    current_section_num = current_section_num  # keep as string if not int
                 current_section_name = m_sec.group(2).strip() if m_sec.group(2) else None
                 if not current_section_name and i + 1 < len(stream):
                     next_line = stream[i+1][1].strip()
@@ -459,6 +467,11 @@ def parse_pdf_to_chunks(pdf_path, output_json):
                 buf_pages = {page_num}
                 # assign paragraph_number
                 para_no = pm_num.group(1) if pm_num else pm_paren.group(1)
+                try:
+                    para_no = int(para_no)
+                except ValueError:
+                    para_no = para_no  # keep as string if not int
+                current_article_buf_meta["paragraph_number"] = para_no
                 current_article_buf_meta["paragraph_number"] = para_no
                 current_article_buf_meta["id"] = f"article-{current_article_num}-para-{para_no}"
                 i += 1
@@ -476,6 +489,10 @@ def parse_pdf_to_chunks(pdf_path, output_json):
             pm = RE_ANNEX_PARAGRAPH_NUMBER.match(stripped)
             if pm:
                 para_no = pm.group(1) or pm.group(2)
+                try:
+                    para_no = int(para_no) if pm.group(1) else para_no  # keep "3.1" etc. as string
+                except ValueError:
+                    para_no = para_no
                 if buf_lines:
                     emit_chunk("annex", buf_lines, buf_pages, {
                         "id": f"annex-{current_annex_num}-para-{para_no}",
