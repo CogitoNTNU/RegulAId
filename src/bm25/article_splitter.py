@@ -6,7 +6,6 @@ import json
 from collections import Counter
 from typing import List, Tuple, Optional, Dict, Any
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
 
 from langchain_ollama import OllamaEmbeddings
@@ -14,8 +13,6 @@ import psycopg
 from dotenv import load_dotenv
 
 from pydantic import BaseModel, Field
-
-documents_from_db: List[Document] = []  # TODO This should be saved in the database
 
 load_dotenv()
 
@@ -151,13 +148,6 @@ def articles_to_chunks(articles) -> List[Document]:
     return chunks
 
 
-def bf25(query, k=10):
-    retriever = BM25Retriever.from_documents(documents_from_db,
-                                             k=k,
-                                             )
-    return retriever.invoke(query)
-
-
 def load_text(path: str) -> str:
     with open(path, "r", encoding="utf-8") as f:
         text = f.read()
@@ -256,6 +246,50 @@ def create_hnsw_index(table_name=None, column_name="embedding", metric="vector_c
         print("Error creating HNSW index:", str(e))
 
 
+def create_bm25_index(table_name=None, column_name="page_content"):
+    """
+    Create a ParadeDB BM25 index on the specified column.
+    """
+    if table_name is None:
+        table_name = os.getenv("COLLECTION_NAME")
+    sql = f"""
+        CREATE INDEX IF NOT EXISTS ON {table_name}
+        USING bm25 ({column_name});
+    """
+    try:
+        with psycopg.connect(psycopg_connection_string()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql)
+                conn.commit()
+        print(f"BM25 index created (if not exists) on {table_name}.{column_name}.")
+    except Exception as e:
+        print("Error creating BM25 index:", str(e))
+
+
+def parade_bm25_search(query: str, k: int = 5, table_name=None, column_name="page_content") -> list:
+    """
+    Perform BM25 search using ParadeDB's BM25 operator and scoring function.
+    """
+    if table_name is None:
+        table_name = os.getenv("COLLECTION_NAME")
+    sql = f"""
+        SELECT id, {column_name}, metadata, paradedb.score(id) AS score
+        FROM {table_name}
+        WHERE {column_name} @@@ %s
+        ORDER BY score DESC
+        LIMIT %s
+    """
+    try:
+        with psycopg.connect(psycopg_connection_string()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, (query, k))
+                results = cur.fetchall()
+        return results
+    except Exception as e:
+        print("Error in ParadeDB BM25 search:", str(e))
+        return []
+
+
 def create_collection_table(table_name=None, column_name="embedding"):
     """
     Create the collection table if it does not exist, with a vector column for ParadeDB.
@@ -315,6 +349,7 @@ if __name__ == "__main__":
     check_database_connection()
     create_collection_table()  # Ensure table exists
     create_hnsw_index()  # Ensure HNSW index exists
+    create_bm25_index(table_name="langchain_collection", column_name="page_content")
 
     text = load_text(path)
     articles = split_articles_by_header(text)
@@ -325,13 +360,14 @@ if __name__ == "__main__":
         print("\nLast chunk header number:", last_num)
         print("Last chunk first line:", last_chunk.splitlines()[0] if last_chunk.splitlines() else "<empty>")
 
-        documents_from_db: List[Document] = articles_to_chunks(articles)
-
-        print(bf25("Regulation applies"))
+        documents: List[Document] = articles_to_chunks(articles)
 
         print("Starting embedding")
-        add_documents(documents_from_db)
+        add_documents(documents[:10])
         print("Finished embedding")
+
+        print("ParadeDB BM25 search:")
+        print(parade_bm25_search("Regulation applies", k=5))
 
         qurey = QueryParams(query="Regulation applies")
         print(get_similar_documents(qurey))
