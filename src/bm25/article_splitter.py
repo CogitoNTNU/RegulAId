@@ -246,22 +246,31 @@ def create_hnsw_index(table_name=None, column_name="embedding", metric="vector_c
         print("Error creating HNSW index:", str(e))
 
 
-def create_bm25_index(table_name=None, column_name="page_content"):
+def create_bm25_index(table_name=None, columns=None):
     """
-    Create a ParadeDB BM25 index on the specified column.
+    Create a ParadeDB BM25 index on the specified columns, including a key_field.
     """
     if table_name is None:
         table_name = os.getenv("COLLECTION_NAME")
+    if columns is None:
+        columns = ["id", "page_content", "metadata"]
+
+    columns_str = ", ".join(columns)
+    index_name = f"bm25_idx_on_{table_name}"
+
+    # Assuming 'id' is the primary key and suitable for key_field
     sql = f"""
-        CREATE INDEX IF NOT EXISTS ON {table_name}
-        USING bm25 ({column_name});
+        CREATE INDEX IF NOT EXISTS {index_name} ON {table_name}
+        USING bm25 ({columns_str})
+        WITH (key_field='id');
     """
     try:
         with psycopg.connect(psycopg_connection_string()) as conn:
             with conn.cursor() as cur:
                 cur.execute(sql)
                 conn.commit()
-        print(f"BM25 index created (if not exists) on {table_name}.{column_name}.")
+        print(
+            f"BM25 index '{index_name}' created (if not exists) on {table_name} with columns ({columns_str}) and key_field='id'.")
     except Exception as e:
         print("Error creating BM25 index:", str(e))
 
@@ -347,9 +356,11 @@ if __name__ == "__main__":
     path = "../data/processed/AIACT-Serina.md"
 
     check_database_connection()
-    create_collection_table()  # Ensure table exists
-    create_hnsw_index()  # Ensure HNSW index exists
-    create_bm25_index(table_name="langchain_collection", column_name="page_content")
+    # Ensure all operations use the same table name
+    collection_table_name = "langchain_collection"  # Define it once
+    create_collection_table(table_name=collection_table_name)
+    create_hnsw_index(table_name=collection_table_name)
+    create_bm25_index(table_name=collection_table_name)
 
     text = load_text(path)
     articles = split_articles_by_header(text)
@@ -363,13 +374,17 @@ if __name__ == "__main__":
         documents: List[Document] = articles_to_chunks(articles)
 
         print("Starting embedding")
-        add_documents(documents[:10])
+        # Ensure documents are added to the correct table
+        add_documents(documents[:10], table_name=collection_table_name)
         print("Finished embedding")
 
         print("ParadeDB BM25 search:")
-        print(parade_bm25_search("Regulation applies", k=5))
+        # Pass the consistent table name here
+        print(parade_bm25_search("Regulation applies", k=5, table_name=collection_table_name))
 
         qurey = QueryParams(query="Regulation applies")
-        print(get_similar_documents(qurey))
+        # Pass the consistent table name here
+        print(get_similar_documents(qurey, table_name=collection_table_name))
         print("ParadeDB HNSW similarity search:")
-        print(parade_similarity_search("Regulation applies", k=5))
+        # Pass the consistent table name here
+        print(parade_similarity_search("Regulation applies", k=5, table_name=collection_table_name))
