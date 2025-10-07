@@ -30,7 +30,7 @@ import collections
 from tqdm import tqdm
 
 # ---------- CONFIG / RULES ----------
-PDF_PATH = "chunking/AIACT_no_hdr_keep_pn.pdf"   # change if different
+PDF_PATH = "chunking/AIACT_new.pdf"   # change if different
 OUTPUT_JSON = "chunking/aia_chunks.json"
 
 # Strict lists of things the user asked to strip entirely:
@@ -168,6 +168,22 @@ def remove_footnotes(text: str) -> str:
         cleaned_lines.append(line)
     return "\n".join(cleaned_lines)
 
+def remove_superscript_refs(page_dict, text):
+    """Remove small superscript reference markers like (10), (11), (12) from text using font-size heuristics."""
+    cleaned_lines = []
+    for block in page_dict["blocks"]:
+        for line in block.get("lines", []):
+            line_text = ""
+            for span in line.get("spans", []):
+                # Skip tiny superscripts (footnote refs)
+                if span["size"] < 7 or span["text"].strip() in {"*", "**"}:
+                    continue
+                line_text += span["text"]
+            if line_text.strip():
+                cleaned_lines.append(line_text.strip())
+    return "\n".join(cleaned_lines)
+
+
 def normalize_whitespace(s):
     # collapse multiple blank lines and trim
     s = re.sub(r'\r\n', '\n', s)
@@ -237,15 +253,18 @@ def parse_pdf_to_chunks(pdf_path, output_json):
     # We'll build a stream of lines with (page_num, line_text) so it's easy to maintain page ranges per chunk
     stream = []
     for p in pages:
-        cleaned = strip_headers_footers(p["text"], headers, footers)
-        cleaned = strip_headers_footers(p["text"], headers, footers)
-        cleaned = remove_footnotes(cleaned) 
-        # keep page-number tokens if present (do not remove a '1/144' lone line) — they can be used to compute page ranges
+        # Step 1 — clean superscript refs and footnotes
+        text_no_refs = remove_superscript_refs(p["dict"], p["text"])
+        cleaned = strip_headers_footers(text_no_refs, headers, footers)
+        cleaned = remove_footnotes(cleaned)
+        
+        # Step 2 — build stream but skip page numbers
         for ln in cleaned.splitlines():
             s = ln.strip()
             if RE_PAGE_NUMBER.match(s):
-                continue  # skip page number lines completely
+                continue
             stream.append((p["page_num"], s))
+
 
 
     # helper to finalize chunk
