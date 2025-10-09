@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Request
 from src.schemas.search_schemas import SearchRequest, SearchResponse
-from src.api.services.openai_service import OpenAIService
 
 router = APIRouter(prefix="/search", tags=["search"])
 
