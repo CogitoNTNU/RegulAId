@@ -9,9 +9,16 @@ dependencies = [
     "docling>=2.52.0",
     "docling-core>=2.48.1",
     "docling-ibm-models>=3.9.1",
-    "mlx>=0.29.2",
-    "mlx-vlm>=0.3.3",
+    "easyocr>=1.7.2",
+    "langchain>=0.3.27",
+    "langchain-community>=0.3.30",
+    "langchain-ollama>=0.3.8",
+    "langchain-postgres>=0.0.15",
+    "opencv-python>=4.12.0.88",
+    "psycopg>=3.2.10",
+    "pydantic>=2.11.9",
     "pypdf>=4.0.0",
+    "rank-bm25>=0.2.2",
     "torch>=2.8.0",
     "torchaudio>=2.8.0",
     "torchvision>=0.23.0",
@@ -35,6 +42,12 @@ docs = [
     "mkdocstrings-python>=1.16.12",
 ]
 
+mlx = [
+    "mlx>=0.29.2",
+    "mlx-vlm>=0.3.3",
+]
+
+
 [tool.commitizen]
 name = "cz_conventional_commits"
 tag_format = "$version"
@@ -43,3 +56,6 @@ version_provider = "uv"
 update_changelog_on_bump = true
 major_version_zero = true
 
+
+[project.scripts]
+check-mlx-compat = "regulaid.utils.check_mlx_compat:main"
