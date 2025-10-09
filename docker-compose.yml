@@ -1,37 +1,43 @@
 services:
-  postgres:
-    image: paradedb/paradedb:latest
-    restart: always
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin_password
-      POSTGRES_DB: mydatabase
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata-regulaid:/var/lib/postgresql/data
+  # postgres:
+  #   image: paradedb/paradedb:latest
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: admin
+  #     POSTGRES_PASSWORD: admin_password
+  #     POSTGRES_DB: mydatabase
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - pgdata-regulaid:/var/lib/postgresql/data
 
-  regulaid:
+  # regulaid:
+  #   build:
+  #     context: ./api/regulaid
+  #     dockerfile: Dockerfile
+  #   working_dir: /app
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - python-cache:/root/.cache/pip
+  #   environment:
+  #     - PYTHONDONTWRITEBYTECODE=1
+  #     - PYTHONUNBUFFERED=1
+  #     - WEB_HOST_IP=0.0.0.0
+  #     - DB_HOST=postgres
+  #     - DB_PORT=5432
+  #     - DB_USER=admin
+  #     - DB_PASSWORD=admin_password
+  #     - DB_NAME=mydatabase
+  #   depends_on:
+  #     postgres:
+  #       condition: service_started
+  frontend:
     build:
-      context: ./api/regulaid
+      context: ./frontend
       dockerfile: Dockerfile
-    working_dir: /app
     ports:
-      - "8080:80"
-    volumes:
-      - python-cache:/root/.cache/pip
-    environment:
-      - PYTHONDONTWRITEBYTECODE=1
-      - PYTHONUNBUFFERED=1
-      - WEB_HOST_IP=0.0.0.0
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=admin
-      - DB_PASSWORD=admin_password
-      - DB_NAME=mydatabase
-    depends_on:
-      postgres:
-        condition: service_started
+      - "3000:80"
 
 volumes:
   pgdata-regulaid:

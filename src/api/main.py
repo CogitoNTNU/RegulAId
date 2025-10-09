@@ -1,10 +1,12 @@
 # src/main.py
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from src.api.routers import health, search
 from src.api.services.openai_service import OpenAIService
 from src.api.config import OPENAI_MODEL
 import logging
+from time import perf_counter
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,26 @@ async def lifespan(app: FastAPI):
             svc.close()
 
 app = FastAPI(lifespan=lifespan)
+
+
+# Middleware to measure total request time and add timing headers when available
+@app.middleware("http")
+async def add_timing_header(request: Request, call_next):
+    start = perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        # ensure we still measure time for exceptions
+        elapsed_ms = (perf_counter() - start) * 1000.0
+        logging.getLogger(__name__).exception("Unhandled exception in request (%.2f ms): %s", elapsed_ms, exc)
+        print(f"Request exception - elapsed: {elapsed_ms:.2f} ms")
+        return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
+    elapsed_ms = (perf_counter() - start) * 1000.0
+    # Log total elapsed time for the request to terminal
+    logging.getLogger(__name__).info("Request total elapsed: %.2f ms", elapsed_ms)
+    print(f"Request total elapsed: {elapsed_ms:.2f} ms")
+
+    return response
 
 # Root
 @app.get("/")
