@@ -83,7 +83,7 @@ For example: OS version, programs, libraries, etc.
 To run the project, run the following command from the root directory of the project:
 
 ```bash
-
+uv run uvicorn src.api.main:app --host 127.0.0.1 --port 8000 --http h11 --loop asyncio --reload
 ```
 
 <!-- TODO: Instructions on how to run the project and use its features. -->
