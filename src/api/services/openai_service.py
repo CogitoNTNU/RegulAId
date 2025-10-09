@@ -27,4 +27,5 @@ class OpenAIService:
             model=self.model,
             messages=[{"role": "user", "content": prompt}],
         )
-        return response.choices[0].message.content.strip()
+        content = response.choices[0].message.content
+        return content.strip() if content is not None else ""
