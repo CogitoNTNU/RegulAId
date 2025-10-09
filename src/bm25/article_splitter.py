@@ -353,8 +353,7 @@ def parade_similarity_search(query_text: str, k: int = 5, table_name=None, colum
 
 
 if __name__ == "__main__":
-    path = "../data/processed/AIACT-Serina.md"
-
+    path = "../../data/processed/AIACT.md"
     check_database_connection()
     # Ensure all operations use the same table name
     collection_table_name = "langchain_collection"  # Define it once
@@ -362,8 +361,9 @@ if __name__ == "__main__":
     create_hnsw_index(table_name=collection_table_name)
     create_bm25_index(table_name=collection_table_name)
 
+    # Change this to t
     text = load_text(path)
-    articles = split_articles_by_header(text)
+    articles = split_articles_by_header(text) # change to 
     verify_articles(articles)
 
     if articles:
