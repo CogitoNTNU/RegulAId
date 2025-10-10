@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 import os
-import re
-import unicodedata
 import json
-from collections import Counter
-from typing import List, Tuple, Optional, Dict, Any
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from typing import List, Optional, Dict, Any
 from langchain_core.documents import Document
 
 from langchain_ollama import OllamaEmbeddings
@@ -23,14 +19,6 @@ def pg_connection_string() -> str:
 
 def psycopg_connection_string() -> str:
     return f"dbname='{os.getenv('DB_NAME')}' user='{os.getenv('DB_USER')}' password='{os.getenv('DB_PASSWORD')}' host='{os.getenv('DB_HOST')}' port='{os.getenv('DB_PORT')}'"
-
-
-class DocumentMetadata(BaseModel):
-    """
-    Metadata for each chunk
-    """
-    article_id: Optional[int] = Field()
-    chunk_id: Optional[int] = Field()
 
 
 class QueryParams(BaseModel):
@@ -122,63 +110,35 @@ def get_similar_documents(query_request: QueryParams, table_name=None, column_na
         return []
 
 
-def articles_to_chunks(articles) -> List[Document]:
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=350, chunk_overlap=0)
+def load_chunks(json_path: str) -> List[Document]:
+    """
+    Load preprocessed chunks from aiact-chunks.json and convert to LangChain Documents.
+    """
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
 
-    chunks: List[Document] = []  # This is the list of chunks of the whole document
+    chunks = []
+    for chunk_data in data["chunks"]:
+        # Create metadata from the chunk data
+        metadata = {
+            "id": chunk_data["id"],
+            "type": chunk_data["type"],
+            "paragraph_number": chunk_data.get("paragraph_number"),
+            "page_range": chunk_data["page_range"],
+            "chapter_number": chunk_data.get("chapter_number"),
+            "chapter_name": chunk_data.get("chapter_name"),
+            "section_number": chunk_data.get("section_number"),
+            "section_name": chunk_data.get("section_name"),
+            "article_number": chunk_data.get("article_number"),
+            "article_name": chunk_data.get("article_name"),
+            "annex_number": chunk_data.get("annex_number"),
+            "annex_name": chunk_data.get("annex_name"),
+        }
 
-    for articleID, article in articles:  # Chapter => Article => Paragraph etc
-        print(articleID)
-
-        # https://python.langchain.com/docs/concepts/text_splitters/
-
-        chunks_of_an_article = text_splitter.split_text(article)
-
-        chunk_id = 1
-
-        for chunk in chunks_of_an_article:
-            chunk_metadata = DocumentMetadata(
-                article_id=articleID,
-                chunk_id=chunk_id
-            ).__dict__
-
-            chunk_id += 1
-            chunks.append(Document(page_content=chunk, metadata=chunk_metadata))
+        # Create Document with text as page_content and metadata
+        chunks.append(Document(page_content=chunk_data["text"], metadata=metadata))
 
     return chunks
-
-
-def load_text(path: str) -> str:
-    with open(path, "r", encoding="utf-8") as f:
-        text = f.read()
-    # normalize unicode and replace non-breaking spaces which often break regex
-    text = unicodedata.normalize("NFC", text)
-    text = text.replace("\u00A0", " ")
-    return text
-
-
-def split_articles_by_header(text: str) -> List[Tuple[int, str]]:  # TODO add Ines and Ingunn's code
-    """
-    Return list of (article_number, chunk_text).
-    The header regex is anchored to line-start (MULTILINE) to avoid accidental matches inside paragraphs.
-    """
-
-    # header_re = re.compile(r'\nArticle\s*(\d+)\n | ##\s*Article\s*(\d+)\n', flags=re.I | re.M)
-
-    header_re = re.compile(r'(?:\n|##\s*)Article\s*(\d+)\s*\n', flags=re.I | re.M)
-    matches = list(header_re.finditer(text))
-    if not matches:
-        return []
-
-    articles = []
-    for i, m in enumerate(matches):
-        num = int(m.group(1))
-        start = m.start()
-        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
-        chunk = text[start:end].rstrip()
-        articles.append((num, chunk))
-
-    return articles
 
 
 def check_database_connection():
@@ -188,41 +148,6 @@ def check_database_connection():
         print("Database connection was successful")
     except Exception as e:
         print('Database Connection Error:', str(e))
-
-
-def verify_articles(articles: List[Tuple[int, str]]):
-    if not articles:
-        print("No article headers found.")
-        return
-
-    nums = [n for n, _ in articles]
-    cnt = Counter(nums)
-    duplicates = [n for n, c in cnt.items() if c > 1]
-
-    mn, mx = min(nums), max(nums)
-    expected = list(range(mn, mx + 1))
-    missing = [n for n in expected if n not in cnt]
-
-    order_issues = []
-    for i in range(1, len(nums)):
-        prev, cur = nums[i - 1], nums[i]
-        if cur != prev + 1:
-            order_issues.append((i, prev, cur))
-
-    print(f"Found {len(articles)} chunks. Header numbers span {mn} .. {mx}.")
-    if duplicates:
-        print("Duplicate article numbers:", duplicates)
-    if missing:
-        print("Missing article numbers:", missing)
-    if order_issues:
-        print("Order problems (chunk_index, previous_number -> current_number):")
-        for idx, prev, cur in order_issues[:50]:
-            prev_title = articles[idx - 1][1].splitlines()[0][:80]
-            cur_title = articles[idx][1].splitlines()[0][:80]
-            print(
-                f"  chunk {idx}: {prev} -> {cur}; prev header starts: {prev_title!r}; cur header starts: {cur_title!r}")
-    if not (duplicates or missing or order_issues):
-        print("All article headers look sequential and in order.")
 
 
 def create_hnsw_index(table_name=None, column_name="embedding", metric="vector_cosine_ops", m=16, ef_construction=64):
@@ -353,38 +278,34 @@ def parade_similarity_search(query_text: str, k: int = 5, table_name=None, colum
 
 
 if __name__ == "__main__":
-    path = "../../data/processed/AIACT.md"
+    # Path to the preprocessed chunks
+    chunks_path = "../../data/processed/aiact-chunks.json"
+
     check_database_connection()
+
     # Ensure all operations use the same table name
-    collection_table_name = "langchain_collection"  # Define it once
+    collection_table_name = "langchain_collection"
     create_collection_table(table_name=collection_table_name)
     create_hnsw_index(table_name=collection_table_name)
     create_bm25_index(table_name=collection_table_name)
 
-    # Change this to t
-    text = load_text(path)
-    articles = split_articles_by_header(text) # change to 
-    verify_articles(articles)
+    # Load preprocessed chunks
+    print(f"Loading chunks from {chunks_path}...")
+    documents: List[Document] = load_chunks(chunks_path)
+    print(f"Loaded {len(documents)} chunks")
 
-    if articles:
-        last_num, last_chunk = articles[-1]
-        print("\nLast chunk header number:", last_num)
-        print("Last chunk first line:", last_chunk.splitlines()[0] if last_chunk.splitlines() else "<empty>")
+    print("Starting embedding (first 10 documents)...")
+    # Add documents to the database
+    add_documents(documents[:10], table_name=collection_table_name)
+    print("Finished embedding")
 
-        documents: List[Document] = articles_to_chunks(articles)
+    # Test searches
+    print("\nParadeDB BM25 search:")
+    #print(parade_bm25_search("Regulation applies", k=5, table_name=collection_table_name))
 
-        print("Starting embedding")
-        # Ensure documents are added to the correct table
-        add_documents(documents[:10], table_name=collection_table_name)
-        print("Finished embedding")
+    query = QueryParams(query="Regulation applies")
+    print("\nVector similarity search:")
+    #print(get_similar_documents(query, table_name=collection_table_name))
 
-        print("ParadeDB BM25 search:")
-        # Pass the consistent table name here
-        print(parade_bm25_search("Regulation applies", k=5, table_name=collection_table_name))
-
-        qurey = QueryParams(query="Regulation applies")
-        # Pass the consistent table name here
-        print(get_similar_documents(qurey, table_name=collection_table_name))
-        print("ParadeDB HNSW similarity search:")
-        # Pass the consistent table name here
-        print(parade_similarity_search("Regulation applies", k=5, table_name=collection_table_name))
+    print("\nParadeDB HNSW similarity search:")
+    #print(parade_similarity_search("Regulation applies", k=5, table_name=collection_table_name))
