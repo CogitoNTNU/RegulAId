@@ -1,104 +1,113 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 type Msg = { role: "user" | "assistant"; content: string };
+type ApiResponse = string[] | { result?: string } | string | unknown;
 
-type SearchResult = { chunk_id: string; text: string; score?: number | null };
-type SearchResponse = { result: string };
+function toText(data: ApiResponse): string {
+    if (typeof data === "string") return data;
+    if (Array.isArray(data)) return data.map(String).join("\n");
+    if (data && typeof data === "object" && "result" in data && typeof (data as any).result === "string")
+        return (data as any).result;
+    return JSON.stringify(data);
+}
 
 export default function App() {
     const [messages, setMessages] = useState<Msg[]>([
-        { role: "assistant", content: "Hi! Ask me anything about your data." }
+        { role: "assistant", content: "Hi! Ask me anything." },
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
-    const listRef = useRef<HTMLDivElement>(null);
+
+    const endRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
+        endRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, loading]);
 
     async function send() {
         const text = input.trim();
         if (!text || loading) return;
-        setInput("");
+
         const next = [...messages, { role: "user", content: text }];
         setMessages(next);
+        setInput("");
         setLoading(true);
 
         try {
-            const history: string[] = messages.map(m => m.content);
+            const history = next.map(m => m.content);
             const res = await fetch("/api/search/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query: text, history: history })
+                body: JSON.stringify({ query: text, history }),
             });
-            const raw = await res.text();                      // robust: accept JSON or plain text
-            if (!res.ok) throw new Error(raw || `HTTP ${res.status}`);
-            let answer = raw;
-            try {
-                const data = JSON.parse(raw) as Partial<SearchResponse>;
-                if (typeof data.result === "string") answer = data.result;
-            } catch { /* keep raw */ }
-
+            const data: ApiResponse = await res.json();
+            if (!res.ok) throw new Error(toText(data));
+            const answer = toText(data);
             setMessages(m => [...m, { role: "assistant", content: answer }]);
         } catch (e: any) {
-            setMessages(m => [...m, { role: "assistant", content: `Error: ${e.message || e}` }]);
+            setMessages(m => [...m, { role: "assistant", content: String(e?.message ?? e) }]);
         } finally {
             setLoading(false);
         }
     }
 
     function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            send();
-        }
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
     }
 
     return (
-        <div style={{ height: "100%", display: "grid", gridTemplateRows: "1fr auto", fontFamily: "system-ui, sans-serif" }}>
-            <div ref={listRef} style={{ overflowY: "auto", padding: "16px", background: "#9d34ffff" }}>
-                {messages.map((m, i) => (
-                    <div
-                        key={i}
-                        style={{
-                            maxWidth: 820,
-                            margin: "0 auto 12px",
-                            padding: "12px 14px",
-                            borderRadius: 12,
-                            whiteSpace: "pre-wrap",
-                            color: m.role === "user" ? "#0b1020" : "#e8ebf7",
-                            background: m.role === "user" ? "#e8ebf7" : "#f828ffff"
-                        }}
-                    >
-                        <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 4 }}>{m.role}</div>
-                        {m.content}
+        <div className="h-screen w-full p-4">
+            <div className="mx-auto max-w-3xl h-full min-h-0">
+                <Card className="h-[80vh] grid grid-rows-[1fr_auto] overflow-hidden">
+                    {/* row 1 must be min-h-0 so the viewport can scroll */}
+                    <div className="min-h-0">
+                        <ScrollArea className="h-full">
+                            <div className="p-4 space-y-3">
+                                {messages.map((m, i) => <Bubble key={i} role={m.role} content={m.content} />)}
+                                {loading && <Bubble role="assistant" content="…thinking" muted />}
+                                <div ref={endRef} />
+                            </div>
+                        </ScrollArea>
                     </div>
-                ))}
-                {loading && (
-                    <div style={{ maxWidth: 820, margin: "0 auto 12px", padding: "12px 14px", borderRadius: 12, background: "#1a2344", color: "#e8ebf7" }}>
-                        <div style={{ opacity: 0.65, fontSize: 12, marginBottom: 4 }}>assistant</div>
-                        <span>…thinking</span>
-                    </div>
-                )}
-            </div>
 
-            <div style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid #e5e7eb", background: "white" }}>
-                <input
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={onKey}
-                    placeholder="Type a message and press Enter…"
-                    style={{ flex: 1, padding: "12px 14px", borderRadius: 10, border: "1px solid #cbd5e1" }}
-                />
-                <button
-                    onClick={send}
-                    disabled={loading || !input.trim()}
-                    style={{ padding: "12px 16px", borderRadius: 10, border: "1px solid #0b1020", background: "#0b1020", color: "white", cursor: loading ? "not-allowed" : "pointer" }}
-                >
-                    Send
-                </button>
+                    <div className="border-t p-3 flex gap-2">
+                        <Input
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={onKey}
+                            placeholder="Type and press Enter…"
+                        />
+                        <Button onClick={send} disabled={loading || !input.trim()}>Send</Button>
+                    </div>
+                </Card>
             </div>
         </div>
     );
+
+    function Bubble({
+        role, content, muted,
+    }: { role: "user" | "assistant"; content: string; muted?: boolean }) {
+        const isUser = role === "user";
+        return (
+            <div className={`mb-1 flex items-start gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
+                {!isUser && <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>}
+                <div
+                    className={[
+                        "max-w-[80%] rounded-2xl px-3 py-2 text-sm",
+                        "whitespace-pre-wrap break-words break-normal",
+                        isUser ? "bg-primary text-primary-foreground" : "bg-muted",
+                        muted ? "opacity-60" : "",
+                    ].join(" ")}
+                >
+                    {content}
+                </div>
+                {isUser && <Avatar className="h-8 w-8"><AvatarFallback>U</AvatarFallback></Avatar>}
+            </div>
+        );
+    }
 }
