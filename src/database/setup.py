@@ -5,7 +5,8 @@ import json
 import psycopg
 from typing import List
 from langchain_core.documents import Document
-from langchain_ollama import OllamaEmbeddings
+# from langchain_ollama import OllamaEmbeddings remove comment if you want to use OllamaEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from dotenv import load_dotenv
 
 # Add parent directory to path for imports
@@ -15,11 +16,12 @@ from database.connection import get_psycopg_connection_string
 
 load_dotenv()
 
-
-def get_embeddings_model() -> OllamaEmbeddings:
+# def get_embeddings_model() -> OllamaEmbeddings: if OllamaEmbeddings instead
+def get_embeddings_model() -> OpenAIEmbeddings:
     """Get the embeddings model."""
-    return OllamaEmbeddings(
-        base_url=os.getenv("EMBEDDING_API_BASE_URL"),
+    #return OllamaEmbeddings( if Ollama
+    return OpenAIEmbeddings(
+        # base_url=os.getenv("EMBEDDING_API_BASE_URL"), Include if Ollama
         model=os.getenv("EMBEDDING_MODEL_NAME"),
     )
 

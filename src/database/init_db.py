@@ -9,6 +9,9 @@ import json
 from typing import List
 from langchain_core.documents import Document
 import argparse
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

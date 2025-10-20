@@ -4,7 +4,8 @@ import os
 import sys
 import psycopg
 from typing import List, Dict, Any
-from langchain_ollama import OllamaEmbeddings
+# from langchain_ollama import OllamaEmbeddings # remove comment if you want to use OllamaEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from dotenv import load_dotenv
 from database.connection import get_psycopg_connection_string
 
@@ -23,8 +24,9 @@ class VectorRetriever:
         self.metric_operator = "<=>"  # Cosine distance
 
         # Initialize embeddings model
-        self.embeddings = OllamaEmbeddings(
-            base_url=os.getenv("EMBEDDING_API_BASE_URL"),
+        #self.embeddings = OllamaEmbeddings( if ollamaEmbedding
+        self.embeddings = OpenAIEmbeddings(
+            # base_url=os.getenv("EMBEDDING_API_BASE_URL"), Include if Ollama
             model=os.getenv("EMBEDDING_MODEL_NAME"),
         )
 
