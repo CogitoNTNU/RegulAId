@@ -30,7 +30,10 @@ class OpenAIService:
         start = perf_counter()
         response = self.client.chat.completions.create(
             model=self.model,
-            messages=[{"role": "user", "content": prompt + s }],
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant. Always respond in English only, regardless of the language of the question."},
+                {"role": "user", "content": prompt + s }
+            ],
         )
         openai_elapsed_ms = (perf_counter() - start) * 1000.0
 

@@ -13,9 +13,25 @@ def search_documents(payload: SearchRequest, request: Request):
     # Measure total backend time for handling this request (including OpenAI call)
     backend_start = perf_counter()
 
+    # Retrieve relevant documents using retriever
+    retriever = request.app.state.retriever
+    top_k = request.app.state.top_k
+    retrieved_docs = retriever.search(query=payload.query, k=top_k)
+
+    # Format retrieved documents as context
+    context = ""
+    if retrieved_docs:
+        context = "Context from EU AI Act documents:\n\n"
+        for i, doc in enumerate(retrieved_docs, 1):
+            context += f"[{i}] {doc['content']}\n\n"
+        context += "---\n\n"
+    print(context)
+    # Prepend context to the query
+    enhanced_query = context + payload.query if context else payload.query
+
     oa_service = request.app.state.openai
     # OpenAIService.generate_text returns (result, openai_elapsed_ms)
-    result, openai_elapsed_ms = oa_service.generate_text(prompt=payload.query, history=payload.history)
+    result, openai_elapsed_ms = oa_service.generate_text(prompt=enhanced_query, history=payload.history)
 
     backend_elapsed_ms = (perf_counter() - backend_start) * 1000.0
 

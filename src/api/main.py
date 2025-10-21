@@ -4,7 +4,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from src.api.routers import health, search
 from src.api.services.openai_service import OpenAIService
-from src.api.config import OPENAI_MODEL
+from src.api.config import OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K
+from src.retrievers import BM25Retriever, VectorRetriever
 import logging
 from time import perf_counter
 
@@ -15,6 +16,19 @@ async def lifespan(app: FastAPI):
     # Init services
     logger.info("Wait for the service")
     app.state.openai = OpenAIService(model=OPENAI_MODEL)
+
+    # Initialize retriever based on config
+    if RETRIEVER_TYPE == "bm25":
+        app.state.retriever = BM25Retriever()
+        logger.info("Initialized BM25 (keyword) retriever")
+    elif RETRIEVER_TYPE == "vector":
+        app.state.retriever = VectorRetriever()
+        logger.info("Initialized Vector (semantic) retriever")
+    else:
+        raise ValueError(f"Unknown RETRIEVER_TYPE: {RETRIEVER_TYPE}. Use 'bm25' or 'vector'")
+
+    app.state.top_k = RETRIEVER_TOP_K
+
     try:
         yield
     finally:

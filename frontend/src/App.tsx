@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Response } from "@/components/ui/shadcn-io/ai/response";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type ApiResponse = string[] | { result?: string } | string | unknown;
@@ -99,12 +100,15 @@ export default function App() {
                 <div
                     className={[
                         "max-w-[80%] rounded-2xl px-3 py-2 text-sm",
-                        "whitespace-pre-wrap break-words break-normal",
                         isUser ? "bg-primary text-primary-foreground" : "bg-muted",
                         muted ? "opacity-60" : "",
                     ].join(" ")}
                 >
-                    {content}
+                    {isUser ? (
+                        <span className="whitespace-pre-wrap break-words break-normal">{content}</span>
+                    ) : (
+                        <Response>{content}</Response>
+                    )}
                 </div>
                 {isUser && <Avatar className="h-8 w-8"><AvatarFallback>U</AvatarFallback></Avatar>}
             </div>
