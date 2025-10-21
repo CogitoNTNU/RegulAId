@@ -9,7 +9,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database import check_connection
-from retrievers import BM25Retriever, VectorRetriever
+from retrievers import BM25Retriever, VectorRetriever, HybridRetriever
+
 
 def test_retrievers(query: str = "What are high-risk AI systems?", k: int = 3):
     print("Testing Retrievers")
@@ -40,6 +41,27 @@ def test_retrievers(query: str = "What are high-risk AI systems?", k: int = 3):
             print(f"\n{i}. Similarity: {result['similarity']:.4f}")
             print(f"   Content: {result['content'][:300]}...")
             print(f"   Metadata: {result['metadata'].get('id', 'N/A')}")
+    else:
+        print("No results found")
+
+    # Test Hybrid retriever
+    print("\nHybrid Search (RRF):")
+    hybrid = HybridRetriever()
+    hybrid_results = hybrid.search(
+        query,
+        k=k,
+        rrf_k=60,
+        bm25_weight=1.0,
+        vector_weight=1.0,
+        bm25_top_k=100,
+        vector_top_k=100,
+    )
+
+    if hybrid_results:
+        for i, result in enumerate(hybrid_results, 1):
+            print(f"\n{i}. RRF Score: {result['rrf_score']:.4f}")
+            print(f"   Content: {result['content'][:300]}...")
+            print(f"   Metadata: {result.get('id', 'N/A')}")
     else:
         print("No results found")
 
