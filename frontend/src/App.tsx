@@ -5,6 +5,21 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Response } from "@/components/ui/shadcn-io/ai/response";
+import {
+  InlineCitation,
+  InlineCitationCard,
+  InlineCitationCardBody,
+  InlineCitationCardTrigger,
+  InlineCitationCarousel,
+  InlineCitationCarouselContent,
+  InlineCitationCarouselHeader,
+  InlineCitationCarouselIndex,
+  InlineCitationCarouselItem,
+  InlineCitationCarouselNext,
+  InlineCitationCarouselPrev,
+  InlineCitationSource,
+  InlineCitationText,
+} from '@/components/ui/shadcn-io/ai/inline-citation';
 
 type Source = { id: number | string; content: string; metadata?: Record<string, any> };
 type Msg = { role: "user" | "assistant"; content: string; sources?: Source[] };
@@ -103,7 +118,6 @@ export default function App() {
         role, content, muted, sources,
     }: { role: "user" | "assistant"; content: string; muted?: boolean; sources?: Source[] }) {
         const isUser = role === "user";
-        const [showSources, setShowSources] = useState(false);
 
         return (
             <div className={`mb-1 flex items-start gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
@@ -121,33 +135,32 @@ export default function App() {
                         <>
                             <Response>{content}</Response>
                             {sources && sources.length > 0 && (
-                                <div className="mt-2 border-t pt-2 text-xs text-muted-foreground">
-                                    <button
-                                        className="underline"
-                                        onClick={() => setShowSources(s => !s)}
-                                        type="button"
-                                    >
-                                        {showSources ? "Hide sources" : "Show sources"}
-                                    </button>
-                                    {showSources && (
-                                        <ul className="mt-2 space-y-2">
-                                            {sources.map((src, idx) => (
-                                                <li key={src.id ?? idx} className="bg-background rounded p-2 border">
-                                                    <div>
-                                                        <strong>Source {idx + 1}</strong>
-                                                        {src.metadata?.id && (
-                                                            <span className="ml-2 text-muted-foreground">({src.metadata.id})</span>
-                                                        )}
-                                                        {src.metadata?.page_range && (
-                                                            <span className="ml-2 text-muted-foreground">Page: {src.metadata.page_range}</span>
-                                                        )}
-                                                    </div>
-                                                    <div className="whitespace-pre-wrap break-words">{src.content}</div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
+                                <InlineCitation>
+                                    <InlineCitationText>Sources</InlineCitationText>
+                                    <InlineCitationCard>
+                                        <InlineCitationCardTrigger sources={[]} />
+                                        <InlineCitationCardBody>
+                                            <InlineCitationCarousel>
+                                                <InlineCitationCarouselHeader>
+                                                    <InlineCitationCarouselPrev />
+                                                    <InlineCitationCarouselNext />
+                                                    <InlineCitationCarouselIndex />
+                                                </InlineCitationCarouselHeader>
+                                                <InlineCitationCarouselContent>
+                                                    {sources.map((src, idx) => (
+                                                        <InlineCitationCarouselItem key={src.id ?? idx}>
+                                                            <InlineCitationSource
+                                                                title={`Source ${idx + 1} (${src.metadata?.id})`}
+                                                                url="#"
+                                                                description={src.content}
+                                                            />
+                                                        </InlineCitationCarouselItem>
+                                                    ))}
+                                                </InlineCitationCarouselContent>
+                                            </InlineCitationCarousel>
+                                        </InlineCitationCardBody>
+                                    </InlineCitationCard>
+                                </InlineCitation>
                             )}
                         </>
                     )}
