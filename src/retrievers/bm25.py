@@ -22,7 +22,7 @@ class BM25Retriever:
         self.table_name = os.getenv("COLLECTION_NAME")
         self.column_name = "page_content"
 
-    def search(self, query: str, k: int = 5) -> List[Dict[str, Any]]:
+    def search(self, query: str, k: int = 10) -> List[Dict[str, Any]]:
         """
         Perform BM25 search.
 

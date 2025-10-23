@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Response } from "@/components/ui/shadcn-io/ai/response";
 
-type Msg = { role: "user" | "assistant"; content: string };
-type ApiResponse = string[] | { result?: string } | string | unknown;
+type Source = { id: number | string; content: string; metadata?: Record<string, any> };
+type Msg = { role: "user" | "assistant"; content: string; sources?: Source[] };
+type ApiResponse = { result?: string; sources?: Source[] } | string[] | string | unknown;
 
 function toText(data: ApiResponse): string {
     if (typeof data === "string") return data;
@@ -15,6 +16,13 @@ function toText(data: ApiResponse): string {
     if (data && typeof data === "object" && "result" in data && typeof (data as any).result === "string")
         return (data as any).result;
     return JSON.stringify(data);
+}
+
+function toSources(data: ApiResponse): Source[] | undefined {
+    if (data && typeof data === "object" && "sources" in data && Array.isArray((data as any).sources)) {
+        return (data as any).sources;
+    }
+    return undefined;
 }
 
 export default function App() {
@@ -49,7 +57,8 @@ export default function App() {
             const data: ApiResponse = await res.json();
             if (!res.ok) throw new Error(toText(data));
             const answer = toText(data);
-            setMessages(m => [...m, { role: "assistant", content: answer }]);
+            const sources = toSources(data);
+            setMessages(m => [...m, { role: "assistant", content: answer, sources }]);
         } catch (e: any) {
             setMessages(m => [...m, { role: "assistant", content: String(e?.message ?? e) }]);
         } finally {
@@ -69,7 +78,7 @@ export default function App() {
                     <div className="min-h-0">
                         <ScrollArea className="h-full">
                             <div className="p-4 space-y-3">
-                                {messages.map((m, i) => <Bubble key={i} role={m.role} content={m.content} />)}
+                                {messages.map((m, i) => <Bubble key={i} role={m.role} content={m.content} sources={m.sources} />)}
                                 {loading && <Bubble role="assistant" content="…thinking" muted />}
                                 <div ref={endRef} />
                             </div>
@@ -91,9 +100,11 @@ export default function App() {
     );
 
     function Bubble({
-        role, content, muted,
-    }: { role: "user" | "assistant"; content: string; muted?: boolean }) {
+        role, content, muted, sources,
+    }: { role: "user" | "assistant"; content: string; muted?: boolean; sources?: Source[] }) {
         const isUser = role === "user";
+        const [showSources, setShowSources] = useState(false);
+
         return (
             <div className={`mb-1 flex items-start gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
                 {!isUser && <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>}
@@ -107,7 +118,38 @@ export default function App() {
                     {isUser ? (
                         <span className="whitespace-pre-wrap break-words break-normal">{content}</span>
                     ) : (
-                        <Response>{content}</Response>
+                        <>
+                            <Response>{content}</Response>
+                            {sources && sources.length > 0 && (
+                                <div className="mt-2 border-t pt-2 text-xs text-muted-foreground">
+                                    <button
+                                        className="underline"
+                                        onClick={() => setShowSources(s => !s)}
+                                        type="button"
+                                    >
+                                        {showSources ? "Hide sources" : "Show sources"}
+                                    </button>
+                                    {showSources && (
+                                        <ul className="mt-2 space-y-2">
+                                            {sources.map((src, idx) => (
+                                                <li key={src.id ?? idx} className="bg-background rounded p-2 border">
+                                                    <div>
+                                                        <strong>Source {idx + 1}</strong>
+                                                        {src.metadata?.id && (
+                                                            <span className="ml-2 text-muted-foreground">({src.metadata.id})</span>
+                                                        )}
+                                                        {src.metadata?.page_range && (
+                                                            <span className="ml-2 text-muted-foreground">Page: {src.metadata.page_range}</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="whitespace-pre-wrap break-words">{src.content}</div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
                 {isUser && <Avatar className="h-8 w-8"><AvatarFallback>U</AvatarFallback></Avatar>}

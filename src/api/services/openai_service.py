@@ -4,10 +4,13 @@ from dotenv import load_dotenv
 import logging
 from time import perf_counter
 
+from schemas.search_schemas import LLMResponse
+
 # Load environment variables from a .env file if present
 load_dotenv()
 
 logger = logging.getLogger(__name__)
+
 
 class OpenAIService:
     """Simple wrapper around OpenAI Chat Completions API."""
@@ -22,7 +25,7 @@ class OpenAIService:
         self.model = model
         logger.info("OpenAIService initialized")
 
-    def generate_text(self, prompt: str, history) -> str:
+    def generate_text(self, prompt: str, history) -> LLMResponse:
         """Generate a chat completion response for a prompt."""
         s = "these are the previously sent messages:".join(history)
 
@@ -31,8 +34,9 @@ class OpenAIService:
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[
-                {"role": "system", "content": "You are a helpful assistant. Always respond in English only, regardless of the language of the question."},
-                {"role": "user", "content": prompt + s }
+                {"role": "system",
+                 "content": "You are a helpful assistant. Always respond in English only, regardless of the language of the question."},
+                {"role": "user", "content": prompt + s}
             ],
         )
         openai_elapsed_ms = (perf_counter() - start) * 1000.0
@@ -43,4 +47,4 @@ class OpenAIService:
         logger.info("OpenAIService.generate_text: openai call took %.2f ms", openai_elapsed_ms)
 
         # Return the content plus the OpenAI elapsed time in milliseconds
-        return result, openai_elapsed_ms
+        return LLMResponse(content=result, openai_elapsed_ms=openai_elapsed_ms)
