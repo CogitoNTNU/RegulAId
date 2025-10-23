@@ -1,24 +1,24 @@
-import { useEffect, useRef, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Response } from "@/components/ui/shadcn-io/ai/response";
+import {useEffect, useRef, useState} from "react";
+import {Card} from "@/components/ui/card";
+import {ScrollArea} from "@/components/ui/scroll-area";
+import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
+import {Avatar, AvatarFallback} from "@/components/ui/avatar";
+import {Response} from "@/components/ui/shadcn-io/ai/response";
 import {
-  InlineCitation,
-  InlineCitationCard,
-  InlineCitationCardBody,
-  InlineCitationCardTrigger,
-  InlineCitationCarousel,
-  InlineCitationCarouselContent,
-  InlineCitationCarouselHeader,
-  InlineCitationCarouselIndex,
-  InlineCitationCarouselItem,
-  InlineCitationCarouselNext,
-  InlineCitationCarouselPrev,
-  InlineCitationSource,
-  InlineCitationText,
+    InlineCitation,
+    InlineCitationCard,
+    InlineCitationCardBody,
+    InlineCitationCardTrigger,
+    InlineCitationCarousel,
+    InlineCitationCarouselContent,
+    InlineCitationCarouselHeader,
+    InlineCitationCarouselIndex,
+    InlineCitationCarouselItem,
+    InlineCitationCarouselNext,
+    InlineCitationCarouselPrev,
+    InlineCitationSource,
+    InlineCitationText,
 } from '@/components/ui/shadcn-io/ai/inline-citation';
 
 type Source = { id: number | string; content: string; metadata?: Record<string, any> };
@@ -42,7 +42,7 @@ function toSources(data: ApiResponse): Source[] | undefined {
 
 export default function App() {
     const [messages, setMessages] = useState<Msg[]>([
-        { role: "assistant", content: "Hi! Ask me anything." },
+        {role: "assistant", content: "Hi! Ask me anything."},
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -50,14 +50,15 @@ export default function App() {
     const endRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        endRef.current?.scrollIntoView({ behavior: "smooth" });
+        endRef.current?.scrollIntoView({behavior: "smooth"});
     }, [messages, loading]);
 
     async function send() {
         const text = input.trim();
         if (!text || loading) return;
 
-        const next = [...messages, { role: "user", content: text }];
+        const next: Msg[] = [...messages, {role: "user" as const, content: text}];
+
         setMessages(next);
         setInput("");
         setLoading(true);
@@ -66,23 +67,26 @@ export default function App() {
             const history = next.map(m => m.content);
             const res = await fetch("/api/search/", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query: text, history }),
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({query: text, history}),
             });
             const data: ApiResponse = await res.json();
             if (!res.ok) throw new Error(toText(data));
             const answer = toText(data);
             const sources = toSources(data);
-            setMessages(m => [...m, { role: "assistant", content: answer, sources }]);
+            setMessages(m => [...m, {role: "assistant", content: answer, sources}]);
         } catch (e: any) {
-            setMessages(m => [...m, { role: "assistant", content: String(e?.message ?? e) }]);
+            setMessages(m => [...m, {role: "assistant", content: String(e?.message ?? e)}]);
         } finally {
             setLoading(false);
         }
     }
 
     function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            send();
+        }
     }
 
     return (
@@ -93,9 +97,10 @@ export default function App() {
                     <div className="min-h-0">
                         <ScrollArea className="h-full">
                             <div className="p-4 space-y-3">
-                                {messages.map((m, i) => <Bubble key={i} role={m.role} content={m.content} sources={m.sources} />)}
-                                {loading && <Bubble role="assistant" content="…thinking" muted />}
-                                <div ref={endRef} />
+                                {messages.map((m, i) => <Bubble key={i} role={m.role} content={m.content}
+                                                                sources={m.sources}/>)}
+                                {loading && <Bubble role="assistant" content="…thinking" muted/>}
+                                <div ref={endRef}/>
                             </div>
                         </ScrollArea>
                     </div>
@@ -115,8 +120,8 @@ export default function App() {
     );
 
     function Bubble({
-        role, content, muted, sources,
-    }: { role: "user" | "assistant"; content: string; muted?: boolean; sources?: Source[] }) {
+                        role, content, muted, sources,
+                    }: { role: "user" | "assistant"; content: string; muted?: boolean; sources?: Source[] }) {
         const isUser = role === "user";
 
         return (
@@ -138,13 +143,13 @@ export default function App() {
                                 <InlineCitation>
                                     <InlineCitationText>Sources</InlineCitationText>
                                     <InlineCitationCard>
-                                        <InlineCitationCardTrigger sources={[]} />
+                                        <InlineCitationCardTrigger sources={[]}/>
                                         <InlineCitationCardBody>
                                             <InlineCitationCarousel>
                                                 <InlineCitationCarouselHeader>
-                                                    <InlineCitationCarouselPrev />
-                                                    <InlineCitationCarouselNext />
-                                                    <InlineCitationCarouselIndex />
+                                                    <InlineCitationCarouselPrev/>
+                                                    <InlineCitationCarouselNext/>
+                                                    <InlineCitationCarouselIndex/>
                                                 </InlineCitationCarouselHeader>
                                                 <InlineCitationCarouselContent>
                                                     {sources.map((src, idx) => (
