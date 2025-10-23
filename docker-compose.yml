@@ -1,15 +1,15 @@
 services:
-  regulaid_postgres:
-    image: paradedb/paradedb:latest
-    restart: always
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin_password
-      POSTGRES_DB: mydatabase
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata-regulaid:/var/lib/postgresql/data
+  # postgres:
+  #   image: paradedb/paradedb:latest
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: admin
+  #     POSTGRES_PASSWORD: admin_password
+  #     POSTGRES_DB: mydatabase
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - pgdata-regulaid:/var/lib/postgresql/data
 
   # regulaid:
   #   build:
