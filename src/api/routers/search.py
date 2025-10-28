@@ -11,6 +11,7 @@ router = APIRouter(prefix="/search", tags=["search"])
 @router.post("/", response_model=SearchResponse, summary="Query OpenAI")
 def search_documents(payload: SearchRequest, request: Request):
     # Measure total backend time for handling this request (including OpenAI call)
+    print("I am in here")
     backend_start = perf_counter()
 
     # Retrieve relevant documents using retriever
