@@ -37,10 +37,10 @@ from scipy import stats
 # Configuration (edit here)
 # =========================
 EVALUATE_METHODS: List[str] = [
-    "hybrid_retrieval_only",
-    "hybrid_retrieval_reranked",
-    # TODO: add your custom method names here and map them in TEMPLATES below
-]
+    "bm25_retrieval_only",
+    "semantic_retrieval_only",
+    "hybrid_retrieval",
+    ]
 RUN_TAG: str = "retrieval_only_test"
 RAGAS_METRICS = [
     context_precision,
@@ -48,21 +48,18 @@ RAGAS_METRICS = [
     faithfulness,
     answer_relevancy,
 ]
-
-# TODO: Map your template names to callables/classes implementing a .run(question, reference_contexts)
 # Leave placeholders; user will import their implementations.
 # Example:
 # from src.templates.hybrid_retrieval_only import HybridRetrievalOnly
 # from src.templates.hybrid_retrieval_reranked import HybridRetrievalReranked
 TEMPLATES: Dict[str, object] = {
-    # TODO: uncomment and ensure paths are valid for your project
-    # "hybrid_retrieval_only": HybridRetrievalOnly,
-    # "hybrid_retrieval_reranked": HybridRetrievalReranked,
-
+    "bm25_retrieval_only": BM25Retriever,
+    "semantic_retrieval_only": VectorRetriever,
+    "hybrid_retrieval": HybridRetriever,
 }
 
 # Input files (relative to repo root)
-TESTSET_REL_PATH = os.path.join("data", "datasets", "testset.json")
+TESTSET_REL_PATH = os.path.join("../data/processed/testset.json")
 
 
 # =========================
@@ -399,7 +396,6 @@ def main() -> None:
 
     # Select templates to run
     if not TEMPLATES:
-        print("TODO: Configure TEMPLATES mapping to your implementations. No templates to run.")
         return
     templates_to_run = {name: TEMPLATES[name] for name in EVALUATE_METHODS if name in TEMPLATES}
 

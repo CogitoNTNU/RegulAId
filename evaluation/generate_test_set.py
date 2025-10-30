@@ -24,7 +24,7 @@ from ragas.testset.synthesizers.prompts import ThemesPersonasInput, ThemesPerson
 
 # TODO: Update paths and sizes for your data/use-case
 DOCS_DIR = "../data/processed/aiact-chunks.json"
-OUTPUT_DIR = "../data/processed/test-set_evaluation.json"
+OUTPUT_DIR = "../data/processed"
 OUTPUT_FILE = "testset.json"
 NUM_SINGLE_HOP = 5  # TODO: adjust sample counts
 NUM_MULTI_HOP = 5   # TODO: adjust sample counts
