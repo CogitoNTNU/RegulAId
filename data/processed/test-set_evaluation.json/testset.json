@@ -1,0 +1,314 @@
+[
+    {
+        "question":"What is a risk-management system supposed to do for high-risk AI systems?",
+        "ground_truth":"A risk-management system is supposed to mitigate the risks from high-risk AI systems placed on the market or put into service, and ensure a high level of trustworthiness. It should establish certain mandatory requirements based on the intended purpose and context of use of the AI system.",
+        "answer_ids":[
+
+        ],
+        "answer_numbers":[
+
+        ],
+        "contexts":[
+            "To mitigate the risks from high-risk AI systems placed on the market or put into service and to ensure a high level of\ntrustworthiness, certain mandatory requirements should apply to high-risk AI systems, taking into account the\nintended purpose and the context of use of the AI system and according to the risk-management system to be\nestablished by the provider. The measures adopted by the providers to comply with the mandatory requirements of\nthis Regulation should take into account the generally acknowledged state of the art on AI, be proportionate and\neffective to meet the objectives of this Regulation. Based on the "
+        ],
+        "metadata":[
+            {
+
+            }
+        ]
+    },
+    {
+        "question":"What is this Union harmonisation legislation and how does it connect with AI stuff and products, like medical devices or machines, and what do people gotta do to make sure they follow all the rules together right?",
+        "ground_truth":"Union harmonisation legislation means that more than one law can apply to a product, and it needs to follow all the rules before being sold or used. For AI systems, like those in machinery or medical devices, some risks are not covered by current laws, so new regulations need to work together with the existing ones. Providers of products with high-risk AI systems need to find ways to comply with all the rules flexibly, which might include combining required processes from both the old and new legislation without ignoring any obligations.",
+        "answer_ids":[
+
+        ],
+        "answer_numbers":[
+
+        ],
+        "contexts":[
+            "New Legislative Framework, as clarified in\nCommission notice \u2018The \u201cBlue Guide\u201d on the implementation of EU product rules 2022', the general rule is that\nmore than one legal act of Union harmonisation legislation may be applicable to one product, since the making\navailable or putting into service can take place only when the product complies with all applicable Union\nharmonisation legislation. The hazards of AI systems covered by the requirements of this Regulation concern\ndifferent aspects than the existing Union harmonisation legislation and therefore the requirements of this Regulation\nwould complement the existing body of the Union harmonisation legislation. For example, machinery or medical\ndevices products incorporating an AI system might present risks not addressed by the essential health and safety\n()\nrequirements set out in the relevant Union harmonised legislation, as that sectoral law does not deal with risks\nspecific to AI systems. This calls for a simultaneous and complementary application of the various legislative acts. To\nensure consistency and to avoid an unnecessary administrative burden and unnecessary costs, providers of a product\nthat contains one or more high-risk AI system, to which the requirements of this Regulation and of the Union\nharmonisation legislation based on the New Legislative Framework and listed in an annex to this Regulation apply,\nshould have flexibility with regard to operational decisions on how to ensure compliance of a product that contains\none or more AI systems with all the applicable requirements of that Union harmonised legislation in an optimal\nmanner. That flexibility could mean, for example a decision by the provider to integrate a part of the necessary\ntesting and reporting processes, information and documentation required under this Regulation into already existing\ndocumentation and procedures required under existing Union harmonisation legislation based on the New\nLegislative Framework and listed in an annex to this Regulation. This should not, in any way, undermine the\nobligation of the provider to comply with all the applicable requirements."
+        ],
+        "metadata":[
+            {
+
+            }
+        ]
+    },
+    {
+        "question":"Wut is that 'intended purpose' for a AI system, like, can u explain that more and say why it important?",
+        "ground_truth":"The intended purpose of an AI system is one of the criteria that the Commission considers when assessing the condition under paragraph 1, point (b). It refers to the specific function or goal for which the AI system was designed or expected to be used.",
+        "answer_ids":[
+
+        ],
+        "answer_numbers":[
+
+        ],
+        "contexts":[
+            "When assessing the condition under paragraph 1, point (b), the Commission shall take into account the following\ncriteria:\n (a) the intended purpose of the AI system;\n (b) the extent to which an AI system has been used or is likely to be used;\n"
+        ],
+        "metadata":[
+            {
+
+            }
+        ]
+    },
+    {
+        "question":"Wut kind of data is processed by AI system?",
+        "ground_truth":"The data processed by an AI system includes the nature and amount of data, particularly whether special categories of personal data are used.",
+        "answer_ids":[
+
+        ],
+        "answer_numbers":[
+
+        ],
+        "contexts":[
+            "(c) the nature and amount of the data processed and used by the AI system, in particular whether special categories of\npersonal data are processed;\n(d) the extent to which the AI system acts autonomously and the possibility for a human to override a decision or\nrecommendations that may lead to potential harm;\n(e) the extent to which the use of an AI system has already caused harm to health and safety, has had an adverse impact on\nfundamental rights or has given rise to significant concerns in relation to the likelihood of such harm or adverse impact,\nas demonstrated, for example, by reports or documented allegations submitted to national competent authorities or by\nother reports, as appropriate;\n(f) the potential extent of such harm or such adverse impact, in particular in terms of its intensity and its ability to affect\nmultiple persons or to disproportionately affect a particular group of persons;\n(g) the extent to which persons who are potentially harmed or suffer an adverse impact are dependent on the outcome\nproduced with an AI system, in particular because for practical or legal reasons it is not reasonably possible to opt-out\nfrom that outcome;\n(h) the extent to which there is an imbalance of power, or the persons who are potentially harmed or suffer an adverse\nimpact are in a vulnerable position in relation to the deployer of an AI system, in particular due to status, authority,\nknowledge, economic or social circumstances, or age;\n(i) the extent to which the outcome produced involving an AI system is easily corrigible or reversible, taking into account\nthe technical solutions available to correct or reverse it, whereby outcomes having an adverse impact on health, safety or\nfundamental rights, shall not be considered to be easily corrigible or reversible;\n(j) the magnitude and likelihood of benefit of the deployment of the AI system for individuals, groups, or society at large,\nincluding possible improvements in product safety;\n(k) the extent to which existing Union law provides for:\n(i) effective measures of redress in relation to the risks posed by an AI system, with the exclusion of claims for\ndamages;\n(ii) effective measures to prevent or substantially minimise those risks."
+        ],
+        "metadata":[
+            {
+
+            }
+        ]
+    },
+    {
+        "question":"What's the deal with Article 9 and how it relates to Article 73 for testing AI systems?",
+        "ground_truth":"Article 73 states that any serious incident identified during real-world testing must be reported to the national market surveillance authority, which involves immediate mitigation measures or suspension of the testing. Meanwhile, Article 9 focuses on promoting compliance through joint activities between market surveillance authorities and the Commission to handle high-risk AI systems that present serious risks across multiple Member States.",
+        "answer_ids":[
+            "article-60-para-7",
+            "recital-157"
+        ],
+        "answer_numbers":[
+            7,
+            160
+        ],
+        "contexts":[
+            "Any serious incident identified in the course of the testing in real world conditions shall be reported to the national\nmarket surveillance authority in accordance with Article 73. The provider or prospective provider shall adopt immediate\nmitigation measures or, failing that, shall suspend the testing in real world conditions until such mitigation takes place, or\notherwise terminate it. The provider or prospective provider shall establish a procedure for the prompt recall of the AI\nsystem upon such termination of the testing in real world conditions.",
+            "The market surveillance authorities and the Commission should be able to propose joint activities, including joint\ninvestigations, to be conducted by market surveillance authorities or market surveillance authorities jointly with the\nCommission, that have the aim of promoting compliance, identifying non-compliance, raising awareness and\nproviding guidance in relation to this Regulation with respect to specific categories of high-risk AI systems that are\nfound to present a serious risk across two or more Member States. Joint activities to promote compliance should be\ncarried out in accordance with Article 9 of Regulation (EU) 2019\/1020. The AI Office should provide coordination\nsupport for joint investigations."
+        ],
+        "metadata":[
+            {
+                "id":"article-60-para-7",
+                "type":"article",
+                "paragraph_number":7,
+                "page_range":"93\/144",
+                "chapter_number":"VI",
+                "chapter_name":"MEASURES IN SUPPORT OF INNOVATION",
+                "section_number":"3",
+                "section_name":"Obligations of providers of general-purpose AI models with systemic risk",
+                "article_number":60,
+                "article_name":"Testing of high-risk AI systems in real world conditions outside AI regulatory sandboxes",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"recital-157",
+                "type":"recital",
+                "paragraph_number":160,
+                "page_range":"40\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What tasks must the authorised representative perform according to Article 53 and how does Article 31 relate to notifying authorities?",
+        "ground_truth":"According to Article 31, notifying authorities may only notify conformity assessment bodies that have satisfied certain requirements. In relation to Article 53, the authorised representative is mandated to verify that the technical documentation specified in Annex XI is properly drawn up and that all obligations referred to in Article 53, and if applicable Article 55, have been fulfilled by the provider. This includes keeping a copy of the technical documentation for 10 years and providing it to the AI Office upon request.",
+        "answer_ids":[
+            "article-30-para-1",
+            "article-54-para-3"
+        ],
+        "answer_numbers":[
+            1,
+            3
+        ],
+        "contexts":[
+            "Notifying authorities may notify only conformity assessment bodies which have satisfied the requirements laid down\nin Article 31.",
+            "The authorised representative shall perform the tasks specified in the mandate received from the provider. It shall\nprovide a copy of the mandate to the AI Office upon request, in one of the official languages of the institutions of the\nUnion. For the purposes of this Regulation, the mandate shall empower the authorised representative to carry out the\nfollowing tasks:\n(a) verify that the technical documentation specified in Annex XI has been drawn up and all obligations referred to in\nArticle 53 and, where applicable, Article 55 have been fulfilled by the provider;\n(b) keep a copy of the technical documentation specified in Annex XI at the disposal of the AI Office and national\ncompetent authorities, for a period of 10 years after the general-purpose AI model has been placed on the market, and\nthe contact details of the provider that appointed the authorised representative;\n(c) provide the AI Office, upon a reasoned request, with all the information and documentation, including that referred to\nin point (b), necessary to demonstrate compliance with the obligations in this Chapter;\n(d) cooperate with the AI Office and competent authorities, upon a reasoned request, in any action they take in relation to\nthe general-purpose AI model, including when the model is integrated into AI systems placed on the market or put into"
+        ],
+        "metadata":[
+            {
+                "id":"article-30-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"71\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":"4",
+                "section_name":"Notifying authorities and notified bodies",
+                "article_number":30,
+                "article_name":"Notification procedure",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-54-para-3",
+                "type":"article",
+                "paragraph_number":3,
+                "page_range":"85\/144",
+                "chapter_number":"V",
+                "chapter_name":"GENERAL-PURPOSE AI MODELS",
+                "section_number":"2",
+                "section_name":"Obligations for providers of general-purpose AI models",
+                "article_number":54,
+                "article_name":"Authorised representatives of providers of general-purpose AI models",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What is the information used by the system as per the information supplied by the provider?",
+        "ground_truth":"The information used by the system refers to the data and inputs that the AI system operates on. It also includes the intended purpose, which is defined as the use for which the AI system is intended by the provider, including the specific context and conditions of use as detailed in the information supplied by the provider.",
+        "answer_ids":[
+            "annex-VIII-para-7",
+            "article-3-para-12"
+        ],
+        "answer_numbers":[
+            7,
+            12
+        ],
+        "contexts":[
+            ".\nA basic and concise description of the information used by the system (data, inputs) and its operating logic;",
+            "\u2018intended purpose' means the use for which an AI system is intended by the provider, including the specific context\nand conditions of use, as specified in the information supplied by the provider in the instructions for use, promotional\nor sales materials and statements, as well as in the technical documentation;"
+        ],
+        "metadata":[
+            {
+                "id":"annex-VIII-para-7",
+                "type":"annex",
+                "paragraph_number":7,
+                "page_range":"136\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":"VIII",
+                "annex_name":"Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
+                "source":"chunks"
+            },
+            {
+                "id":"article-3-para-12",
+                "type":"article",
+                "paragraph_number":12,
+                "page_range":"47\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":3,
+                "article_name":"Definitions",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What are the implications of Regulations (EU) 2017\/745 and (EU) 2018\/1139 for high-risk AI systems that fall under the scope of existing EU legislation?",
+        "ground_truth":"Regulation (EU) 2017\/745 applies specifically to medical devices, establishing requirements for safety and efficacy. This regulation interacts with Regulation (EU) 2018\/1139, which governs civil aviation, specifically focusing on safety standards for high-risk AI systems that may serve as safety components of products or systems. The implications of these regulations require that high-risk AI systems adhere to mandatory safety requirements and undergo conformity assessments aligned with these regulations, ensuring that the necessary safety and regulatory standards are met across the sectors involved.",
+        "answer_ids":[
+            "recital-47",
+            "recital-144"
+        ],
+        "answer_numbers":[
+            49,
+            147
+        ],
+        "contexts":[
+            "As regards high-risk AI systems that are safety components of products or systems, or which are themselves\nproducts or systems falling within the scope of Regulation (EC) No 300\/2008 of the European Parliament and of the\nParliament and of the Council (), Directive (EU) 2016\/797 of the European Parliament and of the Council (),\nRegulation (EU) 2018\/858 of the European Parliament and of the Council (), Regulation (EU) 2018\/1139 of the\n()\n()\n()\n()\nEuropean Parliament and of the Council (), and Regulation (EU) 2019\/2144 of the European Parliament and of the\nCouncil (), it is appropriate to amend those acts to ensure that the Commission takes into account, on the basis of\nthe technical and regulatory specificities of each sector, and without interfering with existing governance, conformity\nassessment and enforcement mechanisms and authorities established therein, the mandatory requirements for\nhigh-risk AI systems laid down in this Regulation when adopting any relevant delegated or implementing acts on the\nbasis of those acts.",
+            "It is appropriate that the Commission facilitates, to the extent possible, access to testing and experimentation\nfacilities to bodies, groups or laboratories established or accredited pursuant to any relevant Union harmonisation\nlegislation and which fulfil tasks in the context of conformity assessment of products or devices covered by that\nUnion harmonisation legislation. This is, in particular, the case as regards expert panels, expert laboratories and\nreference laboratories in the field of medical devices pursuant to Regulations (EU) 2017\/745 and (EU) 2017\/746."
+        ],
+        "metadata":[
+            {
+                "id":"recital-47",
+                "type":"recital",
+                "paragraph_number":49,
+                "page_range":"13-14\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"recital-144",
+                "type":"recital",
+                "paragraph_number":147,
+                "page_range":"37\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What are the obligations described in Article 3 and Article 35 regarding incidents and assessments?",
+        "ground_truth":"Article 35 of the Regulation (EU) outlines the requirement for a data protection impact assessment to be conducted. Additionally, Article 3 establishes that in cases of widespread infringements or serious incidents, as defined under its specific provisions, a report must be provided immediately and no later than two days after the provider or deployer becomes aware of the incident.",
+        "answer_ids":[
+            "annex-VIII-para-2016",
+            "article-73-para-3"
+        ],
+        "answer_numbers":[
+            2016,
+            3
+        ],
+        "contexts":[
+            ".\nA summary of the data protection impact assessment carried out in accordance with Article 35 of Regulation (EU)",
+            "Notwithstanding paragraph 2 of this Article, in the event of a widespread infringement or a serious incident as\ndefined in Article 3, point (49)(b), the report referred to in paragraph 1 of this Article shall be provided immediately, and\nnot later than two days after the provider or, where applicable, the deployer becomes aware of that incident."
+        ],
+        "metadata":[
+            {
+                "id":"annex-VIII-para-2016",
+                "type":"annex",
+                "paragraph_number":2016,
+                "page_range":"137\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":"VIII",
+                "annex_name":"Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
+                "source":"chunks"
+            },
+            {
+                "id":"article-73-para-3",
+                "type":"article",
+                "paragraph_number":3,
+                "page_range":"102\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":73,
+                "article_name":"",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    }
+]
