@@ -55,6 +55,8 @@ class OpenAIService:
         s = "\n".join(history) if history else ""
 
         # Build a simple search tool that calls the retriever
+        captured_sources: list[dict] = []
+
         @tool("search_ai_act", description="Search the EU AI ACT documents")
         def _search_tool(query: str) -> str:
             """Search the EU AI ACT documents using the project's retriever.
@@ -65,6 +67,8 @@ class OpenAIService:
             Returns:
                 Concatenated snippets and metadata from top-k matching documents.
             """
+            nonlocal captured_sources
+            captured_sources.clear()
             try:
                 results = retriever.search(query=query, k=top_k)
             except TypeError:
@@ -75,27 +79,28 @@ class OpenAIService:
             out = []
             for i, r in enumerate(results, 1):
                 md = r.get("metadata") or {}
-                out.append(f"[{i}] {r.get('content', '')} \nMETADATA: {md}")
+                content_snippet = r.get("content", "")
+                # Keep a structured representation for callers
+                captured_sources.append({"index": i, "content": content_snippet, "metadata": md})
+                out.append(f"[{i}] {content_snippet} \nMETADATA: {md}")
             return "\n\n".join(out)
 
         agent = create_agent(model=self.client_llm, tools=[_search_tool], system_prompt="You are a helpful assistant")
 
         # Invoke the agent with a single user message
         start = perf_counter()
-        agent_response = agent.invoke({"messages": [{"role": "user", "content": prompt + ("\n\n" + s if s else "")} ]})
+        try:
+            agent_response = agent.invoke(
+                {"messages": [{"role": "user", "content": prompt + ("\n\n" + s if s else "")}]})
+
+        except Exception as e:
+            # Log the exception and return a safe response so callers don't get 500s
+            logger.exception("OpenAI agent invocation failed: %s", e)
+            return LLMResponse(content=f"OpenAI agent error: {e}", openai_elapsed_ms=0.0, sources=[])
         openai_elapsed_ms = (perf_counter() - start) * 1000.0
 
-        # Extract text from agent response (support dict-like or object responses)
-        content = None
-        if isinstance(agent_response, dict):
-            content = agent_response.get("output") or agent_response.get("text") or agent_response.get("result")
-        else:
-            content = getattr(agent_response, "output", None) or getattr(agent_response, "text", None)
-
-        if content is None:
-            content = str(agent_response)
-
-        result = content.strip() if content is not None else ""
+        result = agent_response['messages'][-1].content
 
         logger.info("OpenAIService.generate_text (agent): agent call took %.2f ms", openai_elapsed_ms)
-        return LLMResponse(content=result, openai_elapsed_ms=openai_elapsed_ms)
+        # Return any captured sources from tool calls so routers can expose them to clients
+        return LLMResponse(content=result, openai_elapsed_ms=openai_elapsed_ms, sources=captured_sources)
