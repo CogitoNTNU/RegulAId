@@ -51,7 +51,6 @@ Creates `data/processed/aiact-chunks.json`.
 
 ```bash
 # Insert all documents
-uv run python src/database/init_db.py
 
 # Or insert only first 100 for testing
 uv run python src/database/init_db.py --num-docs 100

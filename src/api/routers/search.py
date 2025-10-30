@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from src.schemas.search_schemas import SearchRequest, SearchResponse
+from ...schemas.search_schemas import SearchRequest, SearchResponse
 from time import perf_counter
 import logging
 

@@ -2,10 +2,10 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from src.api.routers import health, search
-from src.api.services.openai_service import OpenAIService
-from src.api.config import OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K
-from src.retrievers import BM25Retriever, VectorRetriever
+from .routers import health, search
+from .services.openai_service import OpenAIService
+from .config import OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K
+from ..retrievers import BM25Retriever, VectorRetriever
 import logging
 from time import perf_counter
 
