@@ -78,7 +78,7 @@ def main():
 
     # Test with sample queries
     test_retrievers(
-        query="What are high-risk AI systems?",
+        query="What is recital 34 is in the EU AI ACT?",
         k=3
     )
 
