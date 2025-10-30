@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import logging
 from time import perf_counter
 
-from schemas.search_schemas import LLMResponse
+from ...schemas.search_schemas import LLMResponse
 
 # Load environment variables from a .env file if present
 load_dotenv()
