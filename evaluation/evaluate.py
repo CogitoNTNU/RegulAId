@@ -12,6 +12,10 @@ import pandas as pd
 from dotenv import load_dotenv
 from datasets import Dataset
 
+# Ensure project root (parent of this folder) is on sys.path for `src` imports
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 # RAGAS
 from ragas import evaluate
 from ragas.llms.base import llm_factory
@@ -59,7 +63,7 @@ TEMPLATES: Dict[str, object] = {
 }
 
 # Input files (relative to repo root)
-TESTSET_REL_PATH = os.path.join("../data/processed/testset.json")
+TESTSET_REL_PATH = os.path.join("data", "processed", "testset.json")
 
 
 # =========================
@@ -306,28 +310,78 @@ def create_comparison_charts(summary_data: List[Dict], results_dir: str = "resul
 def run_template_worker(template_name: str,
                         template_cls,
                         questions_df: pd.DataFrame) -> Tuple[str, List[Dict]]:
-    """Run one template over all questions inside a separate process."""
+    """Run one template over all questions inside a separate process.
+    Tries to adapt to different constructor and run method signatures.
+    """
     llm = llm_factory()
     embeddings = embedding_factory()
-    template = template_cls(llm=llm, embeddings=embeddings)
+
+    # Best-effort construction with fallbacks
+    template = None
+    construct_attempts = [
+        {"llm": llm, "embeddings": embeddings},
+        {"embeddings": embeddings},
+        {"llm": llm},
+        {},
+    ]
+    last_exc = None
+    for kwargs in construct_attempts:
+        try:
+            template = template_cls(**kwargs)
+            break
+        except TypeError as exc:
+            last_exc = exc
+            continue
+    if template is None:
+        raise last_exc if last_exc else RuntimeError(f"Failed to construct template {template_name}")
 
     results: List[Dict] = []
     for _, row in questions_df.iterrows():
         start_time = time.time()
+        answer = ""
+        retrieved_context: List[str] = []
         try:
-            # Template contract: run(question, reference_contexts) -> {answer, context}
-            result = template.run(row['question'], row['reference_contexts'])
-            answer = result['answer']
-            retrieved_context = result['context']
-            if isinstance(retrieved_context, str):
-                retrieved_context = [retrieved_context]
+            # Try a 'run' method first
+            if hasattr(template, "run"):
+                try:
+                    out = template.run(row['question'], row.get('reference_contexts'))
+                except TypeError:
+                    out = template.run(row['question'])
+                # Normalize output
+                if isinstance(out, dict):
+                    answer = out.get('answer', answer)
+                    ctx = out.get('context') or out.get('contexts') or out.get('retrieved_context')
+                    if isinstance(ctx, str):
+                        retrieved_context = [ctx]
+                    elif isinstance(ctx, list):
+                        retrieved_context = [str(c) for c in ctx]
+                elif isinstance(out, str):
+                    # Treat as answer-only (for RAGAS, still requires contexts)
+                    answer = out
+                elif isinstance(out, (list, tuple)):
+                    # Treat as contexts
+                    retrieved_context = [str(c) for c in out]
+            # Fallback to a 'retrieve' method if present
+            elif hasattr(template, "retrieve"):
+                try:
+                    ctx = template.retrieve(row['question'])
+                except TypeError:
+                    # try without args
+                    ctx = template.retrieve()
+                if isinstance(ctx, str):
+                    retrieved_context = [ctx]
+                elif isinstance(ctx, list):
+                    retrieved_context = [str(c) for c in ctx]
+                # No generation => leave answer empty
+            else:
+                raise AttributeError(f"Template {template_name} has neither run nor retrieve")
+
             response_time = time.time() - start_time
         except Exception as exc:
-            answer = "Error occurred during processing"
-            retrieved_context = []
             response_time = 0.0
             print(f"[{template_name}] Exception: {exc}")
             traceback.print_exc()
+            # keep defaults (empty answer/context)
 
         results.append({
             "question": row["question"],
@@ -369,20 +423,13 @@ def main() -> None:
     script_dir = os.path.dirname(__file__)
     project_root = os.path.abspath(os.path.join(script_dir, '..'))
     testset_path = os.path.join(project_root, TESTSET_REL_PATH)
-    components_path = os.path.join(project_root, COMPONENTS_REL_PATH)
 
     print("Loading testset...")
     with open(testset_path, 'r', encoding='utf-8') as f:
         testset_data = json.load(f)
 
-    # Optional components file, ignore if missing
-    if os.path.exists(components_path):
-        with open(components_path, 'r', encoding='utf-8') as f:
-            components_data = json.load(f)
-        num_components = len(components_data)
-    else:
-        components_data = []
-        num_components = 0
+    # Components are optional; set to zero if unused
+    num_components = 0
 
     num_questions = len(testset_data)
 
