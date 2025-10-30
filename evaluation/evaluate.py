@@ -23,6 +23,10 @@ from ragas.metrics import (
     answer_relevancy,
 )
 
+from src.retrievers.bm25 import BM25Retriever
+from src.retrievers.hybrid import HybridRetriever
+from src.retrievers.vector import VectorRetriever
+
 # Plotting utils
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -54,12 +58,11 @@ TEMPLATES: Dict[str, object] = {
     # TODO: uncomment and ensure paths are valid for your project
     # "hybrid_retrieval_only": HybridRetrievalOnly,
     # "hybrid_retrieval_reranked": HybridRetrievalReranked,
+
 }
 
 # Input files (relative to repo root)
 TESTSET_REL_PATH = os.path.join("data", "datasets", "testset.json")
-# Optional: extra metadata/components if you need them
-COMPONENTS_REL_PATH = os.path.join("data", "components.json")
 
 
 # =========================
