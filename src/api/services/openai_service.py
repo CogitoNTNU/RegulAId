@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import logging
 from time import perf_counter
+import json
 
 from langchain.agents import create_agent
 from langchain.tools import tool
@@ -57,25 +58,93 @@ class OpenAIService:
         # Build a simple search tool that calls the retriever
         captured_sources: list[dict] = []
 
-        @tool("search_ai_act", description="Search the EU AI ACT documents")
-        def _search_tool(query: str) -> str:
+        @tool(
+            "search_ai_act",
+            description=(
+                "Search the EU AI ACT documents. Accepts either a plain text query string OR a JSON/dict with"
+                " keys 'query' and optional 'filters'. Use 'filters' to restrict results by metadata (see docstring)."
+            ),
+        )
+        def _search_tool(payload) -> str:
             """Search the EU AI ACT documents using the project's retriever.
 
+            How the LLM should use this tool (explicit instructions):
+            - The tool accepts EITHER:
+              1) A plain text string containing the user query, e.g. "What are the risk levels in the AI Act?";
+              2) A JSON object (or Python dict) with the shape:
+                 {
+                   "query": "your query string",
+                   "filters": { <metadata filter spec> }
+                 }
+
+            - The `filters` object uses the same operators the retrievers expect (see `src/retrievers/filters.py`):
+                * equality (default / alias 'is'):  "article_number": "1"
+                * contains:                         "title": {"op": "contains", "value": "accuracy"}
+                * is one of:                        "tags": {"op": "is one of", "value": ["recital", "article"]}
+                * numeric comparisons:              "score": {"op": ">", "value": 3}
+
+            - Examples the LLM can use when deciding to call the tool:
+                - Plain query: "What is the risk level in the AI Act?"
+                - With metadata filter (article 15):
+                  {"query": "accuracy metrics", "filters": {"article_number": "15"}}
+
+            - Notes for the LLM:
+                * If you need to restrict results to a specific article or paragraph, include a `filters` object
+                  with the appropriate metadata keys (e.g., 'article_number', 'paragraph_number').
+                * Operator names are case-insensitive strings; the simplest form is to pass a plain value for
+                  equality checks.
+
             Args:
-                query: user query string
+                payload: plain string query, a JSON string representing the dict above, or a Python dict.
 
             Returns:
                 Concatenated snippets and metadata from top-k matching documents.
             """
             nonlocal captured_sources
             captured_sources.clear()
+
+            # Normalize input to (query, filters)
+            query_text = ""
+            filters = None
+
+            # If the tool received a dict-like payload
+            if isinstance(payload, dict):
+                query_text = payload.get("query") or payload.get("q") or ""
+                filters = payload.get("filters")
+            elif isinstance(payload, str):
+                s = payload.strip()
+                # Try to parse JSON payloads produced by the agent
+                if (s.startswith("{") and s.endswith("}")) or s.startswith("["):
+                    try:
+                        parsed = json.loads(s)
+                        if isinstance(parsed, dict):
+                            query_text = parsed.get("query") or parsed.get("q") or ""
+                            filters = parsed.get("filters")
+                        else:
+                            # Unexpected JSON shape; fall back to raw string
+                            query_text = s
+                    except Exception:
+                        query_text = s
+                else:
+                    query_text = s
+            else:
+                # Fallback for other input types
+                query_text = str(payload)
+
+            # Call the retriever with filters when provided
             try:
-                results = retriever.search(query=query, k=top_k)
+                results = retriever.search(query=query_text, k=top_k, filters=filters)
             except TypeError:
-                # Some retriever implementations expect (query, k) positional args
-                results = retriever.search(query, top_k)
+                # Some retriever implementations may expect positional args
+                try:
+                    results = retriever.search(query_text, top_k, filters)
+                except TypeError:
+                    # Old retriever signature without filters
+                    results = retriever.search(query_text, top_k)
+
             if not results:
                 return "No relevant documents found."
+
             out = []
             for i, r in enumerate(results, 1):
                 md = r.get("metadata") or {}
