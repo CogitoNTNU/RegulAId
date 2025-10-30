@@ -1,0 +1,1200 @@
+[
+    {
+        "question":"What specific information is required in the request for information related to the EU declaration of conformity for high-risk AI systems, as referenced in Union harmonisation legislation?",
+        "ground_truth":"The specific information required in the request for information related to the EU declaration of conformity for high-risk AI systems includes stating the legal basis and the purpose of the request, specifying what information is required, setting a period within which the information is to be provided, and indicating the fines provided for in Article 101 for supplying incorrect, incomplete, or misleading information.",
+        "answer_ids":[
+            "article-47-para-3",
+            "article-91-para-4"
+        ],
+        "answer_numbers":[
+            3,
+            4
+        ],
+        "contexts":[
+            "Where high-risk AI systems are subject to other Union harmonisation legislation which also requires an EU\ndeclaration of conformity, a single EU declaration of conformity shall be drawn up in respect of all Union law applicable to\nthe high-risk AI system. The declaration shall contain all the information required to identify the Union harmonisation\nlegislation to which the declaration relates.",
+            "The request for information shall state the legal basis and the purpose of the request, specify what information is\nrequired, set a period within which the information is to be provided, and indicate the fines provided for in Article 101 for\nsupplying incorrect, incomplete or misleading information."
+        ],
+        "metadata":[
+            {
+                "id":"article-47-para-3",
+                "type":"article",
+                "paragraph_number":3,
+                "page_range":"81\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":"5",
+                "section_name":"Standards, conformity assessment, certificates, registration",
+                "article_number":47,
+                "article_name":"EU declaration of conformity",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-91-para-4",
+                "type":"article",
+                "paragraph_number":4,
+                "page_range":"112\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"4",
+                "section_name":"Remedies",
+                "article_number":91,
+                "article_name":"Power to request documentation and information",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What happens if there's a serious incident as defined in Article 3, and how does that relate to the conditions under Article 6(3)?",
+        "ground_truth":"If there's a serious incident defined in Article 3, a report must be provided immediately, no later than two days after the provider or deployer becomes aware of the incident. This reporting is relevant under Article 6(3), which outlines conditions regarding when an AI system is considered not-high-risk.",
+        "answer_ids":[
+            "article-73-para-3",
+            "annex-VIII-para-7"
+        ],
+        "answer_numbers":[
+            3,
+            7
+        ],
+        "contexts":[
+            "Notwithstanding paragraph 2 of this Article, in the event of a widespread infringement or a serious incident as\ndefined in Article 3, point (49)(b), the report referred to in paragraph 1 of this Article shall be provided immediately, and\nnot later than two days after the provider or, where applicable, the deployer becomes aware of that incident.",
+            ".\nThe condition or conditions under Article 6(3)based on which the AI system is considered to be not-high-risk;"
+        ],
+        "metadata":[
+            {
+                "id":"article-73-para-3",
+                "type":"article",
+                "paragraph_number":3,
+                "page_range":"102\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":73,
+                "article_name":"",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"annex-VIII-para-7",
+                "type":"annex",
+                "paragraph_number":7,
+                "page_range":"136\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":"VIII",
+                "annex_name":"Information to be submitted upon the registration of high-risk AI systems in accordance with Article 49",
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What guidelines will the Commission provide in accordance with Article 96 regarding the compliance requirements and potential fines outlined in Article 99 for AI systems?",
+        "ground_truth":"The Commission shall provide guidelines specifying the practical implementation of Article 96 by 2 February 2026, which will include a comprehensive list of practical examples of high-risk and not high-risk AI systems. Additionally, the provider of an AI system must ensure compliance with the requirements laid down in this Regulation, and if they fail to do so within the specified period, they will be subject to fines in accordance with Article 99.",
+        "answer_ids":[
+            "article-6-para-5",
+            "article-80-para-4"
+        ],
+        "answer_numbers":[
+            5,
+            4
+        ],
+        "contexts":[
+            "The Commission shall, after consulting the European Artificial Intelligence Board (the \u2018Board'), and no later than\n2 February 2026, provide guidelines specifying the practical implementation of this Article in line with Article 96 together\nwith a comprehensive list of practical examples of use cases of AI systems that are high-risk and not high-risk.",
+            "The provider shall ensure that all necessary action is taken to bring the AI system into compliance with the\nrequirements and obligations laid down in this Regulation. Where the provider of an AI system concerned does not bring\nthe AI system into compliance with those requirements and obligations within the period referred to in paragraph 2 of this\nArticle, the provider shall be subject to fines in accordance with Article 99."
+        ],
+        "metadata":[
+            {
+                "id":"article-6-para-5",
+                "type":"article",
+                "paragraph_number":5,
+                "page_range":"54\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":null,
+                "section_name":null,
+                "article_number":6,
+                "article_name":"Classification rules for high-risk AI systems",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-80-para-4",
+                "type":"article",
+                "paragraph_number":4,
+                "page_range":"108\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":80,
+                "article_name":"Procedure for dealing with AI systems classified by the provider as non-high-risk in application of Annex III",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"How do Article 17 and Article 3 relate to the compliance requirements for microenterprises and high-risk AI systems?",
+        "ground_truth":"Article 17 allows microenterprises to comply with certain elements of the quality management system in a simplified manner, provided they do not have partner or linked enterprises. In contrast, Article 3 specifies that for high-risk AI systems that are safety components of devices or are devices themselves, the notification of serious incidents is limited to certain incidents defined in point (49)(c) and must be reported to the national competent authority by the Member States.",
+        "answer_ids":[
+            "article-63-para-1",
+            "article-73-para-10"
+        ],
+        "answer_numbers":[
+            1,
+            10
+        ],
+        "contexts":[
+            "Microenterprises within the meaning of Recommendation 2003\/361\/EC may comply with certain elements of the\nquality management system required by Article 17 of this Regulation in a simplified manner, provided that they do not\nhave partner enterprises or linked enterprises within the meaning of that Recommendation. For that purpose, the\nCommission shall develop guidelines on the elements of the quality management system which may be complied with in\na simplified manner considering the needs of microenterprises, without affecting the level of protection or the need for\ncompliance with the requirements in respect of high-risk AI systems.",
+            "For high-risk AI systems which are safety components of devices, or are themselves devices, covered by Regulations\n(EU) 2017\/745 and (EU) 2017\/746, the notification of serious incidents shall be limited to those referred to in Article 3,\npoint (49)(c) of this Regulation, and shall be made to the national competent authority chosen for that purpose by the\nMember States where the incident occurred."
+        ],
+        "metadata":[
+            {
+                "id":"article-63-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"95\/144",
+                "chapter_number":"VI",
+                "chapter_name":"MEASURES IN SUPPORT OF INNOVATION",
+                "section_number":"3",
+                "section_name":"Obligations of providers of general-purpose AI models with systemic risk",
+                "article_number":63,
+                "article_name":"Derogations for specific operators",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-73-para-10",
+                "type":"article",
+                "paragraph_number":10,
+                "page_range":"102\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":73,
+                "article_name":"",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What conditions determine the conformity assessment procedures for high-risk AI systems, and how can these procedures be amended by the Commission?",
+        "ground_truth":"For high-risk AI systems, the conformity assessment procedures depend on whether harmonised standards or common specifications are applied. If these do not exist, or only part of a harmonised standard has been applied, the provider must follow the procedure set out in Annex VII. The Commission has the power to amend conditions under which an AI system is deemed high-risk and adjust the conformity assessment procedures as necessary.",
+        "answer_ids":[
+            "article-43-para-1",
+            "recital-170"
+        ],
+        "answer_numbers":[
+            1,
+            173
+        ],
+        "contexts":[
+            "For high-risk AI systems listed in point 1 of Annex III, where, in demonstrating the compliance of a high-risk AI\nsystem with the requirements set out in Section 2, the provider has applied harmonised standards referred to in Article 40,\nor, where applicable, common specifications referred to in Article 41, the provider shall opt for one of the following\nconformity assessment procedures based on:\n(a) the internal control referred to in Annex VI; or\n(b) the assessment of the quality management system and the assessment of the technical documentation, with the\ninvolvement of a notified body, referred to in Annex VII.\nIn demonstrating the compliance of a high-risk AI system with the requirements set out in Section 2, the provider shall\nfollow the conformity assessment procedure set out in Annex VII where:\n(a) harmonised standards referred to in Article 40 do not exist, and common specifications referred to in Article 41 are not\navailable;\n(b) the provider has not applied, or has applied only part of, the harmonised standard;\n(c) the common specifications referred to in point (a) exist, but the provider has not applied them;\n(d) one or more of the harmonised standards referred to in point (a) has been published with a restriction, and only on the\npart of the standard that was restricted.\nFor the purposes of the conformity assessment procedure referred to in Annex VII, the provider may choose any of the\nnotified bodies. However, where the high-risk AI system is intended to be put into service by law enforcement, immigration\nor asylum authorities or by Union institutions, bodies, offices or agencies, the market surveillance authority referred to in\nArticle 74(8) or (9), as applicable, shall act as a notified body.",
+            "In order to ensure that the regulatory framework can be adapted where necessary, the power to adopt acts in\naccordance with Article 290 TFEU should be delegated to the Commission to amend the conditions under which an\nAI system is not to be considered to be high-risk, the list of high-risk AI systems, the provisions regarding technical\ndocumentation, the content of the EU declaration of conformity the provisions regarding the conformity assessment\nprocedures, the provisions establishing the high-risk AI systems to which the conformity assessment procedure\nbased on assessment of the quality management system and assessment of the technical documentation should\napply, the threshold, benchmarks and indicators, including by supplementing those benchmarks and indicators, in\nthe rules for the classification of general-purpose AI models with systemic risk, the criteria for the designation of\ngeneral-purpose AI models with systemic risk, the technical documentation for providers of general-purpose AI\nmodels and the transparency information for providers of general-purpose AI models. It is of particular importance\nthat the Commission carry out appropriate consultations during its preparatory work, including at expert level, and\nthat those consultations be conducted in accordance with the principles laid down in the Interinstitutional\nAgreement of 13 April 2016 on Better Law-Making (). In particular, to ensure equal participation in the\npreparation of delegated acts, the European Parliament and the Council receive all documents at the same time as\nMember States' experts, and their experts systematically have access to meetings of Commission expert groups\ndealing with the preparation of delegated acts."
+        ],
+        "metadata":[
+            {
+                "id":"article-43-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"78\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":"5",
+                "section_name":"Standards, conformity assessment, certificates, registration",
+                "article_number":43,
+                "article_name":"Conformity assessment",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"recital-170",
+                "type":"recital",
+                "paragraph_number":173,
+                "page_range":"43\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"Can you explain the implications of non-compliance with Article 16 obligations and how they relate to the requirements outlined in Article 14(5) for high-risk AI systems, particularly concerning administrative fines and system logging?",
+        "ground_truth":"Non-compliance with obligations pursuant to Article 16 can lead to substantial administrative fines, which may reach up to EUR 15,000,000 or, if the offender is an undertaking, up to 3% of its total worldwide annual turnover from the preceding financial year. This regulation emphasizes the importance of adhering to various operational requirements. On the other hand, Article 14(5) refers to specific requirements regarding the logging capabilities of high-risk AI systems, which include recording the periods of each use, the reference database applied, input data matched, and identification of personnel involved in result verification. Thus, fulfilling the obligations under Article 16 ensures compliance with broader regulatory demands, while the stipulations of Article 14(5) ensure that AI systems operate transparently and responsibly.",
+        "answer_ids":[
+            "article-99-para-4",
+            "article-12-para-3"
+        ],
+        "answer_numbers":[
+            4,
+            3
+        ],
+        "contexts":[
+            "Non-compliance with any of the following provisions related to operators or notified bodies, other than those laid\ndown in Articles 5, shall be subject to administrative fines of up to EUR 15 000 000 or, if the offender is an undertaking, up\nto 3 % of its total worldwide annual turnover for the preceding financial year, whichever is higher:\n(a) obligations of providers pursuant to Article 16;\n(b) obligations of authorised representatives pursuant to Article 22;\n(c) obligations of importers pursuant to Article 23;\n(d) obligations of distributors pursuant to Article 24;\n(e) obligations of deployers pursuant to Article 26;",
+            "For high-risk AI systems referred to in point 1 (a), of Annex III, the logging capabilities shall provide, at a minimum:\n(a) recording of the period of each use of the system (start date and time and end date and time of each use);\n(b) the reference database against which input data has been checked by the system;\n(c) the input data for which the search has led to a match;\n(d) the identification of the natural persons involved in the verification of the results, as referred to in Article 14(5)."
+        ],
+        "metadata":[
+            {
+                "id":"article-99-para-4",
+                "type":"article",
+                "paragraph_number":4,
+                "page_range":"115\/144",
+                "chapter_number":"XII",
+                "chapter_name":"PENALTIES",
+                "section_number":"4",
+                "section_name":"Remedies",
+                "article_number":99,
+                "article_name":"Penalties",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-12-para-3",
+                "type":"article",
+                "paragraph_number":3,
+                "page_range":"59\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":null,
+                "section_name":null,
+                "article_number":12,
+                "article_name":"Record-keeping",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"How can we make sure that AI systems used in migration and asylum processes are non-discriminatory and protect fundamental rights while following common rules for high-risk AI systems?",
+        "ground_truth":"To ensure that AI systems used in migration and asylum processes are non-discriminatory and protect fundamental rights, it is crucial that these systems maintain accuracy and transparency. They should be classified as high-risk and governed by common rules that are consistent with the Charter and in line with the Union's international trade commitments. Additionally, the established rules should adhere to the European Declaration on Digital Rights and the Ethics guidelines for trustworthy AI, which collectively promote the respect for rights such as free movement and non-discrimination.",
+        "answer_ids":[
+            "recital-58",
+            "recital-7"
+        ],
+        "answer_numbers":[
+            60,
+            7
+        ],
+        "contexts":[
+            "AI systems used in migration, asylum and border control management affect persons who are often in particularly\nvulnerable position and who are dependent on the outcome of the actions of the competent public authorities. The\naccuracy, non-discriminatory nature and transparency of the AI systems used in those contexts are therefore\nparticularly important to guarantee respect for the fundamental rights of the affected persons, in particular their\nrights to free movement, non-discrimination, protection of private life and personal data, international protection\nand good administration. It is therefore appropriate to classify as high-risk, insofar as their use is permitted under\nrelevant Union and national law, AI systems intended to be used by or on behalf of competent public authorities or\nby Union institutions, bodies, offices or agencies charged with tasks in the fields of migration, asylum and border\ncontrol management as polygraphs and similar tools, for assessing certain risks posed by natural persons entering\nthe territory of a Member State or applying for visa or asylum, for assisting competent public authorities for the\nexamination, including related assessment of the reliability of evidence, of applications for asylum, visa and residence\nUnion law. The use of AI systems in migration, asylum and border control management should, in no circumstances,\nbe used by Member States or Union institutions, bodies, offices or agencies as a means to circumvent their\ninternational obligations under the UN Convention relating to the Status of Refugees done at Geneva on 28 July\n1951 as amended by the Protocol of 31 January 1967. Nor should they be used to in any way infringe on the\nprinciple of non-refoulement, or to deny safe and effective legal avenues into the territory of the Union, including\nthe right to international protection.",
+            "In order to ensure a consistent and high level of protection of public interests as regards health, safety and\nfundamental rights, common rules for high-risk AI systems should be established. Those rules should be consistent\nwith the Charter, non-discriminatory and in line with the Union's international trade commitments. They should\nalso take into account the European Declaration on Digital Rights and Principles for the Digital Decade and the\nEthics guidelines for trustworthy AI of the High-Level Expert Group on Artificial Intelligence (AI HLEG)."
+        ],
+        "metadata":[
+            {
+                "id":"recital-58",
+                "type":"recital",
+                "paragraph_number":60,
+                "page_range":"17-18\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"recital-7",
+                "type":"recital",
+                "paragraph_number":7,
+                "page_range":"2\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What are the implications of non-compliance with the AI practices stated in Article 5 in relation to the monitoring powers granted under Article 11?",
+        "ground_truth":"Non-compliance with the prohibition of the AI practices referred to in Article 5 shall be subject to administrative fines of up to EUR 1,500,000. Market surveillance authorities, in exercising their power to monitor the application of Article 5, are guided by Article 11 of Regulation (EU) 2019\/1020, which allows them to perform appropriate checks while considering data stored in the EU database mentioned in Article 71 of the Regulation.",
+        "answer_ids":[
+            "article-100-para-2",
+            "article-80-para-8"
+        ],
+        "answer_numbers":[
+            2,
+            8
+        ],
+        "contexts":[
+            "Non-compliance with the prohibition of the AI practices referred to in Article 5 shall be subject to administrative\nfines of up to EUR 1 500 000.",
+            "In exercising their power to monitor the application of this Article, and in accordance with Article 11 of Regulation\n(EU) 2019\/1020, market surveillance authorities may perform appropriate checks, taking into account in particular\ninformation stored in the EU database referred to in Article 71 of this Regulation."
+        ],
+        "metadata":[
+            {
+                "id":"article-100-para-2",
+                "type":"article",
+                "paragraph_number":2,
+                "page_range":"117\/144",
+                "chapter_number":"XII",
+                "chapter_name":"PENALTIES",
+                "section_number":"4",
+                "section_name":"Remedies",
+                "article_number":100,
+                "article_name":"Administrative fines on Union institutions, bodies, offices and agencies",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-80-para-8",
+                "type":"article",
+                "paragraph_number":8,
+                "page_range":"108\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":80,
+                "article_name":"Procedure for dealing with AI systems classified by the provider as non-high-risk in application of Annex III",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What r the diffrens between point (49)(b) and point (49)(c) for AI systems?",
+        "ground_truth":"Point (49)(c) refers to the notification of serious incidents for high-risk AI systems that must be reported under certain legislative obligations. In contrast, point (49)(b) deals with widespread infringements or serious incidents, which require a report to be provided immediately, and no later than two days after the provider becomes aware of the incident.",
+        "answer_ids":[
+            "article-73-para-9",
+            "article-73-para-3"
+        ],
+        "answer_numbers":[
+            9,
+            3
+        ],
+        "contexts":[
+            "For high-risk AI systems referred to in Annex III that are placed on the market or put into service by providers that are\nsubject to Union legislative instruments laying down reporting obligations equivalent to those set out in this Regulation, the\nnotification of serious incidents shall be limited to those referred to in Article 3, point (49)(c).",
+            "Notwithstanding paragraph 2 of this Article, in the event of a widespread infringement or a serious incident as\ndefined in Article 3, point (49)(b), the report referred to in paragraph 1 of this Article shall be provided immediately, and\nnot later than two days after the provider or, where applicable, the deployer becomes aware of that incident."
+        ],
+        "metadata":[
+            {
+                "id":"article-73-para-9",
+                "type":"article",
+                "paragraph_number":9,
+                "page_range":"102\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":73,
+                "article_name":"",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-73-para-3",
+                "type":"article",
+                "paragraph_number":3,
+                "page_range":"102\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":73,
+                "article_name":"",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What are the implications of Article 31 and Article 91 regarding the evaluation and compliance of general-purpose AI models, particularly in cases where information gathered under Article 91 is deemed insufficient?",
+        "ground_truth":"Article 31 establishes that when a notified body subcontracts tasks related to conformity assessment, it must ensure that subcontractors meet the requirements set out in this article and inform the notifying authority. In conjunction with Article 91, which allows the AI Office to evaluate a general-purpose AI model's compliance if Article 91's information is insufficient, it suggests a framework for rigorous oversight and accountability of AI providers, ensuring systemic risks are adequately assessed and managed.",
+        "answer_ids":[
+            "article-92-para-1",
+            "article-33-para-1"
+        ],
+        "answer_numbers":[
+            1,
+            1
+        ],
+        "contexts":[
+            "The AI Office, after consulting the Board, may conduct evaluations of the general-purpose AI model concerned:\n(a) to assess compliance of the provider with obligations under this Regulation, where the information gathered pursuant\nto Article 91 is insufficient; or\n(b) to investigate systemic risks at Union level of general-purpose AI models with systemic risk, in particular following\na qualified alert from the scientific panel in accordance with Article 90(1), point (a).",
+            "Where a notified body subcontracts specific tasks connected with the conformity assessment or has recourse to\na subsidiary, it shall ensure that the subcontractor or the subsidiary meets the requirements laid down in Article 31, and\nshall inform the notifying authority accordingly."
+        ],
+        "metadata":[
+            {
+                "id":"article-92-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"112\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"4",
+                "section_name":"Remedies",
+                "article_number":92,
+                "article_name":"Power to conduct evaluations",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-33-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"73\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":"4",
+                "section_name":"Notifying authorities and notified bodies",
+                "article_number":33,
+                "article_name":"Subsidiaries of notified bodies and subcontracting",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What can a natural person do if they think that their rights are being infringed regarding an AI system placed in the market by an importer governed by European regulations?",
+        "ground_truth":"A natural person who believes that their rights have been infringed can submit complaints to the relevant market surveillance authority. This is in accordance with Regulation (EU) 2019\/1020, which ensures that such complaints are taken into account for market surveillance activities and handled according to established procedures by the authorities.",
+        "answer_ids":[
+            "article-3-para-6",
+            "article-85"
+        ],
+        "answer_numbers":[
+            6
+        ],
+        "contexts":[
+            "\u2018importer' means a natural or legal person located or established in the Union that places on the market an AI system\nthat bears the name or trademark of a natural or legal person established in a third country;",
+            "Without prejudice to other administrative or judicial remedies, any natural or legal person having grounds to consider that\nthere has been an infringement of the provisions of this Regulation may submit complaints to the relevant market\nsurveillance authority.\nIn accordance with Regulation (EU) 2019\/1020, such complaints shall be taken into account for the purpose of conducting\nmarket surveillance activities, and shall be handled in line with the dedicated procedures established therefor by the market\nsurveillance authorities."
+        ],
+        "metadata":[
+            {
+                "id":"article-3-para-6",
+                "type":"article",
+                "paragraph_number":6,
+                "page_range":"46\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":3,
+                "article_name":"Definitions",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-85",
+                "type":"article",
+                "paragraph_number":null,
+                "page_range":"110\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"4",
+                "section_name":"Remedies",
+                "article_number":85,
+                "article_name":"Right to lodge a complaint with a market surveillance authority",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What legal basis must be stated when making a request for information regarding the processing of personal data in compliance with Union law?",
+        "ground_truth":"When making a request for information regarding the processing of personal data, the request must state the legal basis and the purpose of the request, specify what information is required, set a period within which the information is to be provided, and indicate the fines provided for in Article 101 for supplying incorrect, incomplete or misleading information.",
+        "answer_ids":[
+            "article-59-para-3",
+            "article-91-para-4"
+        ],
+        "answer_numbers":[
+            3,
+            4
+        ],
+        "contexts":[
+            "Paragraph 1 is without prejudice to Union or national law which excludes processing of personal data for other\npurposes than those explicitly mentioned in that law, as well as to Union or national law laying down the basis for the\nprocessing of personal data which is necessary for the purpose of developing, testing or training of innovative AI systems or\nany other legal basis, in compliance with Union law on the protection of personal data.",
+            "The request for information shall state the legal basis and the purpose of the request, specify what information is\nrequired, set a period within which the information is to be provided, and indicate the fines provided for in Article 101 for\nsupplying incorrect, incomplete or misleading information."
+        ],
+        "metadata":[
+            {
+                "id":"article-59-para-3",
+                "type":"article",
+                "paragraph_number":3,
+                "page_range":"92\/144",
+                "chapter_number":"VI",
+                "chapter_name":"MEASURES IN SUPPORT OF INNOVATION",
+                "section_number":"3",
+                "section_name":"Obligations of providers of general-purpose AI models with systemic risk",
+                "article_number":59,
+                "article_name":"Further processing of personal data for developing certain AI systems in the public interest in the AI regulatory sandbox",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-91-para-4",
+                "type":"article",
+                "paragraph_number":4,
+                "page_range":"112\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"4",
+                "section_name":"Remedies",
+                "article_number":91,
+                "article_name":"Power to request documentation and information",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"Wut dos Article 4(3) and Article 14(4) say about compliance and enforcement roles for AI moduls?",
+        "ground_truth":"Article 4(3) states that providers of general-purpose AI models must maintain up-to-date technical documentation of the model, including its training, testing processes, and evaluation results, and must provide this upon request to the AI Office and national authorities. It also emphasizes the need to comply with Union law on copyright and related rights. Meanwhile, Article 14(4) allows market surveillance authorities to exercise certain powers remotely to ensure the effective enforcement of the Regulation, which includes monitoring compliance with these obligations.",
+        "answer_ids":[
+            "article-53-para-1",
+            "article-74-para-5"
+        ],
+        "answer_numbers":[
+            1,
+            5
+        ],
+        "contexts":[
+            "Providers of general-purpose AI models shall:\n(a) draw up and keep up-to-date the technical documentation of the model, including its training and testing process and\nthe results of its evaluation, which shall contain, at a minimum, the information set out in Annex XI for the purpose of\nproviding it, upon request, to the AI Office and the national competent authorities;\n(b) draw up, keep up-to-date and make available information and documentation to providers of AI systems who intend to\nintegrate the general-purpose AI model into their AI systems. Without prejudice to the need to observe and protect\nintellectual property rights and confidential business information or trade secrets in accordance with Union and\nnational law, the information and documentation shall:\n(i) enable providers of AI systems to have a good understanding of the capabilities and limitations of the\ngeneral-purpose AI model and to comply with their obligations pursuant to this Regulation; and\n(ii) contain, at a minimum, the elements set out in Annex XII;\n(c) put in place a policy to comply with Union law on copyright and related rights, and in particular to identify and comply\nwith, including through state-of-the-art technologies, a reservation of rights expressed pursuant to Article 4(3) of",
+            "Without prejudice to the powers of market surveillance authorities under Article 14 of Regulation (EU) 2019\/1020,\nfor the purpose of ensuring the effective enforcement of this Regulation, market surveillance authorities may exercise the\npowers referred to in Article 14(4), points (d) and (j), of that Regulation remotely, as appropriate."
+        ],
+        "metadata":[
+            {
+                "id":"article-53-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"84\/144",
+                "chapter_number":"V",
+                "chapter_name":"GENERAL-PURPOSE AI MODELS",
+                "section_number":"2",
+                "section_name":"Obligations for providers of general-purpose AI models",
+                "article_number":53,
+                "article_name":"Obligations for providers of general-purpose AI models",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-74-para-5",
+                "type":"article",
+                "paragraph_number":5,
+                "page_range":"103\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":74,
+                "article_name":"",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What classification does the regulation suggest for remote biometric identification systems in terms of authentication, and how is biometric data defined in relation to its use for identifying natural persons?",
+        "ground_truth":"The regulation suggests that remote biometric identification systems should be classified as high-risk due to the potential for biased results and discriminatory effects. This classification is justified because these systems use biometric data, which is a special category of personal data. Biometric data is defined in Articles of various regulations, allowing for the authentication, identification, or categorization of natural persons, along with the recognition of their emotions.",
+        "answer_ids":[
+            "recital-52",
+            "recital-14"
+        ],
+        "answer_numbers":[
+            54,
+            14
+        ],
+        "contexts":[
+            "As biometric data constitutes a special category of personal data, it is appropriate to classify as high-risk several\ncritical-use cases of biometric systems, insofar as their use is permitted under relevant Union and national law.\nTechnical inaccuracies of AI systems intended for the remote biometric identification of natural persons can lead to\nbiased results and entail discriminatory effects. The risk of such biased results and discriminatory effects is\nparticularly relevant with regard to age, ethnicity, race, sex or disabilities. Remote biometric identification systems\nshould therefore be classified as high-risk in view of the risks that they pose. Such a classification excludes AI\nsystems intended to be used for biometric verification, including authentication, the sole purpose of which is to\nconfirm that a specific natural person is who that person claims to be and to confirm the identity of a natural person\nfor the sole purpose of having access to a service, unlocking a device or having secure access to premises. In addition,\nAI systems intended to be used for biometric categorisation according to sensitive attributes or characteristics\nprotected under Article 9(1) of Regulation (EU) 2016\/679 on the basis of biometric data, in so far as these are not\nprohibited under this Regulation, and emotion recognition systems that are not prohibited under this Regulation,\nshould be classified as high-risk. Biometric systems which are intended to be used solely for the purpose of enabling\ncybersecurity and personal data protection measures should not be considered to be high-risk AI systems.",
+            "The notion of \u2018biometric data' used in this Regulation should be interpreted in light of the notion of biometric data\nas defined in Article 4, point (14) of Regulation (EU) 2016\/679, Article 3, point (18) of Regulation (EU) 2018\/1725\nand Article 3, point (13) of Directive (EU) 2016\/680. Biometric data can allow for the authentication, identification\nor categorisation of natural persons and for the recognition of emotions of natural persons."
+        ],
+        "metadata":[
+            {
+                "id":"recital-52",
+                "type":"recital",
+                "paragraph_number":54,
+                "page_range":"15\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"recital-14",
+                "type":"recital",
+                "paragraph_number":14,
+                "page_range":"4\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What things do the number of parameters mean for a general-purpose AI model and how does having a billion parameters help it do tasks?",
+        "ground_truth":"The number of parameters in a general-purpose AI model is important as it indicates the model's capabilities and impact according to the criteria set out. A model with at least a billion parameters is considered to have significant generality and can competently perform a wide range of distinctive tasks. This is because a higher number of parameters typically allows the model to better learn from a larger data set, improving its performance on various tasks.",
+        "answer_ids":[
+            "annex-781",
+            "recital-96"
+        ],
+        "answer_numbers":[
+            98
+        ],
+        "contexts":[
+            "For the purpose of determining that a general-purpose AI model has capabilities or an impact equivalent to those set out in\nArticle 51(1), point (a), the Commission shall take into account the following criteria:\n(a)\nthe number of parameters of the model;\n(b)\nthe quality or size of the data set, for example measured through tokens;\n(c)\nthe amount of computation used for training the model, measured in floating point operations or indicated by\na combination of other variables such as estimated cost of training, estimated time required for the training, or\nestimated energy consumption for the training;\n(d)\nthe input and output modalities of the model, such as text to text (large language models), text to image,\nmulti-modality, and the state of the art thresholds for determining high-impact capabilities for each modality, and\nthe specific type of inputs and outputs (e.g. biological sequences);\n(e)\nthe benchmarks and evaluations of capabilities of the model, including considering the number of tasks without\nadditional training, adaptability to learn new, distinct tasks, its level of autonomy and scalability, the tools it has\naccess to;\n(f)\nwhether it has a high impact on the internal market due to its reach, which shall be presumed when it has been\nmade available to at least 10 000 registered business users established in the Union;\n(g)\nthe number of registered end-users.",
+            "Whereas the generality of a model could, inter alia, also be determined by a number of parameters, models with at\nleast a billion of parameters and trained with a large amount of data using self-supervision at scale should be\nconsidered to display significant generality and to competently perform a wide range of distinctive tasks."
+        ],
+        "metadata":[
+            {
+                "id":"annex-781",
+                "type":"annex",
+                "paragraph_number":null,
+                "page_range":"144\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":"XIII",
+                "annex_name":"Criteria for the designation of general-purpose AI models with systemic risk referred to in Article 51",
+                "source":"chunks"
+            },
+            {
+                "id":"recital-96",
+                "type":"recital",
+                "paragraph_number":98,
+                "page_range":"26\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What does Article 7(1) say about amendments related to health and safety, and how does it connect to the requirements for notifying authorities mentioned in Article 31?",
+        "ground_truth":"Article 7(1) states that any amendments to the conditions laid out in paragraph 3 must not reduce the overall level of protection regarding health, safety, and fundamental rights. It emphasizes ensuring consistency with delegated acts related to these amendments. On the other hand, Article 31 indicates that notifying authorities can only notify conformity assessment bodies that fulfill the requirements specified within it. Together, these articles underline the importance of maintaining high standards of protection while also adhering to the specific requirements for assessment bodies.",
+        "answer_ids":[
+            "article-6-para-8",
+            "article-30-para-1"
+        ],
+        "answer_numbers":[
+            8,
+            1
+        ],
+        "contexts":[
+            "Any amendment to the conditions laid down in paragraph 3, second subparagraph, adopted in accordance with\nparagraphs 6 and 7 of this Article shall not decrease the overall level of protection of health, safety and fundamental rights\nprovided for by this Regulation and shall ensure consistency with the delegated acts adopted pursuant to Article 7(1), and\ntake account of market and technological developments.",
+            "Notifying authorities may notify only conformity assessment bodies which have satisfied the requirements laid down\nin Article 31."
+        ],
+        "metadata":[
+            {
+                "id":"article-6-para-8",
+                "type":"article",
+                "paragraph_number":8,
+                "page_range":"54\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":null,
+                "section_name":null,
+                "article_number":6,
+                "article_name":"Classification rules for high-risk AI systems",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-30-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"71\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":"4",
+                "section_name":"Notifying authorities and notified bodies",
+                "article_number":30,
+                "article_name":"Notification procedure",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What does the term 'reference database' mean in relation to biometric identification and how is it connected to AI regulations?",
+        "ground_truth":"The term 'reference database' in relation to biometric identification refers to the stored biometric data of individuals, which is used to establish an individual's identity by comparing it to the biometric data collected from the person being identified. This is part of a regulation that defines biometric identification as the automated recognition of various human features. Furthermore, the 'AI Office' plays a role in the implementation and monitoring of AI regulations, which encompasses such definitions and the ethical considerations surrounding biometric data.",
+        "answer_ids":[
+            "recital-15",
+            "article-3-para-47"
+        ],
+        "answer_numbers":[
+            15,
+            47
+        ],
+        "contexts":[
+            "The notion of \u2018biometric identification' referred to in this Regulation should be defined as the automated recognition\nof physical, physiological and behavioural human features such as the face, eye movement, body shape, voice,\nprosody, gait, posture, heart rate, blood pressure, odour, keystrokes characteristics, for the purpose of establishing an\nindividual's identity by comparing biometric data of that individual to stored biometric data of individuals in\na reference database, irrespective of whether the individual has given its consent or not. This excludes AI systems\nintended to be used for biometric verification, which includes authentication, whose sole purpose is to confirm that",
+            "\u2018AI Office' means the Commission's function of contributing to the implementation, monitoring and supervision of AI\n2024; references in this Regulation to the AI Office shall be construed as references to the Commission;"
+        ],
+        "metadata":[
+            {
+                "id":"recital-15",
+                "type":"recital",
+                "paragraph_number":15,
+                "page_range":"4\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-3-para-47",
+                "type":"article",
+                "paragraph_number":47,
+                "page_range":"49\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":3,
+                "article_name":"Definitions",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What does Article 4(3) require from providers in relation to compliance with Union law on copyright, and how does this relate to the decision-making process mentioned in Article 60(4)?",
+        "ground_truth":"Article 4(3) requires providers to put in place a policy to comply with Union law on copyright and related rights. This policy must include measures to identify and comply with a reservation of rights. Additionally, when a market surveillance authority makes a decision or issues an objection as referenced in Article 60(4), it must outline the grounds for the decision or objection, including how the provider can challenge it. Thus, both articles emphasize the importance of ensuring compliance with legal requirements and provide processes for addressing objections.",
+        "answer_ids":[
+            "article-76-para-4",
+            "article-53-para-1"
+        ],
+        "answer_numbers":[
+            4,
+            1
+        ],
+        "contexts":[
+            "Where a market surveillance authority has taken a decision referred to in paragraph 3 of this Article, or has issued an\nobjection within the meaning of Article 60(4), point (b), the decision or the objection shall indicate the grounds therefor\nand how the provider or prospective provider can challenge the decision or objection.",
+            "Providers of general-purpose AI models shall:\n(a) draw up and keep up-to-date the technical documentation of the model, including its training and testing process and\nthe results of its evaluation, which shall contain, at a minimum, the information set out in Annex XI for the purpose of\nproviding it, upon request, to the AI Office and the national competent authorities;\n(b) draw up, keep up-to-date and make available information and documentation to providers of AI systems who intend to\nintegrate the general-purpose AI model into their AI systems. Without prejudice to the need to observe and protect\nintellectual property rights and confidential business information or trade secrets in accordance with Union and\nnational law, the information and documentation shall:\n(i) enable providers of AI systems to have a good understanding of the capabilities and limitations of the\ngeneral-purpose AI model and to comply with their obligations pursuant to this Regulation; and\n(ii) contain, at a minimum, the elements set out in Annex XII;\n(c) put in place a policy to comply with Union law on copyright and related rights, and in particular to identify and comply\nwith, including through state-of-the-art technologies, a reservation of rights expressed pursuant to Article 4(3) of"
+        ],
+        "metadata":[
+            {
+                "id":"article-76-para-4",
+                "type":"article",
+                "paragraph_number":4,
+                "page_range":"105\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":76,
+                "article_name":"",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-53-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"84\/144",
+                "chapter_number":"V",
+                "chapter_name":"GENERAL-PURPOSE AI MODELS",
+                "section_number":"2",
+                "section_name":"Obligations for providers of general-purpose AI models",
+                "article_number":53,
+                "article_name":"Obligations for providers of general-purpose AI models",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What rights do natural and legal persons have if their freedoms are affected by AI systems?",
+        "ground_truth":"Natural and legal persons whose rights and freedoms are adversely affected by the use of AI systems already have effective remedies provided by Union and national law. Additionally, any natural or legal person that believes there has been an infringement of this Regulation is entitled to lodge a complaint to the relevant market surveillance authority.",
+        "answer_ids":[
+            "article-3-para-4",
+            "recital-167"
+        ],
+        "answer_numbers":[
+            4,
+            170
+        ],
+        "contexts":[
+            "\u2018deployer' means a natural or legal person, public authority, agency or other body using an AI system under its\nauthority except where the AI system is used in the course of a personal non-professional activity;",
+            "Union and national law already provide effective remedies to natural and legal persons whose rights and freedoms\nare adversely affected by the use of AI systems. Without prejudice to those remedies, any natural or legal person that\nhas grounds to consider that there has been an infringement of this Regulation should be entitled to lodge\na complaint to the relevant market surveillance authority."
+        ],
+        "metadata":[
+            {
+                "id":"article-3-para-4",
+                "type":"article",
+                "paragraph_number":4,
+                "page_range":"46\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":3,
+                "article_name":"Definitions",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"recital-167",
+                "type":"recital",
+                "paragraph_number":170,
+                "page_range":"42\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"Wut does Article 12(1) say about the logs for high-risk AI systems, and how does that relate to the measures in Article 19 for market surveilance authorities?",
+        "ground_truth":"Article 12(1) stipulates that providers of high-risk AI systems must keep logs that are automatically generated by these systems, maintaining them for at least six months unless other laws provide otherwise. In relation to this, Article 19 requires market surveillance authorities to take appropriate measures within seven days of receiving notifications, indicating a structured response mechanism that ensures compliance with the regulations concerning high-risk AI systems.",
+        "answer_ids":[
+            "article-73-para-8",
+            "article-19-para-1"
+        ],
+        "answer_numbers":[
+            8,
+            1
+        ],
+        "contexts":[
+            "The market surveillance authority shall take appropriate measures, as provided for in Article 19 of Regulation (EU)\n2019\/1020, within seven days from the date it received the notification referred to in paragraph 1 of this Article, and shall\nfollow the notification procedures as provided in that Regulation.",
+            "Providers of high-risk AI systems shall keep the logs referred to in Article 12(1), automatically generated by their\nhigh-risk AI systems, to the extent such logs are under their control. Without prejudice to applicable Union or national law,\nthe logs shall be kept for a period appropriate to the intended purpose of the high-risk AI system, of at least six months,\nunless provided otherwise in the applicable Union or national law, in particular in Union law on the protection of personal\ndata."
+        ],
+        "metadata":[
+            {
+                "id":"article-73-para-8",
+                "type":"article",
+                "paragraph_number":8,
+                "page_range":"102\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":73,
+                "article_name":"",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-19-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"64\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":"3",
+                "section_name":"Obligations of providers and deployers of high-risk AI systems and other parties",
+                "article_number":19,
+                "article_name":"Automatically generated logs",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What measures are in place under Union law to protect whistleblowers reporting infringements related to high-risk AI systems that may endanger life and health, and how does this relate to the protection of life outlined in the regulations governing AI?",
+        "ground_truth":"Under Union law, persons acting as whistleblowers reporting infringements of regulations related to high-risk AI systems are protected by Directive (EU) 2019\/1937. This regulation applies specifically to ensure the protection of individuals who report infringements, reinforcing the commitment to public security and the protection of life, health, and other critical interests, as mentioned in the regulations concerning the market surveillance of AI systems.",
+        "answer_ids":[
+            "article-46-para-1",
+            "recital-169"
+        ],
+        "answer_numbers":[
+            1,
+            172
+        ],
+        "contexts":[
+            "By way of derogation from Article 43 and upon a duly justified request, any market surveillance authority may\nauthorise the placing on the market or the putting into service of specific high-risk AI systems within the territory of the\nMember State concerned, for exceptional reasons of public security or the protection of life and health of persons,\nenvironmental protection or the protection of key industrial and infrastructural assets. That authorisation shall be for\na limited period while the necessary conformity assessment procedures are being carried out, taking into account the\nexceptional reasons justifying the derogation. The completion of those procedures shall be undertaken without undue delay.",
+            "Persons acting as whistleblowers on the infringements of this Regulation should be protected under the Union law.\nDirective (EU) 2019\/1937 of the European Parliament and of the Council () should therefore apply to the reporting\nof infringements of this Regulation and the protection of persons reporting such infringements."
+        ],
+        "metadata":[
+            {
+                "id":"article-46-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"80\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":"5",
+                "section_name":"Standards, conformity assessment, certificates, registration",
+                "article_number":46,
+                "article_name":"Derogation from conformity assessment procedure",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"recital-169",
+                "type":"recital",
+                "paragraph_number":172,
+                "page_range":"43\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"How are the implementing measures related to the real-world testing plan for high-risk AI systems according to the regulations, and what role do implementing acts play in this process?",
+        "ground_truth":"The implementing measures relate to the real-world testing plan for high-risk AI systems as they specify the detailed elements required for conducting such testing in accordance with the regulations. The Commission is responsible for adopting these implementing acts following the examination procedure, ensuring that the providers of high-risk AI systems can test their products under defined conditions. Additionally, the risk management measures must consider the effects and interactions that arise from the application of these requirements, aiming for a balanced approach to minimize risks while fulfilling regulatory obligations.",
+        "answer_ids":[
+            "article-60-para-1",
+            "article-9-para-4"
+        ],
+        "answer_numbers":[
+            1,
+            4
+        ],
+        "contexts":[
+            "Testing of high-risk AI systems in real world conditions outside AI regulatory sandboxes may be conducted by\nproviders or prospective providers of high-risk AI systems listed in Annex III, in accordance with this Article and the\nreal-world testing plan referred to in this Article, without prejudice to the prohibitions under Article 5.\nThe Commission shall, by means of implementing acts, specify the detailed elements of the real-world testing plan. Those\nimplementing acts shall be adopted in accordance with the examination procedure referred to in Article 98(2).\nThis paragraph shall be without prejudice to Union or national law on the testing in real world conditions of high-risk AI\nsystems related to products covered by Union harmonisation legislation listed in Annex I.",
+            "The risk management measures referred to in paragraph 2, point (d), shall give due consideration to the effects and\npossible interaction resulting from the combined application of the requirements set out in this Section, with a view to\nminimising risks more effectively while achieving an appropriate balance in implementing the measures to fulfil those\nrequirements."
+        ],
+        "metadata":[
+            {
+                "id":"article-60-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"92\/144",
+                "chapter_number":"VI",
+                "chapter_name":"MEASURES IN SUPPORT OF INNOVATION",
+                "section_number":"3",
+                "section_name":"Obligations of providers of general-purpose AI models with systemic risk",
+                "article_number":60,
+                "article_name":"Testing of high-risk AI systems in real world conditions outside AI regulatory sandboxes",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-9-para-4",
+                "type":"article",
+                "paragraph_number":4,
+                "page_range":"56\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":null,
+                "section_name":null,
+                "article_number":9,
+                "article_name":"Risk management system",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What necessary actions must a provider of an AI system take to ensure compliance with regulations if they are no longer considered the provider under the Regulation?",
+        "ground_truth":"The provider must ensure that all necessary actions are taken to bring the AI system into compliance with the requirements and obligations outlined in the Regulation. If the provider does not achieve compliance within the specified period, they may face fines as stipulated in Article 99. Additionally, if the former provider has not expressly excluded the AI system's change to a high-risk category, they must closely cooperate and provide necessary information and assistance for fulfilling the obligations regarding the conformity assessment of high-risk AI systems.",
+        "answer_ids":[
+            "article-80-para-4",
+            "recital-84"
+        ],
+        "answer_numbers":[
+            4,
+            86
+        ],
+        "contexts":[
+            "The provider shall ensure that all necessary action is taken to bring the AI system into compliance with the\nrequirements and obligations laid down in this Regulation. Where the provider of an AI system concerned does not bring\nthe AI system into compliance with those requirements and obligations within the period referred to in paragraph 2 of this\nArticle, the provider shall be subject to fines in accordance with Article 99.",
+            "Where, under the conditions laid down in this Regulation, the provider that initially placed the AI system on the\nmarket or put it into service should no longer be considered to be the provider for the purposes of this Regulation,\nand when that provider has not expressly excluded the change of the AI system into a high-risk AI system, the\nformer provider should nonetheless closely cooperate and make available the necessary information and provide the\nreasonably expected technical access and other assistance that are required for the fulfilment of the obligations set\nout in this Regulation, in particular regarding the compliance with the conformity assessment of high-risk AI\nsystems."
+        ],
+        "metadata":[
+            {
+                "id":"article-80-para-4",
+                "type":"article",
+                "paragraph_number":4,
+                "page_range":"108\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":80,
+                "article_name":"Procedure for dealing with AI systems classified by the provider as non-high-risk in application of Annex III",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"recital-84",
+                "type":"recital",
+                "paragraph_number":86,
+                "page_range":"24\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":null,
+                "article_name":null,
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What are the levels of autonomy in AI systems, and how do oversight measures relate to them before the system is used?",
+        "ground_truth":"The levels of autonomy in AI systems refer to the varying capabilities of these machine-based systems to operate independently. Oversight measures for high-risk AI systems should be appropriate to their level of autonomy and the context in which they will be used. These measures can either be built into the AI system by the provider before it is marketed or identified by the provider for implementation by the deployer prior to putting the system into service.",
+        "answer_ids":[
+            "article-14-para-3",
+            "article-3-para-1"
+        ],
+        "answer_numbers":[
+            3,
+            1
+        ],
+        "contexts":[
+            "The oversight measures shall be commensurate with the risks, level of autonomy and context of use of the high-risk\nAI system, and shall be ensured through either one or both of the following types of measures:\n(a) measures identified and built, when technically feasible, into the high-risk AI system by the provider before it is placed\non the market or put into service;\n(b) measures identified by the provider before placing the high-risk AI system on the market or putting it into service and\nthat are appropriate to be implemented by the deployer.",
+            "\u2018AI system' means a machine-based system that is designed to operate with varying levels of autonomy and that may\nexhibit adaptiveness after deployment, and that, for explicit or implicit objectives, infers, from the input it receives,\nhow to generate outputs such as predictions, content, recommendations, or decisions that can influence physical or\nvirtual environments;"
+        ],
+        "metadata":[
+            {
+                "id":"article-14-para-3",
+                "type":"article",
+                "paragraph_number":3,
+                "page_range":"60\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":null,
+                "section_name":null,
+                "article_number":14,
+                "article_name":"Human oversight",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-3-para-1",
+                "type":"article",
+                "paragraph_number":1,
+                "page_range":"46\/144",
+                "chapter_number":null,
+                "chapter_name":null,
+                "section_number":null,
+                "section_name":null,
+                "article_number":3,
+                "article_name":"Definitions",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    },
+    {
+        "question":"What are the national rules regarding the use of remote biometric identification systems in public spaces, and how do they relate to the national measures that Member States must take when a risk is identified with an AI system?",
+        "ground_truth":"The national rules regarding the use of remote biometric identification systems in publicly accessible spaces mandate that each use for law enforcement purposes must be notified to both the relevant market surveillance authority and the national data protection authority. This notification must contain specified information and cannot include sensitive operational data. In parallel, when a Member State identifies a risk under the related paragraph, it is required to inform the Commission and other Member States immediately. This information must include essential details such as the identification data of the AI system, its origin, supply chain, and the nature of the risks involved, along with any national measures that have been taken to address those risks.",
+        "answer_ids":[
+            "article-5-para-4",
+            "article-82-para-3"
+        ],
+        "answer_numbers":[
+            4,
+            3
+        ],
+        "contexts":[
+            "Without prejudice to paragraph 3, each use of a \u2018real-time' remote biometric identification system in publicly\naccessible spaces for law enforcement purposes shall be notified to the relevant market surveillance authority and the\nnational data protection authority in accordance with the national rules referred to in paragraph 5. The notification shall, as\na minimum, contain the information specified under paragraph 6 and shall not include sensitive operational data.",
+            "The Member States shall immediately inform the Commission and the other Member States of a finding under\nparagraph 1. That information shall include all available details, in particular the data necessary for the identification of the\nAI system concerned, the origin and the supply chain of the AI system, the nature of the risk involved and the nature and\nduration of the national measures taken."
+        ],
+        "metadata":[
+            {
+                "id":"article-5-para-4",
+                "type":"article",
+                "paragraph_number":4,
+                "page_range":"53\/144",
+                "chapter_number":"II",
+                "chapter_name":"PROHIBITED AI PRACTICES",
+                "section_number":null,
+                "section_name":null,
+                "article_number":5,
+                "article_name":"Prohibited AI practices",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            },
+            {
+                "id":"article-82-para-3",
+                "type":"article",
+                "paragraph_number":3,
+                "page_range":"109\/144",
+                "chapter_number":"IX",
+                "chapter_name":"POST-MARKET MONITORING, INFORMATION SHARING AND MARKET SURVEILLANCE",
+                "section_number":"1",
+                "section_name":"Post-market monitoring",
+                "article_number":82,
+                "article_name":"Compliant AI systems which present a risk",
+                "annex_number":null,
+                "annex_name":null,
+                "source":"chunks"
+            }
+        ]
+    }
+]

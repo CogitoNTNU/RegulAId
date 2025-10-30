@@ -70,3 +70,8 @@ check-mlx-compat = "regulaid.utils.check_mlx_compat:main"
 [tool.uv]
 index-url = "https://pypi.org/simple"
 package = true
+
+
+[tool.pytest.ini_options]
+# Ensure local project code is importable when running pytest without installing the package
+addopts = "--import-mode=prepend"
