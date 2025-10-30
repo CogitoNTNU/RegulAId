@@ -13,27 +13,13 @@ def search_documents(payload: SearchRequest, request: Request):
     # Measure total backend time for handling this request (including OpenAI call)
     backend_start = perf_counter()
 
-    # Retrieve relevant documents using retriever
+    # Don't prefetch documents here — let the LLM agent call the `search` tool itself.
     retriever = request.app.state.retriever
     top_k = request.app.state.top_k
-    retrieved_docs = retriever.search(query=payload.query, k=top_k)
-
-    # Format retrieved documents as context
-    context = ""
-    if retrieved_docs:
-        context = "Context from EU AI Act documents:\n\n"
-        for i, doc in enumerate(retrieved_docs, 1):
-            context += f"[{i}] {doc['content']}\n\n"
-        context += "---\n\n"
-    print(context)
-    # Prepend context to the query
-    enhanced_query = context + payload.query if context else payload.query
 
     oa_service = request.app.state.openai
-    # OpenAIService.generate_text returns (result, openai_elapsed_ms)
-    # result, openai_elapsed_ms = oa_service.generate_text(prompt=enhanced_query, history=payload.history)
-
-    llmResponse = oa_service.generate_text(prompt=enhanced_query, history=payload.history)
+    # Pass the retriever so the service can register a `search` tool the agent will call
+    llmResponse = oa_service.generate_text(prompt=payload.query, history=payload.history, retriever=retriever, top_k=top_k)
 
     backend_elapsed_ms = (perf_counter() - backend_start) * 1000.0
 
@@ -49,7 +35,5 @@ def search_documents(payload: SearchRequest, request: Request):
     print(f"OpenAI call: {openai_s:.2f} s; Rest of backend: {rest_s:.2f} s")
     logger.info("search_documents timings - openai: %.2f s, rest: %.2f s", openai_s, rest_s)
 
-    print(f"{type(retrieved_docs)} {retrieved_docs}")
-
-    # Return only the result to the client
-    return SearchResponse(result=llmResponse.content, sources=retrieved_docs)
+    # We don't have prefetched sources here; the agent may include citations in its text.
+    return SearchResponse(result=llmResponse.content, sources=[])
