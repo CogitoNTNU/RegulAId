@@ -47,6 +47,11 @@ uv run python src/preprocessing/chunking-paragraphs.py
 
 Creates `data/processed/aiact-chunks.json`.
 
+```bash
+# Chunk fake data
+uv run python src/preprocessing/chunk_fake_data.py
+```
+
 ### 3. Initialize Database (One-time)
 
 ```bash
@@ -55,8 +60,13 @@ Creates `data/processed/aiact-chunks.json`.
 # Or insert only first 100 for testing
 uv run python src/database/init_db.py --num-docs 100
 ```
-
 This creates tables, indexes (HNSW, BM25), and inserts documents with embeddings.
+
+
+```bash
+# Add fake data chunks to database
+uv run python src/database/add_fake_chunks.py
+```
 
 ## Usage
 

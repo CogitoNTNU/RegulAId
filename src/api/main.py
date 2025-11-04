@@ -1,20 +1,27 @@
-# src/main.py
+"""FastAPI app entrypoint."""
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from .routers import health, search
-from .services.openai_service import OpenAIService
-from .config import OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K, SYSTEM_PROMPT
-from ..retrievers import BM25Retriever, VectorRetriever
+from src.api.routers import health, search, classify, checklist
+from src.api.services.openai_service import OpenAIService
+from src.api.config import OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K, SYSTEM_PROMPT
+from src.retrievers import BM25Retriever, VectorRetriever
+from src.agents import ClassificationAgent, ChecklistAgent
 import logging
+import os
 from time import perf_counter
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Init services
-    logger.info("Wait for the service")
+    logger.info("Initializing services...")
     app.state.openai = OpenAIService(model=OPENAI_MODEL, system_prompt=SYSTEM_PROMPT)
 
     # Initialize retriever based on config
@@ -29,6 +36,27 @@ async def lifespan(app: FastAPI):
 
     app.state.top_k = RETRIEVER_TOP_K
 
+    # Initialize LangChain agents
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    if not openai_api_key:
+        raise ValueError("OPENAI_API_KEY environment variable not set")
+
+    logger.info("Initializing Classification Agent...")
+    app.state.classification_agent = ClassificationAgent(
+        retriever=app.state.retriever,
+        openai_api_key=openai_api_key,
+        model=OPENAI_MODEL,
+    )
+
+    logger.info("Initializing Checklist Agent...")
+    app.state.checklist_agent = ChecklistAgent(
+        retriever=app.state.retriever,
+        openai_api_key=openai_api_key,
+        model=OPENAI_MODEL,
+    )
+
+    logger.info("All services initialized successfully!")
+
     try:
         yield
     finally:
@@ -38,6 +66,7 @@ async def lifespan(app: FastAPI):
             await svc.aclose()
         elif hasattr(svc, "close"):
             svc.close()
+
 
 app = FastAPI(lifespan=lifespan)
 
@@ -51,7 +80,9 @@ async def add_timing_header(request: Request, call_next):
     except Exception as exc:
         # ensure we still measure time for exceptions
         elapsed_ms = (perf_counter() - start) * 1000.0
-        logging.getLogger(__name__).exception("Unhandled exception in request (%.2f ms): %s", elapsed_ms, exc)
+        logging.getLogger(__name__).exception(
+            "Unhandled exception in request (%.2f ms): %s", elapsed_ms, exc
+        )
         print(f"Request exception - elapsed: {elapsed_ms:.2f} ms")
         return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
     elapsed_ms = (perf_counter() - start) * 1000.0
@@ -61,15 +92,21 @@ async def add_timing_header(request: Request, call_next):
 
     return response
 
+
 # Root
 @app.get("/")
 def read_root():
     return {"message": "Welcome to RegulAId API", "docs": "/docs"}
 
+
 # Routers
 app.include_router(health.router)
 app.include_router(search.router)
+app.include_router(classify.router)
+app.include_router(checklist.router)
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8000, loop="asyncio")
