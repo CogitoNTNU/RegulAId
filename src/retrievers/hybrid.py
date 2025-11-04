@@ -28,6 +28,7 @@ class HybridRetriever:
             bm25_weight: float = 1.0,
             vector_weight: float = 1.0,
             rrf_k: float = 60.0,
+            **_,
             ):
         """
         Initialize the hybrid retriever with configurable parameters.
@@ -227,3 +228,8 @@ class HybridRetriever:
 
     def __repr__(self) -> str:
         return "HybridRetriever()"
+
+    def retrieve(self, query: str, k: int = 5) -> List[str]:
+        """Return only contexts (page contents) for evaluator compatibility."""
+        results = self.search(query, final_k=k)
+        return [str(r.get("content", "")) for r in results if r.get("content")]

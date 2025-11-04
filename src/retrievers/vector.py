@@ -17,14 +17,14 @@ load_dotenv()
 class VectorRetriever:
     """Vector retriever using ParadeDB HNSW index."""
 
-    def __init__(self):
-        """Initialize vector retriever."""
+    def __init__(self, **_):
+        """Initialize vector retriever. Uses env-configured embeddings to match DB."""
         self.table_name = os.getenv("COLLECTION_NAME")
         self.column_name = "embedding"
         self.metric_operator = "<=>"  # Cosine distance
 
         # Initialize embeddings model
-        #self.embeddings = OllamaEmbeddings( if ollamaEmbedding
+        # Always use the same model as used for ingestion to avoid dim mismatch
         self.embeddings = OpenAIEmbeddings(
             # base_url=os.getenv("EMBEDDING_API_BASE_URL"), Include if Ollama
             model=os.getenv("EMBEDDING_MODEL_NAME"),
@@ -73,6 +73,19 @@ class VectorRetriever:
         except Exception as e:
             print(f"ERROR in vector search: {str(e)}")
             return []
+
+    def retrieve(self, query: str, k: int = 5) -> List[str]:
+        """Convenience method expected by evaluator: return only contexts.
+
+        Args:
+            query: Query text
+            k: Number of contexts to return
+
+        Returns:
+            List of page contents (strings)
+        """
+        results = self.search(query, k=k)
+        return [str(r.get("content", "")) for r in results if r.get("content")]
 
     def __repr__(self) -> str:
         return f"VectorRetriever(table='{self.table_name}')"

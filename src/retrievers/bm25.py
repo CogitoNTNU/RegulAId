@@ -3,6 +3,7 @@
 import os
 import sys
 import psycopg
+import re
 from typing import List, Dict, Any
 from dotenv import load_dotenv
 
@@ -17,10 +18,23 @@ load_dotenv()
 class BM25Retriever:
     """BM25 retriever using ParadeDB."""
 
-    def __init__(self):
-        """Initialize BM25 retriever."""
+    def __init__(self, **_):
+        """Initialize BM25 retriever. Accepts and ignores extra kwargs."""
         self.table_name = os.getenv("COLLECTION_NAME")
         self.column_name = "page_content"
+
+    def _build_bm25_query(self, text: str) -> str:
+        """Convert free-text into ParadeDB BM25 query with column:term pairs.
+
+        Example: "foo and bar" -> "page_content:foo AND page_content:bar"
+        """
+        # tokenize: words and numbers only
+        tokens = re.findall(r"[A-Za-z0-9]+", text)
+        if not tokens:
+            return ""
+        # Use OR between terms to avoid over-filtering; BM25 will rank matches
+        # Note: do NOT prefix with column name when querying a single field
+        return " OR ".join(tokens)
 
     def search(self, query: str, k: int = 10) -> List[Dict[str, Any]]:
         """
@@ -41,9 +55,12 @@ class BM25Retriever:
             LIMIT %s
         """
         try:
+            bm25_query = self._build_bm25_query(query)
+            if not bm25_query:
+                return []
             with psycopg.connect(get_psycopg_connection_string()) as conn:
                 with conn.cursor() as cur:
-                    cur.execute(sql, (query, k))
+                    cur.execute(sql, (bm25_query, k))
                     results = cur.fetchall()
 
             # Format results
@@ -61,6 +78,19 @@ class BM25Retriever:
         except Exception as e:
             print(f"ERROR in BM25 search: {str(e)}")
             return []
+
+    def retrieve(self, query: str, k: int = 5) -> List[str]:
+        """Convenience method expected by evaluator: return only contexts.
+
+        Args:
+            query: Query text
+            k: Number of contexts to return
+
+        Returns:
+            List of page contents (strings)
+        """
+        results = self.search(query, k=k)
+        return [str(r.get("content", "")) for r in results if r.get("content")]
 
     def __repr__(self) -> str:
         return f"BM25Retriever(table='{self.table_name}')"
