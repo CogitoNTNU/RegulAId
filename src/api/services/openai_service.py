@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import logging
 from time import perf_counter
+from typing import List, Optional
 
 from ...schemas.search_schemas import LLMResponse
 
@@ -15,7 +16,12 @@ logger = logging.getLogger(__name__)
 class OpenAIService:
     """Simple wrapper around OpenAI Chat Completions API."""
 
-    def __init__(self, api_key: str | None = None, model: str = "gpt-5") -> None:
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model: str = "gpt-5",
+        system_prompt: Optional[str] = None,
+    ) -> None:
         self.api_key = api_key or os.getenv("OPENAI_KEY")
         if not self.api_key:
             raise ValueError(
@@ -23,20 +29,22 @@ class OpenAIService:
             )
         self.client = OpenAI(api_key=self.api_key)
         self.model = model
+        self.system_prompt = system_prompt or (
+            "You are a helpful assistant. Always respond in English only, regardless of the language of the question."
+        )
         logger.info("OpenAIService initialized")
 
-    def generate_text(self, prompt: str, history) -> LLMResponse:
+    def generate_text(self, prompt: str, history: List[str]) -> LLMResponse:
         """Generate a chat completion response for a prompt."""
-        s = "these are the previously sent messages:".join(history)
+        s = "these are the previously sent messages:".join(history or [])
 
         # Time the OpenAI API call itself (network + processing by OpenAI)
         start = perf_counter()
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[
-                {"role": "system",
-                 "content": "You are a helpful assistant. Always respond in English only, regardless of the language of the question."},
-                {"role": "user", "content": prompt + s}
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": prompt + s},
             ],
         )
         openai_elapsed_ms = (perf_counter() - start) * 1000.0

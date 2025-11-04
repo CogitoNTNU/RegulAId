@@ -30,6 +30,8 @@ from ragas.metrics import (
 from src.retrievers.bm25 import BM25Retriever
 from src.retrievers.hybrid import HybridRetriever
 from src.retrievers.vector import VectorRetriever
+from src.api.services.openai_service import OpenAIService
+from src.api.config import OPENAI_MODEL, SYSTEM_PROMPT, RETRIEVER_TOP_K
 
 # Plotting utils
 import plotly.graph_objects as go
@@ -44,7 +46,11 @@ EVALUATE_METHODS: List[str] = [
     "bm25_retrieval_only",
     "semantic_retrieval_only",
     "hybrid_retrieval",
-    ]
+    "bm25_rag",
+    "semantic_rag",
+    "hybrid_rag",
+    "llm_only",
+]
 RUN_TAG: str = "retrieval_only_test"
 RAGAS_METRICS = [
     context_precision,
@@ -56,11 +62,71 @@ RAGAS_METRICS = [
 # Example:
 # from src.templates.hybrid_retrieval_only import HybridRetrievalOnly
 # from src.templates.hybrid_retrieval_reranked import HybridRetrievalReranked
+class _APIRAGBase:
+    def __init__(self, retriever, k: int = None, **_):
+        self.retriever = retriever
+        self.k = int(k) if k is not None else int(RETRIEVER_TOP_K)
+        self.llm = OpenAIService(model=OPENAI_MODEL, system_prompt=SYSTEM_PROMPT)
+
+    def _run(self, question: str) -> Dict[str, object]:
+        docs = self.retriever.search(query=question, k=self.k) or []
+        # Build context string similar to API router
+        context = ""
+        if docs:
+            context = "Context from EU AI Act documents:\n\n"
+            for i, d in enumerate(docs, 1):
+                content = d.get("content", "")
+                context += f"[{i}] {content}\n\n"
+            context += "---\n\n"
+        enhanced_query = (context + question) if context else question
+        llm_resp = self.llm.generate_text(prompt=enhanced_query, history=[])
+        contexts = [str(d.get("content", "")) for d in docs if d.get("content")]
+        return {"answer": llm_resp.content, "context": contexts}
+
+    def run(self, question: str, reference_contexts=None):
+        return self._run(question)
+
+
+class BM25RAG_API(_APIRAGBase):
+    def __init__(self, **kwargs):
+        super().__init__(BM25Retriever(), **kwargs)
+
+
+class VectorRAG_API(_APIRAGBase):
+    def __init__(self, **kwargs):
+        super().__init__(VectorRetriever(), **kwargs)
+
+
+class HybridRAG_API(_APIRAGBase):
+    def __init__(self, **kwargs):
+        super().__init__(HybridRetriever(), **kwargs)
+
+
 TEMPLATES: Dict[str, object] = {
     "bm25_retrieval_only": BM25Retriever,
     "semantic_retrieval_only": VectorRetriever,
     "hybrid_retrieval": HybridRetriever,
+    # Use API-backed RAG pipelines (system prompt + OpenAIService)
+    "bm25_rag": BM25RAG_API,
+    "semantic_rag": VectorRAG_API,
+    "hybrid_rag": HybridRAG_API,
+    # Baseline: LLM without any retrieval
+    "llm_only": None,  # placeholder, class defined below
 }
+
+
+class LLMOnly_API:
+    """LLM baseline: answer without any retrieval contexts."""
+    def __init__(self, **_):
+        self.llm = OpenAIService(model=OPENAI_MODEL, system_prompt=SYSTEM_PROMPT)
+
+    def run(self, question: str, reference_contexts=None):
+        llm_resp = self.llm.generate_text(prompt=question, history=[])
+        return {"answer": llm_resp.content, "context": []}
+
+
+# Fill placeholder now that class exists
+TEMPLATES["llm_only"] = LLMOnly_API
 
 # Input files (relative to repo root)
 TESTSET_REL_PATH = os.path.join("data", "processed", "testset.json")
@@ -406,10 +472,23 @@ def run_ragas_worker(template_name: str,
         "ground_truth": [r["ground_truths"][0] for r in results],
     }
     ds = Dataset.from_dict(eval_data)
+    # Adapt metric set based on presence of answers and contexts
+    answers_present = any((a or "").strip() for a in eval_data["answer"])
+    contexts_present = any(len(c or []) > 0 for c in eval_data["contexts"])
+    metrics_to_use = ragas_metrics
+    if answers_present and not contexts_present:
+        # LLM-only baseline: only answer_relevancy is meaningful
+        metrics_to_use = [m for m in ragas_metrics if m.name in ("answer_relevancy",)]
+    elif not answers_present and contexts_present:
+        # retrieval-only: only context metrics are meaningful
+        metrics_to_use = [m for m in ragas_metrics if m.name in ("context_precision", "context_recall")]
     try:
-        ragas_result = evaluate(ds, metrics=ragas_metrics)
+        ragas_result = evaluate(ds, metrics=metrics_to_use)
         df_res = ragas_result.to_pandas()
-        scores = {m.name: float(df_res[m.name].mean()) for m in ragas_metrics}
+        scores = {m.name: float(df_res[m.name].mean()) for m in metrics_to_use}
+        # Ensure missing metrics are present with 0.0 for downstream code
+        for m in ragas_metrics:
+            scores.setdefault(m.name, 0.0)
     except Exception as exc:
         print(f"[RAGAS-{template_name}] Evaluation failed: {exc}")
         scores = {m.name: 0.0 for m in ragas_metrics}

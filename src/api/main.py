@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from .routers import health, search
 from .services.openai_service import OpenAIService
-from .config import OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K
+from .config import OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K, SYSTEM_PROMPT
 from ..retrievers import BM25Retriever, VectorRetriever
 import logging
 from time import perf_counter
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Init services
     logger.info("Wait for the service")
-    app.state.openai = OpenAIService(model=OPENAI_MODEL)
+    app.state.openai = OpenAIService(model=OPENAI_MODEL, system_prompt=SYSTEM_PROMPT)
 
     # Initialize retriever based on config
     if RETRIEVER_TYPE == "bm25":
