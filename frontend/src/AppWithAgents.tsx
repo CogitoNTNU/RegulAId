@@ -127,6 +127,8 @@ export default function App() {
 
         // Format response
         let response = "";
+        let sources: Source[] | undefined = undefined;
+
         if (data.needs_more_info) {
             response = `I need more information to classify your system.\n\n**Questions:**\n${data.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}`;
         } else {
@@ -134,13 +136,19 @@ export default function App() {
             response += `**Risk Level:** ${data.risk_level}\n`;
             response += `**System Type:** ${data.system_type}\n`;
             response += `**Confidence:** ${(data.confidence * 100).toFixed(0)}%\n\n`;
-            response += `**Reasoning:** ${data.reasoning}\n\n`;
+            response += `**Reasoning:** ${data.reasoning}`;
+
+            // Convert relevant_articles to sources format
             if (data.relevant_articles && data.relevant_articles.length > 0) {
-                response += `**Relevant Articles:** ${data.relevant_articles.join(", ")}`;
+                sources = data.relevant_articles.map((article: string, idx: number) => ({
+                    id: `article-${idx}`,
+                    content: `Referenced in classification: ${article}`,
+                    metadata: { id: article, type: 'article' }
+                }));
             }
         }
 
-        setMessages(m => [...m, {role: "assistant", content: response, metadata: data}]);
+        setMessages(m => [...m, {role: "assistant", content: response, sources, metadata: data}]);
     }
 
     async function sendFullFlow(description: string) {
@@ -172,9 +180,19 @@ export default function App() {
         classifyResponse += `**Confidence:** ${(classifyData.confidence * 100).toFixed(0)}%\n\n`;
         classifyResponse += `**Reasoning:** ${classifyData.reasoning}`;
 
+        // Convert relevant_articles to sources
+        let classifySources: Source[] | undefined = undefined;
+        if (classifyData.relevant_articles && classifyData.relevant_articles.length > 0) {
+            classifySources = classifyData.relevant_articles.map((article: string, idx: number) => ({
+                id: `article-${idx}`,
+                content: `Referenced in classification: ${article}`,
+                metadata: { id: article, type: 'article' }
+            }));
+        }
+
         setMessages(m => {
             const newMessages = [...m];
-            newMessages[newMessages.length - 1] = {role: "assistant", content: classifyResponse};
+            newMessages[newMessages.length - 1] = {role: "assistant", content: classifyResponse, sources: classifySources};
             return newMessages;
         });
 
@@ -198,19 +216,45 @@ export default function App() {
         checklistResponse += `${checklistData.summary}\n\n`;
         checklistResponse += `**Requirements:**\n\n`;
 
+        // Collect all unique articles from checklist items
+        const allArticles = new Set<string>();
+        const articleToRequirements = new Map<string, string[]>();
+
         checklistData.checklist_items.forEach((item: any, idx: number) => {
             checklistResponse += `**${idx + 1}. ${item.requirement}**\n`;
             checklistResponse += `   - Priority: ${item.priority}\n`;
             checklistResponse += `   - Category: ${item.category}\n`;
             if (item.applicable_articles && item.applicable_articles.length > 0) {
                 checklistResponse += `   - Articles: ${item.applicable_articles.join(", ")}\n`;
+
+                // Track articles and their requirements
+                item.applicable_articles.forEach((article: string) => {
+                    allArticles.add(article);
+                    if (!articleToRequirements.has(article)) {
+                        articleToRequirements.set(article, []);
+                    }
+                    articleToRequirements.get(article)!.push(item.requirement);
+                });
             }
             checklistResponse += `\n`;
         });
 
+        // Convert articles to sources format
+        let checklistSources: Source[] | undefined = undefined;
+        if (allArticles.size > 0) {
+            checklistSources = Array.from(allArticles).map((article, idx) => {
+                const requirements = articleToRequirements.get(article) || [];
+                return {
+                    id: `checklist-article-${idx}`,
+                    content: `${article} - Applies to: ${requirements.join('; ')}`,
+                    metadata: { id: article, type: 'article', requirements }
+                };
+            });
+        }
+
         setMessages(m => {
             const newMessages = [...m];
-            newMessages[newMessages.length - 1] = {role: "assistant", content: checklistResponse, metadata: checklistData};
+            newMessages[newMessages.length - 1] = {role: "assistant", content: checklistResponse, sources: checklistSources, metadata: checklistData};
             return newMessages;
         });
     }
@@ -225,6 +269,15 @@ export default function App() {
     return (
         <div className="h-screen w-full p-4">
             <div className="mx-auto max-w-3xl h-full min-h-0 space-y-3">
+                {/* Logo */}
+                <div className="flex items-center gap-3">
+                    <img
+                        src="/regulaid_logo.png"
+                        alt="RegulAId"
+                        className="h-12 w-auto object-contain"
+                    />
+                </div>
+
                 {/* Mode selector */}
                 <div className="flex gap-2 justify-center">
                     <Button
@@ -247,7 +300,7 @@ export default function App() {
                     </Button>
                 </div>
 
-                <Card className="h-[calc(80vh-3rem)] grid grid-rows-[1fr_auto] overflow-hidden">
+                <Card className="h-[calc(80vh-7rem)] grid grid-rows-[1fr_auto] overflow-hidden">
                     <div className="min-h-0">
                         <ScrollArea className="h-full">
                             <div className="p-4 space-y-3">
@@ -301,7 +354,7 @@ export default function App() {
                                 <InlineCitation>
                                     <InlineCitationText>Sources</InlineCitationText>
                                     <InlineCitationCard>
-                                        <InlineCitationCardTrigger sources={[]}/>
+                                        <InlineCitationCardTrigger sources={["http://eu-ai-act"]}/>
                                         <InlineCitationCardBody>
                                             <InlineCitationCarousel>
                                                 <InlineCitationCarouselHeader>
@@ -313,7 +366,7 @@ export default function App() {
                                                     {sources.map((src, idx) => (
                                                         <InlineCitationCarouselItem key={src.id ?? idx}>
                                                             <InlineCitationSource
-                                                                title={`Source ${idx + 1} (${src.metadata?.id})`}
+                                                                title={`${src.metadata?.id || 'EU AI ACT'}`}
                                                                 url="#"
                                                                 description={src.content}
                                                             />
