@@ -5,7 +5,6 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar";
 import {Response} from "@/components/ui/shadcn-io/ai/response";
-import {Badge} from "@/components/ui/badge";
 import {
     InlineCitation,
     InlineCitationCard,
@@ -351,32 +350,35 @@ export default function App() {
                         <>
                             <Response>{content}</Response>
                             {sources && sources.length > 0 && (
-                                <InlineCitation>
-                                    <InlineCitationText>Sources</InlineCitationText>
-                                    <InlineCitationCard>
-                                        <InlineCitationCardTrigger sources={["http://eu-ai-act"]}/>
-                                        <InlineCitationCardBody>
-                                            <InlineCitationCarousel>
-                                                <InlineCitationCarouselHeader>
-                                                    <InlineCitationCarouselPrev/>
-                                                    <InlineCitationCarouselNext/>
-                                                    <InlineCitationCarouselIndex/>
-                                                </InlineCitationCarouselHeader>
-                                                <InlineCitationCarouselContent>
-                                                    {sources.map((src, idx) => (
-                                                        <InlineCitationCarouselItem key={src.id ?? idx}>
-                                                            <InlineCitationSource
-                                                                title={`${src.metadata?.id || 'EU AI ACT'}`}
-                                                                url="#"
-                                                                description={src.content}
-                                                            />
-                                                        </InlineCitationCarouselItem>
-                                                    ))}
-                                                </InlineCitationCarouselContent>
-                                            </InlineCitationCarousel>
-                                        </InlineCitationCardBody>
-                                    </InlineCitationCard>
-                                </InlineCitation>
+                                <InlineCitationCard>
+                                    <InlineCitationCardTrigger sources={["http://eu-ai-act"]}>
+                                        <InlineCitation>
+                                            <InlineCitationText logo="/eu-aia-ct.png">
+                                                Sources
+                                            </InlineCitationText>
+                                        </InlineCitation>
+                                    </InlineCitationCardTrigger>
+                                    <InlineCitationCardBody>
+                                        <InlineCitationCarousel>
+                                            <InlineCitationCarouselHeader>
+                                                <InlineCitationCarouselPrev/>
+                                                <InlineCitationCarouselNext/>
+                                                <InlineCitationCarouselIndex/>
+                                            </InlineCitationCarouselHeader>
+                                            <InlineCitationCarouselContent>
+                                                {sources.map((src, idx) => (
+                                                    <InlineCitationCarouselItem key={src.id ?? idx}>
+                                                        <InlineCitationSource
+                                                            title={`${src.metadata?.id || 'EU AI ACT'}`}
+                                                            url="#"
+                                                            description={src.content}
+                                                        />
+                                                    </InlineCitationCarouselItem>
+                                                ))}
+                                            </InlineCitationCarouselContent>
+                                        </InlineCitationCarousel>
+                                    </InlineCitationCardBody>
+                                </InlineCitationCard>
                             )}
                         </>
                     )}

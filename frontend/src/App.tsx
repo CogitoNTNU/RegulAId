@@ -140,32 +140,35 @@ export default function App() {
                         <>
                             <Response>{content}</Response>
                             {sources && sources.length > 0 && (
-                                <InlineCitation>
-                                    <InlineCitationText>Sources</InlineCitationText>
-                                    <InlineCitationCard>
-                                        <InlineCitationCardTrigger sources={[]}/>
-                                        <InlineCitationCardBody>
-                                            <InlineCitationCarousel>
-                                                <InlineCitationCarouselHeader>
-                                                    <InlineCitationCarouselPrev/>
-                                                    <InlineCitationCarouselNext/>
-                                                    <InlineCitationCarouselIndex/>
-                                                </InlineCitationCarouselHeader>
-                                                <InlineCitationCarouselContent>
-                                                    {sources.map((src, idx) => (
-                                                        <InlineCitationCarouselItem key={src.id ?? idx}>
-                                                            <InlineCitationSource
-                                                                title={`Source ${idx + 1} (${src.metadata?.id})`}
-                                                                url="#"
-                                                                description={src.content}
-                                                            />
-                                                        </InlineCitationCarouselItem>
-                                                    ))}
-                                                </InlineCitationCarouselContent>
-                                            </InlineCitationCarousel>
-                                        </InlineCitationCardBody>
-                                    </InlineCitationCard>
-                                </InlineCitation>
+                                <InlineCitationCard>
+                                    <InlineCitationCardTrigger sources={["http://eu-ai-act"]}>
+                                        <InlineCitation>
+                                            <InlineCitationText logo="/eu-aia-ct.png">
+                                                Sources
+                                            </InlineCitationText>
+                                        </InlineCitation>
+                                    </InlineCitationCardTrigger>
+                                    <InlineCitationCardBody>
+                                        <InlineCitationCarousel>
+                                            <InlineCitationCarouselHeader>
+                                                <InlineCitationCarouselPrev/>
+                                                <InlineCitationCarouselNext/>
+                                                <InlineCitationCarouselIndex/>
+                                            </InlineCitationCarouselHeader>
+                                            <InlineCitationCarouselContent>
+                                                {sources.map((src, idx) => (
+                                                    <InlineCitationCarouselItem key={src.id ?? idx}>
+                                                        <InlineCitationSource
+                                                            title={`Source ${idx + 1} (${src.metadata?.id})`}
+                                                            url="#"
+                                                            description={src.content}
+                                                        />
+                                                    </InlineCitationCarouselItem>
+                                                ))}
+                                            </InlineCitationCarouselContent>
+                                        </InlineCitationCarousel>
+                                    </InlineCitationCardBody>
+                                </InlineCitationCard>
                             )}
                         </>
                     )}
