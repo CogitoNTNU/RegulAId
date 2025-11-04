@@ -20,6 +20,13 @@ import {
     InlineCitationSource,
     InlineCitationText,
 } from '@/components/ui/shadcn-io/ai/inline-citation';
+import {
+    Task,
+    TaskTrigger,
+    TaskContent,
+    TaskItem,
+    TaskItemFile,
+} from '@/components/ui/shadcn-io/ai/task';
 
 type Source = { id: number | string; content: string; metadata?: Record<string, any> };
 type Msg = { role: "user" | "assistant"; content: string; sources?: Source[] };
@@ -99,7 +106,7 @@ export default function App() {
                             <div className="p-4 space-y-3">
                                 {messages.map((m, i) => <Bubble key={i} role={m.role} content={m.content}
                                                                 sources={m.sources}/>)}
-                                {loading && <Bubble role="assistant" content="…thinking" muted/>}
+                                {loading && <LoadingBubble/>}
                                 <div ref={endRef}/>
                             </div>
                         </ScrollArea>
@@ -118,6 +125,29 @@ export default function App() {
             </div>
         </div>
     );
+
+    function LoadingBubble() {
+        return (
+            <div className="mb-1 flex items-start gap-3 justify-start">
+                <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>
+                <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm bg-muted">
+                    <Task>
+                        <TaskTrigger title="Processing your request" />
+                        <TaskContent>
+                            <TaskItem>Analyzing your question</TaskItem>
+                            <TaskItem>
+                                Searching through <TaskItemFile>EU AI Act documents</TaskItemFile>
+                            </TaskItem>
+                            <TaskItem>
+                                Reading <TaskItemFile>regulations.json</TaskItemFile>
+                            </TaskItem>
+                            <TaskItem>Generating comprehensive response</TaskItem>
+                        </TaskContent>
+                    </Task>
+                </div>
+            </div>
+        );
+    }
 
     function Bubble({
                         role, content, muted, sources,

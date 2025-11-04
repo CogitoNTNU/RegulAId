@@ -21,9 +21,16 @@ import {
     InlineCitationSource,
     InlineCitationText,
 } from '@/components/ui/shadcn-io/ai/inline-citation';
+import {
+    Task,
+    TaskTrigger,
+    TaskContent,
+    TaskItem,
+    TaskItemFile,
+} from '@/components/ui/shadcn-io/ai/task';
 
 type Source = { id: number | string; content: string; metadata?: Record<string, any> };
-type Msg = { role: "user" | "assistant"; content: string; sources?: Source[]; metadata?: any };
+type Msg = { role: "user" | "assistant"; content: string; sources?: Source[]; metadata?: any; showTask?: boolean; taskOnly?: boolean };
 type ApiResponse = { result?: string; sources?: Source[] } | string[] | string | unknown;
 
 type Mode = "chat" | "classify" | "full-flow";
@@ -111,7 +118,10 @@ export default function App() {
         if (!res.ok) throw new Error(toText(data));
         const answer = toText(data);
         const sources = toSources(data);
-        setMessages(m => [...m, {role: "assistant", content: answer, sources}]);
+        setMessages(m => [...m,
+            {role: "assistant", content: "", taskOnly: true},
+            {role: "assistant", content: answer, sources}
+        ]);
     }
 
     async function sendClassify(description: string) {
@@ -140,13 +150,14 @@ export default function App() {
             }
         }
 
-        setMessages(m => [...m, {role: "assistant", content: response, metadata: data}]);
+        setMessages(m => [...m,
+            {role: "assistant", content: "", taskOnly: true},
+            {role: "assistant", content: response, metadata: data}
+        ]);
     }
 
     async function sendFullFlow(description: string) {
         // Step 1: Classify
-        setMessages(m => [...m, {role: "assistant", content: "Step 1: Classifying your AI system..."}]);
-
         const classifyRes = await fetch("/api/classify/", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
@@ -157,30 +168,11 @@ export default function App() {
 
         if (classifyData.needs_more_info) {
             let response = `I need more information before I can classify your system.\n\n**Questions:**\n${classifyData.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\n\nPlease provide more details.`;
-            setMessages(m => {
-                const newMessages = [...m];
-                newMessages[newMessages.length - 1] = {role: "assistant", content: response};
-                return newMessages;
-            });
+            setMessages(m => [...m, {role: "assistant", content: response}]);
             return;
         }
 
-        // Show classification
-        let classifyResponse = `**Classification Complete**\n\n`;
-        classifyResponse += `**Risk Level:** ${classifyData.risk_level}\n`;
-        classifyResponse += `**System Type:** ${classifyData.system_type}\n`;
-        classifyResponse += `**Confidence:** ${(classifyData.confidence * 100).toFixed(0)}%\n\n`;
-        classifyResponse += `**Reasoning:** ${classifyData.reasoning}`;
-
-        setMessages(m => {
-            const newMessages = [...m];
-            newMessages[newMessages.length - 1] = {role: "assistant", content: classifyResponse};
-            return newMessages;
-        });
-
         // Step 2: Generate checklist
-        setMessages(m => [...m, {role: "assistant", content: "Step 2: Generating compliance checklist..."}]);
-
         const checklistRes = await fetch("/api/checklist/", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
@@ -193,26 +185,32 @@ export default function App() {
         const checklistData = await checklistRes.json();
         if (!checklistRes.ok) throw new Error(JSON.stringify(checklistData));
 
-        // Format checklist
-        let checklistResponse = `**Compliance Checklist (${checklistData.total_items} items)**\n\n`;
-        checklistResponse += `${checklistData.summary}\n\n`;
-        checklistResponse += `**Requirements:**\n\n`;
+        // Combine both results into one response
+        let combinedResponse = `## Step 1: Classification Results\n\n`;
+        combinedResponse += `**Risk Level:** ${classifyData.risk_level}\n`;
+        combinedResponse += `**System Type:** ${classifyData.system_type}\n`;
+        combinedResponse += `**Confidence:** ${(classifyData.confidence * 100).toFixed(0)}%\n\n`;
+        combinedResponse += `**Reasoning:** ${classifyData.reasoning}\n\n`;
+        combinedResponse += `---\n\n`;
+        combinedResponse += `## Step 2: Compliance Checklist\n\n`;
+        combinedResponse += `**Total Items:** ${checklistData.total_items}\n\n`;
+        combinedResponse += `${checklistData.summary}\n\n`;
+        combinedResponse += `**Requirements:**\n\n`;
 
         checklistData.checklist_items.forEach((item: any, idx: number) => {
-            checklistResponse += `**${idx + 1}. ${item.requirement}**\n`;
-            checklistResponse += `   - Priority: ${item.priority}\n`;
-            checklistResponse += `   - Category: ${item.category}\n`;
+            combinedResponse += `**${idx + 1}. ${item.requirement}**\n`;
+            combinedResponse += `   - Priority: ${item.priority}\n`;
+            combinedResponse += `   - Category: ${item.category}\n`;
             if (item.applicable_articles && item.applicable_articles.length > 0) {
-                checklistResponse += `   - Articles: ${item.applicable_articles.join(", ")}\n`;
+                combinedResponse += `   - Articles: ${item.applicable_articles.join(", ")}\n`;
             }
-            checklistResponse += `\n`;
+            combinedResponse += `\n`;
         });
 
-        setMessages(m => {
-            const newMessages = [...m];
-            newMessages[newMessages.length - 1] = {role: "assistant", content: checklistResponse, metadata: checklistData};
-            return newMessages;
-        });
+        setMessages(m => [...m,
+            {role: "assistant", content: "", taskOnly: true},
+            {role: "assistant", content: combinedResponse, metadata: {classifyData, checklistData}}
+        ]);
     }
 
     function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -252,8 +250,8 @@ export default function App() {
                         <ScrollArea className="h-full">
                             <div className="p-4 space-y-3">
                                 {messages.map((m, i) => <Bubble key={i} role={m.role} content={m.content}
-                                                                sources={m.sources}/>)}
-                                {loading && <Bubble role="assistant" content="…thinking" muted/>}
+                                                                sources={m.sources} showTask={m.showTask} taskOnly={m.taskOnly} mode={mode}/>)}
+                                {loading && <LoadingBubble mode={mode}/>}
                                 <div ref={endRef}/>
                             </div>
                         </ScrollArea>
@@ -277,10 +275,121 @@ export default function App() {
         </div>
     );
 
+    function LoadingBubble({mode}: { mode: Mode }) {
+        return (
+            <div className="mb-1 flex items-start gap-3 justify-start">
+                <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>
+                <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm bg-muted">
+                    {mode === "chat" && (
+                        <Task>
+                            <TaskTrigger title="Processing your request"/>
+                            <TaskContent>
+                                <TaskItem>Using Q&A Agent</TaskItem>
+                                <TaskItem>Analyzing your question</TaskItem>
+                                <TaskItem>
+                                    Fetching from <TaskItemFile>POST /api/search/</TaskItemFile>
+                                </TaskItem>
+                                <TaskItem>Searching vector database for relevant documents</TaskItem>
+                                <TaskItem>Generating comprehensive response</TaskItem>
+                            </TaskContent>
+                        </Task>
+                    )}
+                    {mode === "classify" && (
+                        <Task>
+                            <TaskTrigger title="Classifying AI system"/>
+                            <TaskContent>
+                                <TaskItem>Using Classification Agent</TaskItem>
+                                <TaskItem>Analyzing system description</TaskItem>
+                                <TaskItem>
+                                    Fetching from <TaskItemFile>POST /api/classify/</TaskItemFile>
+                                </TaskItem>
+                                <TaskItem>Checking risk categories and prohibited practices</TaskItem>
+                                <TaskItem>Computing confidence score</TaskItem>
+                            </TaskContent>
+                        </Task>
+                    )}
+                    {mode === "full-flow" && (
+                        <Task>
+                            <TaskTrigger title="Running full compliance workflow"/>
+                            <TaskContent>
+                                <TaskItem>Step 1: Using Classification Agent</TaskItem>
+                                <TaskItem>
+                                    Fetching from <TaskItemFile>POST /api/classify/</TaskItemFile>
+                                </TaskItem>
+                                <TaskItem>Determining risk level and system type</TaskItem>
+                                <TaskItem>Step 2: Using Checklist Agent</TaskItem>
+                                <TaskItem>
+                                    Fetching from <TaskItemFile>POST /api/checklist/</TaskItemFile>
+                                </TaskItem>
+                                <TaskItem>Generating tailored compliance requirements</TaskItem>
+                            </TaskContent>
+                        </Task>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
     function Bubble({
-                        role, content, muted, sources,
-                    }: { role: "user" | "assistant"; content: string; muted?: boolean; sources?: Source[] }) {
+                        role, content, muted, sources, showTask, taskOnly, mode,
+                    }: { role: "user" | "assistant"; content: string; muted?: boolean; sources?: Source[]; showTask?: boolean; taskOnly?: boolean; mode?: Mode }) {
         const isUser = role === "user";
+
+        // If taskOnly is true, only render the Task component
+        if (taskOnly && !isUser) {
+            return (
+                <div className="mb-1 flex items-start gap-3 justify-start">
+                    <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>
+                    <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm bg-muted">
+                        {mode === "chat" && (
+                            <Task>
+                                <TaskTrigger title="Processing your request"/>
+                                <TaskContent>
+                                    <TaskItem>Using Q&A Agent</TaskItem>
+                                    <TaskItem>Analyzing your question</TaskItem>
+                                    <TaskItem>
+                                        Fetching from <TaskItemFile>POST /api/search/</TaskItemFile>
+                                    </TaskItem>
+                                    <TaskItem>Searching vector database for relevant documents</TaskItem>
+                                    <TaskItem>Generating comprehensive response</TaskItem>
+                                </TaskContent>
+                            </Task>
+                        )}
+                        {mode === "classify" && (
+                            <Task>
+                                <TaskTrigger title="Classifying AI system"/>
+                                <TaskContent>
+                                    <TaskItem>Using Classification Agent</TaskItem>
+                                    <TaskItem>Analyzing system description</TaskItem>
+                                    <TaskItem>
+                                        Fetching from <TaskItemFile>POST /api/classify/</TaskItemFile>
+                                    </TaskItem>
+                                    <TaskItem>Checking risk categories and prohibited practices</TaskItem>
+                                    <TaskItem>Computing confidence score</TaskItem>
+                                </TaskContent>
+                            </Task>
+                        )}
+                        {mode === "full-flow" && (
+                            <Task>
+                                <TaskTrigger title="Running full compliance workflow"/>
+                                <TaskContent>
+                                    <TaskItem>Step 1: Using Classification Agent</TaskItem>
+                                    <TaskItem>
+                                        Fetching from <TaskItemFile>POST /api/classify/</TaskItemFile>
+                                    </TaskItem>
+                                    <TaskItem>Determining risk level and system type</TaskItem>
+                                    <TaskItem>Step 2: Using Checklist Agent</TaskItem>
+                                    <TaskItem>
+                                        Fetching from <TaskItemFile>POST /api/checklist/</TaskItemFile>
+                                    </TaskItem>
+                                    <TaskItem>Generating tailored compliance requirements</TaskItem>
+                                </TaskContent>
+                            </Task>
+                        )}
+                    </div>
+                </div>
+            );
+        }
 
         return (
             <div className={`mb-1 flex items-start gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
