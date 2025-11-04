@@ -2,19 +2,24 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from .routers import health, search
-from .services.openai_service import OpenAIService
-from .config import OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K
-from ..retrievers import BM25Retriever, VectorRetriever
+from src.api.routers import health, search, classify, checklist
+from src.api.services.openai_service import OpenAIService
+from src.api.config import OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K
+from src.retrievers import BM25Retriever, VectorRetriever
+from src.agents import ClassificationAgent, ChecklistAgent
 import logging
+import os
 from time import perf_counter
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Init services
-    logger.info("Wait for the service")
+    logger.info("Initializing services...")
     app.state.openai = OpenAIService(model=OPENAI_MODEL)
 
     # Initialize retriever based on config
@@ -28,6 +33,27 @@ async def lifespan(app: FastAPI):
         raise ValueError(f"Unknown RETRIEVER_TYPE: {RETRIEVER_TYPE}. Use 'bm25' or 'vector'")
 
     app.state.top_k = RETRIEVER_TOP_K
+
+    # Initialize LangChain agents
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    if not openai_api_key:
+        raise ValueError("OPENAI_API_KEY environment variable not set")
+
+    logger.info("Initializing Classification Agent...")
+    app.state.classification_agent = ClassificationAgent(
+        retriever=app.state.retriever,
+        openai_api_key=openai_api_key,
+        model=OPENAI_MODEL
+    )
+
+    logger.info("Initializing Checklist Agent...")
+    app.state.checklist_agent = ChecklistAgent(
+        retriever=app.state.retriever,
+        openai_api_key=openai_api_key,
+        model=OPENAI_MODEL
+    )
+
+    logger.info("All services initialized successfully!")
 
     try:
         yield
@@ -69,6 +95,8 @@ def read_root():
 # Routers
 app.include_router(health.router)
 app.include_router(search.router)
+app.include_router(classify.router)
+app.include_router(checklist.router)
 
 if __name__ == "__main__":
     import uvicorn
