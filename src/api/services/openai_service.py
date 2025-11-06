@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import logging
 from time import perf_counter
 import json
+import ast
 
 from langchain.agents import create_agent
 from langchain.tools import tool
@@ -61,8 +62,8 @@ class OpenAIService:
         @tool(
             "search_ai_act",
             description=(
-                "Search the EU AI ACT documents. Accepts either a plain text query string OR a JSON/dict with"
-                " keys 'query' and optional 'filters'. Use 'filters' to restrict results by metadata (see docstring)."
+                    "Search the EU AI ACT documents. Accepts either a plain text query string OR a JSON/dict with"
+                    " keys 'query' and optional 'filters'. Use 'filters' to restrict results by metadata (see docstring)."
             ),
         )
         def _search_tool(payload) -> str:
@@ -100,6 +101,7 @@ class OpenAIService:
             Returns:
                 Concatenated snippets and metadata from top-k matching documents.
             """
+
             nonlocal captured_sources
             captured_sources.clear()
 
@@ -111,19 +113,29 @@ class OpenAIService:
             if isinstance(payload, dict):
                 query_text = payload.get("query") or payload.get("q") or ""
                 filters = payload.get("filters")
+
+                # Safely log values (avoid string concatenation with non-strings)
+                logger.debug("search tool received dict payload - query_text=%r filters=%r", query_text, filters)
+
             elif isinstance(payload, str):
                 s = payload.strip()
                 # Try to parse JSON payloads produced by the agent
                 if (s.startswith("{") and s.endswith("}")) or s.startswith("["):
+                    parsed = None
                     try:
                         parsed = json.loads(s)
-                        if isinstance(parsed, dict):
-                            query_text = parsed.get("query") or parsed.get("q") or ""
-                            filters = parsed.get("filters")
-                        else:
-                            # Unexpected JSON shape; fall back to raw string
-                            query_text = s
                     except Exception:
+                        # Many LLMs emit Python-style dicts with single quotes; try ast.literal_eval as a fallback
+                        try:
+                            parsed = ast.literal_eval(s)
+                        except Exception:
+                            parsed = None
+
+                    if isinstance(parsed, dict):
+                        query_text = parsed.get("query") or parsed.get("q") or ""
+                        filters = parsed.get("filters")
+                    else:
+                        # Unexpected JSON/Python shape; fall back to raw string
                         query_text = s
                 else:
                     query_text = s
