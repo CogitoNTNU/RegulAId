@@ -35,21 +35,21 @@ async def lifespan(app: FastAPI):
     app.state.top_k = RETRIEVER_TOP_K
 
     # Initialize LangChain agents
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    if not openai_api_key:
-        raise ValueError("OPENAI_API_KEY environment variable not set")
+    OPENAI_KEY = os.getenv("OPENAI_KEY")
+    if not OPENAI_KEY:
+        raise ValueError("OPENAI_KEY environment variable not set")
 
     logger.info("Initializing Classification Agent...")
     app.state.classification_agent = ClassificationAgent(
         retriever=app.state.retriever,
-        openai_api_key=openai_api_key,
+        OPENAI_KEY=OPENAI_KEY,
         model=OPENAI_MODEL
     )
 
     logger.info("Initializing Checklist Agent...")
     app.state.checklist_agent = ChecklistAgent(
         retriever=app.state.retriever,
-        openai_api_key=openai_api_key,
+        OPENAI_KEY=OPENAI_KEY,
         model=OPENAI_MODEL
     )
 

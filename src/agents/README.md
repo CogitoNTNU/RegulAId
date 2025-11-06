@@ -351,19 +351,19 @@ from dotenv import load_dotenv
 
 ```python
 # Get OpenAI API key
-openai_api_key = os.getenv("OPENAI_API_KEY")
+OPENAI_KEY = os.getenv("OPENAI_KEY")
 
 # Initialize Classification Agent
 app.state.classification_agent = ClassificationAgent(
     retriever=app.state.retriever,    # Uses existing retriever!
-    openai_api_key=openai_api_key,
+    OPENAI_KEY=OPENAI_KEY,
     model=OPENAI_MODEL                # Uses existing config!
 )
 
 # Initialize Checklist Agent
 app.state.checklist_agent = ChecklistAgent(
     retriever=app.state.retriever,    # Uses existing retriever!
-    openai_api_key=openai_api_key,
+    OPENAI_KEY=OPENAI_KEY,
     model=OPENAI_MODEL                # Uses existing config!
 )
 ```
@@ -532,7 +532,7 @@ All agents tested and working correctly:
 
 Already configured in your existing `.env`:
 ```bash
-OPENAI_API_KEY=sk-proj-...     # Used by LangChain agents
+OPENAI_KEY=sk-proj-...     # Used by LangChain agents
 OPENAI_KEY=sk-proj-...         # Used by OpenAIService
 DB_HOST=localhost
 DB_PORT=5432
@@ -609,7 +609,7 @@ def create_retrieval_tools(retriever, top_k):
 ```python
 ClassificationAgent(
     retriever=app.state.retriever,  # Injected
-    openai_api_key=api_key,         # Injected
+    OPENAI_KEY=api_key,         # Injected
     model=OPENAI_MODEL              # Injected
 )
 ```
@@ -783,12 +783,12 @@ results = evaluator.evaluate_strings(
 2. Verify `create_react_agent` format matches prompt
 3. Try GPT-4 instead of GPT-3.5 (better at tool use)
 
-### Issue: "OPENAI_API_KEY not set"
+### Issue: "OPENAI_KEY not set"
 
 **Cause**: Environment variable missing
 
 **Fix**:
-1. Check `.env` file has `OPENAI_API_KEY`
+1. Check `.env` file has `OPENAI_KEY`
 2. Make sure `load_dotenv()` is called in main.py
 3. Restart the server
 

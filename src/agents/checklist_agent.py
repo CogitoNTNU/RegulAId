@@ -1,10 +1,10 @@
 """Checklist Agent for EU AI Act compliance requirements."""
 
+import importlib
 import json
-from typing import Any, List
-from langchain_openai import ChatOpenAI
-from langchain.agents import AgentExecutor, create_react_agent
-from langchain.prompts import PromptTemplate
+from typing import Any
+
+# Remove static langchain imports; import dynamically in __init__ to be robust across versions
 from src.agents.tools import create_retrieval_tools
 from src.schemas.agent_schemas import ChecklistRequest, ChecklistResponse, ChecklistItem
 
@@ -78,13 +78,13 @@ Thought:{agent_scratchpad}"""
 class ChecklistAgent:
     """Agent for generating compliance checklists based on AI system classification."""
 
-    def __init__(self, retriever: Any, openai_api_key: str, model: str = "gpt-4o"):
+    def __init__(self, retriever: Any, OPENAI_KEY: str, model: str = "gpt-4o"):
         """
         Initialize the Checklist Agent.
 
         Args:
             retriever: The retriever instance (BM25, Vector, or Hybrid)
-            openai_api_key: OpenAI API key
+            OPENAI_KEY: OpenAI API key
             model: OpenAI model to use (default: gpt-4o)
         """
         self.retriever = retriever
@@ -93,32 +93,138 @@ class ChecklistAgent:
         # Create LangChain tools using the retriever
         self.tools = create_retrieval_tools(retriever, top_k=10)
 
+        # Dynamic import of LangChain/OpenAI wrappers to support multiple versions
+        try:
+            lc_openai = importlib.import_module('langchain_openai')
+            ChatOpenAI = getattr(lc_openai, 'ChatOpenAI')
+        except Exception:
+            # Fallback to langchain.chat_models if available
+            lc_chat = importlib.import_module('langchain.chat_models')
+            ChatOpenAI = getattr(lc_chat, 'ChatOpenAI')
+
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=model,
-            api_key=openai_api_key,
+            api_key=OPENAI_KEY,
             temperature=0.1  # Low temperature for consistent, factual responses
         )
 
-        # Create prompt
-        self.prompt = PromptTemplate.from_template(CHECKLIST_SYSTEM_PROMPT)
+        # Dynamic import for PromptTemplate and agents
+        # Resolve PromptTemplate from possible langchain package layouts (langchain_core or langchain)
+        def _resolve_prompt_template():
+            candidates = [
+                'langchain_core.prompts.prompt',
+                'langchain_core.prompts',
+                'langchain.prompts.prompt',
+                'langchain.prompts',
+            ]
+            for modname in candidates:
+                try:
+                    mod = importlib.import_module(modname)
+                except Exception:
+                    continue
+                pt = getattr(mod, 'PromptTemplate', None)
+                if pt is not None:
+                    return pt
+            # nothing found - provide a helpful error
+            raise ImportError(
+                'Could not locate PromptTemplate in langchain. '
+                'Make sure you have either `langchain` or `langchain-core` installed.'
+            )
 
-        # Create agent
-        self.agent = create_react_agent(
-            llm=self.llm,
-            tools=self.tools,
-            prompt=self.prompt
-        )
+        PromptTemplate = _resolve_prompt_template()
 
-        # Create agent executor
-        self.agent_executor = AgentExecutor(
-            agent=self.agent,
-            tools=self.tools,
-            verbose=True,
-            max_iterations=15,
-            handle_parsing_errors=True,
-            return_intermediate_steps=False
-        )
+        # Import agent creation utilities dynamically and support multiple langchain versions
+        amod = None
+        try:
+            amod = importlib.import_module('langchain.agents')
+        except Exception:
+            amod = None
+
+        # Prefer modern initialize_agent API if available
+        initialize_agent = getattr(amod, 'initialize_agent', None) if amod is not None else None
+        AgentType = getattr(amod, 'AgentType', None) if amod is not None else None
+
+        if callable(initialize_agent) and AgentType is not None:
+            try:
+                # Use initialize_agent (modern API)
+                init_fn = initialize_agent
+                # some initialize_agent variants accept different kwargs; call defensively
+                try:
+                    self.agent_executor = init_fn(
+                        tools=self.tools,
+                        llm=self.llm,
+                        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+                        verbose=True,
+                        max_iterations=15,
+                        return_intermediate_steps=False,
+                    )
+                except TypeError:
+                    # try with positional agent argument if named 'agent' isn't accepted
+                    self.agent_executor = init_fn(self.llm, self.tools)
+                # successfully created modern agent
+            except Exception:
+                # fall through to older APIs/fallback
+                self.agent_executor = None
+
+        else:
+            self.agent_executor = None
+
+        # If modern initialize_agent wasn't used, try older create_react_agent + AgentExecutor
+        if self.agent_executor is None:
+            create_react_agent = getattr(amod, 'create_react_agent', None) if amod is not None else None
+            AgentExecutor = getattr(amod, 'AgentExecutor', None) if amod is not None else None
+
+            if create_react_agent is not None and AgentExecutor is not None and PromptTemplate is not None:
+                # Older react agent + AgentExecutor construction
+                self.prompt = PromptTemplate.from_template(CHECKLIST_SYSTEM_PROMPT)
+
+                self.agent = create_react_agent(
+                    llm=self.llm,
+                    tools=self.tools,
+                    prompt=self.prompt
+                )
+
+                self.agent_executor = AgentExecutor(
+                    agent=self.agent,
+                    tools=self.tools,
+                    verbose=True,
+                    max_iterations=15,
+                    handle_parsing_errors=True,
+                    return_intermediate_steps=False
+                )
+
+        # Final fallback: simple executor that calls the LLM directly
+        if self.agent_executor is None:
+            class SimpleLLMExecutor:
+                def __init__(self, llm):
+                    self.llm = llm
+
+                def run(self, prompt: str) -> str:
+                    try:
+                        return self.llm(prompt)
+                    except Exception:
+                        pass
+                    try:
+                        if hasattr(self.llm, 'generate'):
+                            gen = self.llm.generate({'input': prompt})
+                            return str(gen)
+                    except Exception:
+                        pass
+                    try:
+                        return self.llm.__call__(prompt)
+                    except Exception:
+                        pass
+                    raise RuntimeError('LLM instance is not usable with known call patterns')
+
+                def invoke(self, kwargs: dict) -> dict:
+                    inp = kwargs.get('input') or kwargs.get('prompt') or ''
+                    return {'output': self.run(inp)}
+
+                def __call__(self, prompt: str) -> str:
+                    return self.run(prompt)
+
+            self.agent_executor = SimpleLLMExecutor(self.llm)
 
     def generate_checklist(self, request: ChecklistRequest) -> ChecklistResponse:
         """
