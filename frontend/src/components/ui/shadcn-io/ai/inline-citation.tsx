@@ -1,6 +1,5 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import {
   Carousel,
   CarouselContent,
@@ -14,7 +13,7 @@ import {
 } from '@/components/ui/hover-card';
 import { cn } from '@/lib/utils';
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
-import { type ComponentProps, useCallback, useEffect, useState, useRef, createContext, useContext } from 'react';
+import { type ComponentProps, useCallback, useEffect, useState, createContext, useContext } from 'react';
 
 // Context to share carousel API with child components
 const CarouselApiContext = createContext<CarouselApi | undefined>(undefined);
@@ -25,28 +24,41 @@ const useCarouselApi = () => {
   return api;
 };
 
-export type InlineCitationProps = ComponentProps<'span'>;
+export type InlineCitationProps = ComponentProps<'div'>;
 
 export const InlineCitation = ({
   className,
   ...props
 }: InlineCitationProps) => (
-  <span
-    className={cn('group inline items-center gap-1', className)}
+  <div
+    className={cn('inline-flex items-center gap-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-md px-2 py-1 mt-2', className)}
     {...props}
   />
 );
 
-export type InlineCitationTextProps = ComponentProps<'span'>;
+export type InlineCitationTextProps = ComponentProps<'span'> & {
+  logo?: string;
+};
 
 export const InlineCitationText = ({
+  logo,
   className,
+  children,
   ...props
 }: InlineCitationTextProps) => (
   <span
-    className={cn('transition-colors group-hover:bg-accent', className)}
+    className={cn('flex items-center gap-2 text-muted-foreground text-sm font-medium', className)}
     {...props}
-  />
+  >
+    {logo && (
+      <img
+        src={logo}
+        alt="Source logo"
+        className="h-4 w-4 object-contain"
+      />
+    )}
+    {children}
+  </span>
 );
 
 export type InlineCitationCardProps = ComponentProps<typeof HoverCard>;
@@ -55,30 +67,21 @@ export const InlineCitationCard = (props: InlineCitationCardProps) => (
   <HoverCard closeDelay={0} openDelay={0} {...props} />
 );
 
-export type InlineCitationCardTriggerProps = ComponentProps<typeof Badge> & {
+export type InlineCitationCardTriggerProps = ComponentProps<typeof HoverCardTrigger> & {
   sources: string[];
 };
 
 export const InlineCitationCardTrigger = ({
   sources,
   className,
+  children,
   ...props
 }: InlineCitationCardTriggerProps) => (
-  <HoverCardTrigger asChild>
-    <Badge
-      className={cn('ml-1 rounded-full', className)}
-      variant="secondary"
-      {...props}
-    >
-      {sources.length ? (
-        <>
-          {new URL(sources[0]).hostname}{' '}
-          {sources.length > 1 && `+${sources.length - 1}`}
-        </>
-      ) : (
-        'unknown'
-      )}
-    </Badge>
+  <HoverCardTrigger
+    className={cn('cursor-pointer', className)}
+    {...props}
+  >
+    {children}
   </HoverCardTrigger>
 );
 
@@ -88,7 +91,14 @@ export const InlineCitationCardBody = ({
   className,
   ...props
 }: InlineCitationCardBodyProps) => (
-  <HoverCardContent className={cn('relative w-80 p-0', className)} {...props} />
+  <HoverCardContent
+    className={cn('relative w-80 p-0', className)}
+    align="start"
+    side="bottom"
+    sideOffset={5}
+    avoidCollisions={false}
+    {...props}
+  />
 );
 
 export type InlineCitationCarouselProps = ComponentProps<typeof Carousel>;
@@ -125,7 +135,7 @@ export const InlineCitationCarouselItem = ({
   className,
   ...props
 }: InlineCitationCarouselItemProps) => (
-  <CarouselItem className={cn('w-full space-y-2 p-4', className)} {...props} />
+  <CarouselItem className={cn('w-full space-y-2 px-6 py-4', className)} {...props} />
 );
 
 export type InlineCitationCarouselHeaderProps = ComponentProps<'div'>;
@@ -247,22 +257,32 @@ export const InlineCitationSource = ({
   className,
   children,
   ...props
-}: InlineCitationSourceProps) => (
-  <div className={cn('space-y-1', className)} {...props}>
-    {title && (
-      <h4 className="truncate font-medium text-sm leading-tight">{title}</h4>
-    )}
-    {url && (
-      <p className="truncate break-all text-muted-foreground text-xs">{url}</p>
-    )}
-    {description && (
-      <p className="line-clamp-3 text-muted-foreground text-sm leading-relaxed">
-        {description}
-      </p>
-    )}
-    {children}
-  </div>
-);
+}: InlineCitationSourceProps) => {
+  // Remove ALL hashtags from all fields
+  const cleanTitle = title?.replace(/#/g, '').trim();
+  const cleanUrl = url?.replace(/#/g, '').trim();
+  const cleanDescription = description?.replace(/#/g, '').trim();
+
+  // Hide URL if it's empty or just "#"
+  const shouldShowUrl = cleanUrl && cleanUrl !== '';
+
+  return (
+    <div className={cn('space-y-2', className)} {...props}>
+      {cleanTitle && (
+        <h4 className="truncate font-medium text-sm leading-tight">{cleanTitle}</h4>
+      )}
+      {shouldShowUrl && (
+        <p className="truncate break-all text-muted-foreground text-xs">{cleanUrl}</p>
+      )}
+      {cleanDescription && (
+        <p className="line-clamp-3 text-muted-foreground text-sm leading-relaxed">
+          {cleanDescription}
+        </p>
+      )}
+      {children}
+    </div>
+  );
+};
 
 export type InlineCitationQuoteProps = ComponentProps<'blockquote'>;
 
