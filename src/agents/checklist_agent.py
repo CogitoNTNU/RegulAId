@@ -1,14 +1,12 @@
 """Checklist Agent for EU AI Act compliance requirements."""
 
 import json
-from typing import Any, List, AsyncGenerator
+from typing import Any, AsyncGenerator, cast
 from langchain_openai import ChatOpenAI
-from langchain.agents import AgentExecutor, create_react_agent
-from langchain.prompts import PromptTemplate
+from langchain.agents import create_agent
 from src.agents.tools import create_retrieval_tools
 from src.schemas.agent_schemas import ChecklistRequest, ChecklistResponse, ChecklistItem
 from src.agents.callbacks import StreamingCallbackHandler
-
 
 CHECKLIST_SYSTEM_PROMPT = """You are an expert EU AI Act compliance advisor specializing in creating detailed compliance checklists.
 
@@ -97,29 +95,16 @@ class ChecklistAgent:
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=model,
-            api_key=openai_api_key,
+            api_key=lambda: openai_api_key,
             temperature=0.1,  # Low temperature for consistent, factual responses
             streaming=True  # Enable token streaming
         )
 
-        # Create prompt
-        self.prompt = PromptTemplate.from_template(CHECKLIST_SYSTEM_PROMPT)
-
-        # Create agent
-        self.agent = create_react_agent(
-            llm=self.llm,
+        # Create agent using LangChain v1 create_agent API
+        self.agent = create_agent(
+            model=self.llm,
             tools=self.tools,
-            prompt=self.prompt
-        )
-
-        # Create agent executor
-        self.agent_executor = AgentExecutor(
-            agent=self.agent,
-            tools=self.tools,
-            verbose=True,
-            max_iterations=15,
-            handle_parsing_errors=True,
-            return_intermediate_steps=True 
+            system_prompt=CHECKLIST_SYSTEM_PROMPT,
         )
 
     def generate_checklist(self, request: ChecklistRequest) -> ChecklistResponse:
@@ -145,20 +130,22 @@ class ChecklistAgent:
 
         # Run the agent
         try:
-            result = self.agent_executor.invoke({"input": input_text})
-            output_text = result.get("output", "")
+            result = self.agent.invoke(cast(Any, {"messages": [{"role": "user", "content": input_text}]}))
+            output_text = result.get("messages", [])[-1].content if result.get("messages") else ""
 
             # DEBUG: Print intermediate steps
-            intermediate_steps = result.get("intermediate_steps", [])
-            print(f"\n{'='*80}")
-            print(f"CHECKLIST AGENT - INTERMEDIATE STEPS ({len(intermediate_steps)} steps):")
-            print(f"{'='*80}")
-            for i, (action, observation) in enumerate(intermediate_steps, 1):
-                print(f"\nStep {i}:")
-                print(f"  Tool: {action.tool}")
-                print(f"  Input: {action.tool_input}")
-                print(f"  Output Preview: {observation[:200]}..." if len(observation) > 200 else f"  Output: {observation}")
-            print(f"{'='*80}\n")
+            try:
+                messages = result.get("messages", [])
+                tool_msgs = [m for m in messages if
+                             getattr(m, "type", None) == "tool" or getattr(m, "role", None) == "tool"]
+                print(f"\n{'=' * 80}")
+                print(f"CHECKLIST AGENT - INTERMEDIATE TOOL MESSAGES ({len(tool_msgs)}):")
+                print(f"{'=' * 80}")
+                for i, m in enumerate(tool_msgs, 1):
+                    print(f"\nTool Message {i}: {getattr(m, 'content', str(m))[:200]}")
+                print(f"{'=' * 80}\n")
+            except Exception:
+                pass
 
             # Parse the JSON response
             json_start = output_text.find('{')
@@ -194,8 +181,8 @@ class ChecklistAgent:
             )
 
     async def generate_checklist_streaming(
-        self,
-        request: ChecklistRequest
+            self,
+            request: ChecklistRequest
     ) -> AsyncGenerator[dict, None]:
         """
         Generate a compliance checklist with streaming updates.
@@ -221,22 +208,34 @@ class ChecklistAgent:
         callback_handler = StreamingCallbackHandler()
 
         try:
-            # Start agent execution in background
-            import asyncio
-            agent_task = asyncio.create_task(
-                self.agent_executor.ainvoke(
-                    {"input": input_text},
-                    {"callbacks": [callback_handler]}
-                )
-            )
+            # Stream agent output using agent.stream
+            stream_iter = cast(Any, self.agent.stream(
+                cast(Any, {"messages": [{"role": "user", "content": input_text}]}),
+                stream_mode="messages",
+            ))
 
-            # Stream updates as they come
-            async for update in callback_handler.get_updates():
-                yield update
+            async for token_meta in stream_iter:
+                # token_meta may be a (token, metadata) tuple or a single message object
+                try:
+                    token, metadata = token_meta
+                except Exception:
+                    token = token_meta
+                    metadata = None
 
-            # Wait for agent to complete
-            result = await agent_task
-            output_text = result.get("output", "")
+                try:
+                    content_blocks = getattr(token, "content_blocks", None)
+                    if content_blocks:
+                        text = "".join([b for b in content_blocks]) if isinstance(content_blocks, list) else str(content_blocks)
+                    else:
+                        text = getattr(token, "content", str(token))
+                except Exception:
+                    text = str(token)
+
+                yield {"type": "token", "token": text}
+
+            # After stream completes, invoke once to get the final text
+            result = self.agent.invoke(cast(Any, {"messages": [{"role": "user", "content": input_text}]}))
+            output_text = result.get("messages", [])[-1].content if result.get("messages") else ""
 
             # Parse the JSON response
             json_start = output_text.find('{')

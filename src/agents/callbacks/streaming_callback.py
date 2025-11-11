@@ -2,8 +2,8 @@
 
 import asyncio
 from typing import Any, Dict, List
-from langchain.callbacks.base import AsyncCallbackHandler
-from langchain.schema import AgentAction, AgentFinish
+from langchain_core.callbacks.base import AsyncCallbackHandler
+from langchain_core.agents import AgentAction, AgentFinish
 
 
 class StreamingCallbackHandler(AsyncCallbackHandler):
@@ -24,10 +24,10 @@ class StreamingCallbackHandler(AsyncCallbackHandler):
         })
 
     async def on_tool_start(
-        self,
-        serialized: Dict[str, Any],
-        input_str: str,
-        **kwargs
+            self,
+            serialized: Dict[str, Any],
+            input_str: str,
+            **kwargs
     ) -> None:
         """Called when a tool starts executing."""
         tool_name = serialized.get("name", "unknown")

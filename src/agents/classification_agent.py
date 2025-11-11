@@ -1,10 +1,9 @@
 """Classification Agent for EU AI Act risk assessment."""
 
 import json
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, cast
 from langchain_openai import ChatOpenAI
-from langchain.agents import AgentExecutor, create_react_agent
-from langchain.prompts import PromptTemplate
+from langchain.agents import create_agent
 from src.agents.tools import create_retrieval_tools
 from src.schemas.agent_schemas import ClassificationRequest, ClassificationResponse
 from src.agents.callbacks import StreamingCallbackHandler
@@ -97,29 +96,17 @@ class ClassificationAgent:
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=model,
-            api_key=openai_api_key,
+            api_key=lambda: openai_api_key,
             temperature=0.1,  # Low temperature for consistent, factual responses
             streaming=True  # Enable token streaming
         )
 
-        # Create prompt
-        self.prompt = PromptTemplate.from_template(CLASSIFICATION_SYSTEM_PROMPT)
-
-        # Create agent
-        self.agent = create_react_agent(
-            llm=self.llm,
+        # Create agent with a static system prompt
+        # `create_agent` expects the model (LLM object), a list of tools and a system_prompt string.
+        self.agent = create_agent(
+            model=self.llm,
             tools=self.tools,
-            prompt=self.prompt
-        )
-
-        # Create agent executor
-        self.agent_executor = AgentExecutor(
-            agent=self.agent,
-            tools=self.tools,
-            verbose=True,
-            max_iterations=10,
-            handle_parsing_errors=True,
-            return_intermediate_steps=True  # CHANGED: Enable intermediate steps
+            system_prompt=CLASSIFICATION_SYSTEM_PROMPT,
         )
 
     def classify(self, request: ClassificationRequest) -> ClassificationResponse:
@@ -140,20 +127,24 @@ class ClassificationAgent:
 
         # Run the agent
         try:
-            result = self.agent_executor.invoke({"input": input_text})
-            output_text = result.get("output", "")
+            # The new agent API expects messages as the input shape
+            result = self.agent.invoke(cast(Any, {"messages": [{"role": "user", "content": input_text}]}))
+            # The agent returns a dict with messages; take the last message content
+            output_text = result.get("messages", [])[-1].content if result.get("messages") else ""
 
             # DEBUG: Print intermediate steps
-            intermediate_steps = result.get("intermediate_steps", [])
-            print(f"\n{'='*80}")
-            print(f"INTERMEDIATE STEPS ({len(intermediate_steps)} steps):")
-            print(f"{'='*80}")
-            for i, (action, observation) in enumerate(intermediate_steps, 1):
-                print(f"\nStep {i}:")
-                print(f"  Tool: {action.tool}")
-                print(f"  Input: {action.tool_input}")
-                print(f"  Output Preview: {observation[:200]}..." if len(observation) > 200 else f"  Output: {observation}")
-            print(f"{'='*80}\n")
+            # Try to show any tool call / tool outputs contained in the messages for debugging
+            try:
+                messages = result.get("messages", [])
+                tool_msgs = [m for m in messages if getattr(m, "type", None) == "tool" or getattr(m, "role", None) == "tool"]
+                print(f"\n{'='*80}")
+                print(f"INTERMEDIATE TOOL MESSAGES ({len(tool_msgs)}):")
+                print(f"{'='*80}")
+                for i, m in enumerate(tool_msgs, 1):
+                    print(f"\nTool Message {i}: {getattr(m, 'content', str(m))[:200]}")
+                print(f"{'='*80}\n")
+            except Exception:
+                pass
 
             # Parse the JSON response
             # The agent should return JSON in the Final Answer
@@ -208,22 +199,28 @@ class ClassificationAgent:
         callback_handler = StreamingCallbackHandler()
 
         try:
-            # Start agent execution in background
-            import asyncio
-            agent_task = asyncio.create_task(
-                self.agent_executor.ainvoke(
-                    {"input": input_text},
-                    {"callbacks": [callback_handler]}
-                )
-            )
+            # Stream agent output using the new agent.stream API
+            # agent.stream yields chunks; use stream_mode='messages' to get tokens with metadata
+            async for token, metadata in cast(Any, self.agent.stream(
+                cast(Any, {"messages": [{"role": "user", "content": input_text}]}),
+                stream_mode="messages",
+            )):
+                # Each yielded token is a message-like object; stream token updates to the caller
+                try:
+                    content_blocks = getattr(token, "content_blocks", None)
+                    if content_blocks:
+                        # content_blocks may be a list; join or take first
+                        text = "".join([b for b in content_blocks]) if isinstance(content_blocks, list) else str(content_blocks)
+                    else:
+                        text = getattr(token, "content", str(token))
+                except Exception:
+                    text = str(token)
 
-            # Stream updates as they come
-            async for update in callback_handler.get_updates():
-                yield update
+                yield {"type": "token", "token": text}
 
-            # Wait for agent to complete
-            result = await agent_task
-            output_text = result.get("output", "")
+            # After stream completes, invoke once to get final structured result (some agents include final message in stream but be safe)
+            result = self.agent.invoke(cast(Any, {"messages": [{"role": "user", "content": input_text}]}))
+            output_text = result.get("messages", [])[-1].content if result.get("messages") else ""
 
             # Parse the JSON response
             json_start = output_text.find('{')

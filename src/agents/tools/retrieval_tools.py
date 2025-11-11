@@ -1,7 +1,7 @@
 """LangChain tools for RAG retrieval from EU AI Act database."""
 
 from langchain.tools import tool
-from typing import Any, List
+from typing import Any
 
 
 def create_retrieval_tools(retriever: Any, top_k: int = 5):
