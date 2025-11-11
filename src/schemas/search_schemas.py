@@ -15,3 +15,4 @@ class SearchResponse(BaseModel):
 class LLMResponse(BaseModel):
     content: str = Field(..., description="Search query")
     openai_elapsed_ms: float
+    sources: Optional[List[Dict[str, Any]]] = None

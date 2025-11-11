@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database.connection import get_psycopg_connection_string
+from .filters import build_where_clauses
 
 load_dotenv()
 
@@ -22,28 +23,49 @@ class BM25Retriever:
         self.table_name = os.getenv("COLLECTION_NAME")
         self.column_name = "page_content"
 
-    def search(self, query: str, k: int = 10) -> List[Dict[str, Any]]:
+    def search(self, query: str, k: int = 10, filters: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """
-        Perform BM25 search.
+        Perform BM25 search with optional metadata filtering.
 
         Args:
             query: Search query text
             k: Number of results to return
+            filters: Optional dict of metadata filters (see filters.build_where_clauses)
 
         Returns:
             List of documents with their BM25 scores
         """
-        sql = f"""
-            SELECT id, {self.column_name}, metadata, paradedb.score(id) AS score
-            FROM {self.table_name}
-            WHERE {self.column_name} @@@ %s
-            ORDER BY score DESC
-            LIMIT %s
-        """
+        base_select = f"SELECT id, {self.column_name}, metadata, paradedb.score(id) AS score FROM {self.table_name}"
+
+        where_clauses: List[str] = []
+        params: List[Any] = []
+
+        # Full text query condition
+        if query is not None and str(query).strip() != "":
+            where_clauses.append(f"{self.column_name} @@@ %s")
+            params.append(query)
+
+        # Build metadata where clauses using shared helper
+        where_clauses.extend(build_where_clauses(filters or {}, params))
+
+        # Combine clauses
+        if where_clauses:
+            where_sql = " WHERE " + " AND ".join(where_clauses)
+        else:
+            where_sql = ""
+
+        # If there's no full-text query, paradedb.score(id) may be NULL; sort nulls last
+        order_sql = " ORDER BY score DESC NULLS LAST"
+
+        limit_sql = " LIMIT %s"
+        params.append(k)
+
+        sql = base_select + where_sql + order_sql + limit_sql
+
         try:
             with psycopg.connect(get_psycopg_connection_string()) as conn:
                 with conn.cursor() as cur:
-                    cur.execute(sql, (query, k))
+                    cur.execute(sql, tuple(params))
                     results = cur.fetchall()
 
             # Format results
