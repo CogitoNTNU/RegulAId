@@ -1,12 +1,13 @@
 """Classification Agent for EU AI Act risk assessment."""
 
 import json
-from typing import Any
+from typing import Any, AsyncGenerator
 from langchain_openai import ChatOpenAI
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain.prompts import PromptTemplate
 from src.agents.tools import create_retrieval_tools
 from src.schemas.agent_schemas import ClassificationRequest, ClassificationResponse
+from src.agents.callbacks import StreamingCallbackHandler
 
 
 CLASSIFICATION_SYSTEM_PROMPT = """You are an expert EU AI Act compliance advisor specializing in classifying AI systems according to their risk level.
@@ -97,7 +98,8 @@ class ClassificationAgent:
         self.llm = ChatOpenAI(
             model=model,
             api_key=openai_api_key,
-            temperature=0.1  # Low temperature for consistent, factual responses
+            temperature=0.1,  # Low temperature for consistent, factual responses
+            streaming=True  # Enable token streaming
         )
 
         # Create prompt
@@ -117,7 +119,7 @@ class ClassificationAgent:
             verbose=True,
             max_iterations=10,
             handle_parsing_errors=True,
-            return_intermediate_steps=False
+            return_intermediate_steps=True  # CHANGED: Enable intermediate steps
         )
 
     def classify(self, request: ClassificationRequest) -> ClassificationResponse:
@@ -140,6 +142,18 @@ class ClassificationAgent:
         try:
             result = self.agent_executor.invoke({"input": input_text})
             output_text = result.get("output", "")
+
+            # DEBUG: Print intermediate steps
+            intermediate_steps = result.get("intermediate_steps", [])
+            print(f"\n{'='*80}")
+            print(f"INTERMEDIATE STEPS ({len(intermediate_steps)} steps):")
+            print(f"{'='*80}")
+            for i, (action, observation) in enumerate(intermediate_steps, 1):
+                print(f"\nStep {i}:")
+                print(f"  Tool: {action.tool}")
+                print(f"  Input: {action.tool_input}")
+                print(f"  Output Preview: {observation[:200]}..." if len(observation) > 200 else f"  Output: {observation}")
+            print(f"{'='*80}\n")
 
             # Parse the JSON response
             # The agent should return JSON in the Final Answer
@@ -170,3 +184,70 @@ class ClassificationAgent:
                 questions=["Could you provide more details about your AI system?"],
                 relevant_articles=[]
             )
+
+    async def classify_streaming(
+        self,
+        request: ClassificationRequest
+    ) -> AsyncGenerator[dict, None]:
+        """
+        Classify an AI system with streaming updates.
+
+        Args:
+            request: Classification request with AI system description
+
+        Yields:
+            Dict with streaming updates (tasks, progress, final result)
+        """
+        # Build input for the agent
+        input_text = f"""AI System Description: {request.ai_system_description}"""
+
+        if request.additional_info:
+            input_text += f"\n\nAdditional Information: {json.dumps(request.additional_info, indent=2)}"
+
+        # Create streaming callback handler
+        callback_handler = StreamingCallbackHandler()
+
+        try:
+            # Start agent execution in background
+            import asyncio
+            agent_task = asyncio.create_task(
+                self.agent_executor.ainvoke(
+                    {"input": input_text},
+                    {"callbacks": [callback_handler]}
+                )
+            )
+
+            # Stream updates as they come
+            async for update in callback_handler.get_updates():
+                yield update
+
+            # Wait for agent to complete
+            result = await agent_task
+            output_text = result.get("output", "")
+
+            # Parse the JSON response
+            json_start = output_text.find('{')
+            json_end = output_text.rfind('}') + 1
+
+            if json_start != -1 and json_end > json_start:
+                json_str = output_text[json_start:json_end]
+                response_data = json.loads(json_str)
+
+                # Yield final result
+                yield {
+                    "type": "final_result",
+                    "data": response_data
+                }
+            else:
+                # Yield error
+                yield {
+                    "type": "error",
+                    "message": "Failed to parse agent response"
+                }
+
+        except Exception as e:
+            # Yield error
+            yield {
+                "type": "error",
+                "message": f"Error during classification: {str(e)}"
+            }

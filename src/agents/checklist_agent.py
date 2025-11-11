@@ -1,12 +1,13 @@
 """Checklist Agent for EU AI Act compliance requirements."""
 
 import json
-from typing import Any, List
+from typing import Any, List, AsyncGenerator
 from langchain_openai import ChatOpenAI
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain.prompts import PromptTemplate
 from src.agents.tools import create_retrieval_tools
 from src.schemas.agent_schemas import ChecklistRequest, ChecklistResponse, ChecklistItem
+from src.agents.callbacks import StreamingCallbackHandler
 
 
 CHECKLIST_SYSTEM_PROMPT = """You are an expert EU AI Act compliance advisor specializing in creating detailed compliance checklists.
@@ -78,14 +79,14 @@ Thought:{agent_scratchpad}"""
 class ChecklistAgent:
     """Agent for generating compliance checklists based on AI system classification."""
 
-    def __init__(self, retriever: Any, openai_api_key: str, model: str = "gpt-4o"):
+    def __init__(self, retriever: Any, openai_api_key: str, model: str = "gpt-4.1"):
         """
         Initialize the Checklist Agent.
 
         Args:
             retriever: The retriever instance (BM25, Vector, or Hybrid)
             openai_api_key: OpenAI API key
-            model: OpenAI model to use (default: gpt-4o)
+            model: OpenAI model to use (default: gpt-4.1)
         """
         self.retriever = retriever
         self.model = model
@@ -97,7 +98,8 @@ class ChecklistAgent:
         self.llm = ChatOpenAI(
             model=model,
             api_key=openai_api_key,
-            temperature=0.1  # Low temperature for consistent, factual responses
+            temperature=0.1,  # Low temperature for consistent, factual responses
+            streaming=True  # Enable token streaming
         )
 
         # Create prompt
@@ -117,7 +119,7 @@ class ChecklistAgent:
             verbose=True,
             max_iterations=15,
             handle_parsing_errors=True,
-            return_intermediate_steps=False
+            return_intermediate_steps=True 
         )
 
     def generate_checklist(self, request: ChecklistRequest) -> ChecklistResponse:
@@ -145,6 +147,18 @@ class ChecklistAgent:
         try:
             result = self.agent_executor.invoke({"input": input_text})
             output_text = result.get("output", "")
+
+            # DEBUG: Print intermediate steps
+            intermediate_steps = result.get("intermediate_steps", [])
+            print(f"\n{'='*80}")
+            print(f"CHECKLIST AGENT - INTERMEDIATE STEPS ({len(intermediate_steps)} steps):")
+            print(f"{'='*80}")
+            for i, (action, observation) in enumerate(intermediate_steps, 1):
+                print(f"\nStep {i}:")
+                print(f"  Tool: {action.tool}")
+                print(f"  Input: {action.tool_input}")
+                print(f"  Output Preview: {observation[:200]}..." if len(observation) > 200 else f"  Output: {observation}")
+            print(f"{'='*80}\n")
 
             # Parse the JSON response
             json_start = output_text.find('{')
@@ -178,3 +192,82 @@ class ChecklistAgent:
                 total_items=0,
                 summary=f"Error during checklist generation: {str(e)}"
             )
+
+    async def generate_checklist_streaming(
+        self,
+        request: ChecklistRequest
+    ) -> AsyncGenerator[dict, None]:
+        """
+        Generate a compliance checklist with streaming updates.
+
+        Args:
+            request: Checklist request with risk level and system type
+
+        Yields:
+            Dict with streaming updates (tasks, progress, final result)
+        """
+        # Build input for the agent
+        input_text = f"""Risk Level: {request.risk_level}"""
+
+        if request.system_type:
+            input_text += f"\nSystem Type: {request.system_type}"
+
+        if request.system_description:
+            input_text += f"\nSystem Description: {request.system_description}"
+
+        input_text += "\n\nGenerate a comprehensive compliance checklist for this AI system."
+
+        # Create streaming callback handler
+        callback_handler = StreamingCallbackHandler()
+
+        try:
+            # Start agent execution in background
+            import asyncio
+            agent_task = asyncio.create_task(
+                self.agent_executor.ainvoke(
+                    {"input": input_text},
+                    {"callbacks": [callback_handler]}
+                )
+            )
+
+            # Stream updates as they come
+            async for update in callback_handler.get_updates():
+                yield update
+
+            # Wait for agent to complete
+            result = await agent_task
+            output_text = result.get("output", "")
+
+            # Parse the JSON response
+            json_start = output_text.find('{')
+            json_end = output_text.rfind('}') + 1
+
+            if json_start != -1 and json_end > json_start:
+                json_str = output_text[json_start:json_end]
+                response_data = json.loads(json_str)
+
+                # Convert checklist items to proper format
+                if 'checklist_items' in response_data:
+                    response_data['checklist_items'] = [
+                        item if isinstance(item, dict) else item.__dict__
+                        for item in response_data['checklist_items']
+                    ]
+
+                # Yield final result
+                yield {
+                    "type": "final_result",
+                    "data": response_data
+                }
+            else:
+                # Yield error
+                yield {
+                    "type": "error",
+                    "message": "Failed to parse agent response"
+                }
+
+        except Exception as e:
+            # Yield error
+            yield {
+                "type": "error",
+                "message": f"Error generating checklist: {str(e)}"
+            }
