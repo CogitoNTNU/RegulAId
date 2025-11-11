@@ -6,7 +6,6 @@ from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 from src.agents.tools import create_retrieval_tools
 from src.schemas.agent_schemas import ChecklistRequest, ChecklistResponse, ChecklistItem
-from src.agents.callbacks import StreamingCallbackHandler
 
 CHECKLIST_SYSTEM_PROMPT = """You are an expert EU AI Act compliance advisor specializing in creating detailed compliance checklists.
 
@@ -204,37 +203,37 @@ class ChecklistAgent:
 
         input_text += "\n\nGenerate a comprehensive compliance checklist for this AI system."
 
-        # Create streaming callback handler
-        callback_handler = StreamingCallbackHandler()
-
         try:
-            # Stream agent output using agent.stream
-            stream_iter = cast(Any, self.agent.stream(
-                cast(Any, {"messages": [{"role": "user", "content": input_text}]}),
+            # Stream agent output using the new LangChain 1.0 agent.stream API
+            # stream_mode='messages' yields (token, metadata) tuples
+            for token, metadata in self.agent.stream(
+                {"messages": [{"role": "user", "content": input_text}]},
                 stream_mode="messages",
-            ))
-
-            async for token_meta in stream_iter:
-                # token_meta may be a (token, metadata) tuple or a single message object
+            ):
+                # Extract text content from the token
                 try:
-                    token, metadata = token_meta
-                except Exception:
-                    token = token_meta
-                    metadata = None
-
-                try:
+                    # Check for content_blocks first (new unified format)
                     content_blocks = getattr(token, "content_blocks", None)
                     if content_blocks:
-                        text = "".join([b for b in content_blocks]) if isinstance(content_blocks, list) else str(content_blocks)
+                        # Extract text from content blocks
+                        for block in content_blocks:
+                            if isinstance(block, dict) and block.get("type") == "text":
+                                text = block.get("text", "")
+                                if text:
+                                    yield {"type": "token", "token": text}
+                            elif isinstance(block, str):
+                                yield {"type": "token", "token": block}
                     else:
-                        text = getattr(token, "content", str(token))
+                        # Fall back to content attribute
+                        text = getattr(token, "content", "")
+                        if text:
+                            yield {"type": "token", "token": text}
                 except Exception:
-                    text = str(token)
-
-                yield {"type": "token", "token": text}
+                    # Silently skip tokens we can't parse
+                    pass
 
             # After stream completes, invoke once to get the final text
-            result = self.agent.invoke(cast(Any, {"messages": [{"role": "user", "content": input_text}]}))
+            result = self.agent.invoke({"messages": [{"role": "user", "content": input_text}]})
             output_text = result.get("messages", [])[-1].content if result.get("messages") else ""
 
             # Parse the JSON response
