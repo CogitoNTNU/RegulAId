@@ -1,10 +1,8 @@
 """Checklist Agent for EU AI Act compliance requirements."""
 
-import importlib
 import json
-from typing import Any
+from typing import Any, List, AsyncGenerator
 
-# Remove static langchain imports; import dynamically in __init__ to be robust across versions
 from src.agents.tools import create_retrieval_tools
 from src.schemas.agent_schemas import ChecklistRequest, ChecklistResponse, ChecklistItem
 
@@ -93,14 +91,9 @@ class ChecklistAgent:
         # Create LangChain tools using the retriever
         self.tools = create_retrieval_tools(retriever, top_k=10)
 
-        # Dynamic import of LangChain/OpenAI wrappers to support multiple versions
-        try:
-            lc_openai = importlib.import_module('langchain_openai')
-            ChatOpenAI = getattr(lc_openai, 'ChatOpenAI')
-        except Exception:
-            # Fallback to langchain.chat_models if available
-            lc_chat = importlib.import_module('langchain.chat_models')
-            ChatOpenAI = getattr(lc_chat, 'ChatOpenAI')
+        # Import LangChain classes - using LangChain 1.0+ create_agent
+        from langchain_openai import ChatOpenAI
+        from langchain.agents import create_agent
 
         # Initialize LLM
         self.llm = ChatOpenAI(
@@ -109,122 +102,13 @@ class ChecklistAgent:
             temperature=0.1  # Low temperature for consistent, factual responses
         )
 
-        # Dynamic import for PromptTemplate and agents
-        # Resolve PromptTemplate from possible langchain package layouts (langchain_core or langchain)
-        def _resolve_prompt_template():
-            candidates = [
-                'langchain_core.prompts.prompt',
-                'langchain_core.prompts',
-                'langchain.prompts.prompt',
-                'langchain.prompts',
-            ]
-            for modname in candidates:
-                try:
-                    mod = importlib.import_module(modname)
-                except Exception:
-                    continue
-                pt = getattr(mod, 'PromptTemplate', None)
-                if pt is not None:
-                    return pt
-            # nothing found - provide a helpful error
-            raise ImportError(
-                'Could not locate PromptTemplate in langchain. '
-                'Make sure you have either `langchain` or `langchain-core` installed.'
-            )
-
-        PromptTemplate = _resolve_prompt_template()
-
-        # Import agent creation utilities dynamically and support multiple langchain versions
-        amod = None
-        try:
-            amod = importlib.import_module('langchain.agents')
-        except Exception:
-            amod = None
-
-        # Prefer modern initialize_agent API if available
-        initialize_agent = getattr(amod, 'initialize_agent', None) if amod is not None else None
-        AgentType = getattr(amod, 'AgentType', None) if amod is not None else None
-
-        if callable(initialize_agent) and AgentType is not None:
-            try:
-                # Use initialize_agent (modern API)
-                init_fn = initialize_agent
-                # some initialize_agent variants accept different kwargs; call defensively
-                try:
-                    self.agent_executor = init_fn(
-                        tools=self.tools,
-                        llm=self.llm,
-                        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-                        verbose=True,
-                        max_iterations=15,
-                        return_intermediate_steps=False,
-                    )
-                except TypeError:
-                    # try with positional agent argument if named 'agent' isn't accepted
-                    self.agent_executor = init_fn(self.llm, self.tools)
-                # successfully created modern agent
-            except Exception:
-                # fall through to older APIs/fallback
-                self.agent_executor = None
-
-        else:
-            self.agent_executor = None
-
-        # If modern initialize_agent wasn't used, try older create_react_agent + AgentExecutor
-        if self.agent_executor is None:
-            create_react_agent = getattr(amod, 'create_react_agent', None) if amod is not None else None
-            AgentExecutor = getattr(amod, 'AgentExecutor', None) if amod is not None else None
-
-            if create_react_agent is not None and AgentExecutor is not None and PromptTemplate is not None:
-                # Older react agent + AgentExecutor construction
-                self.prompt = PromptTemplate.from_template(CHECKLIST_SYSTEM_PROMPT)
-
-                self.agent = create_react_agent(
-                    llm=self.llm,
-                    tools=self.tools,
-                    prompt=self.prompt
-                )
-
-                self.agent_executor = AgentExecutor(
-                    agent=self.agent,
-                    tools=self.tools,
-                    verbose=True,
-                    max_iterations=15,
-                    handle_parsing_errors=True,
-                    return_intermediate_steps=False
-                )
-
-        # Final fallback: simple executor that calls the LLM directly
-        if self.agent_executor is None:
-            class SimpleLLMExecutor:
-                def __init__(self, llm):
-                    self.llm = llm
-
-                def run(self, prompt: str) -> str:
-                    try:
-                        return self.llm(prompt)
-                    except Exception:
-                        pass
-                    try:
-                        if hasattr(self.llm, 'generate'):
-                            gen = self.llm.generate({'input': prompt})
-                            return str(gen)
-                    except Exception:
-                        pass
-                    try:
-                        return self.llm.__call__(prompt)
-                    except Exception:
-                        pass
-                    raise RuntimeError('LLM instance is not usable with known call patterns')
-
-                def invoke(self, kwargs: dict) -> dict:
-                    inp = kwargs.get('input') or kwargs.get('prompt') or ''
-                    return {'output': self.run(inp)}
-
-                def __call__(self, prompt: str) -> str:
-                    return self.run(prompt)
-
-            self.agent_executor = SimpleLLMExecutor(self.llm)
+        # Create agent using LangChain 1.0+ recommended approach
+        # create_agent returns a LangGraph runnable
+        self.agent_executor = create_agent(
+            self.llm,
+            self.tools,
+            system_prompt=CHECKLIST_SYSTEM_PROMPT
+        )
 
     def generate_checklist(self, request: ChecklistRequest) -> ChecklistResponse:
         """
@@ -247,12 +131,55 @@ class ChecklistAgent:
 
         input_text += "\n\nGenerate a comprehensive compliance checklist for this AI system."
 
-        # Run the agent
+        # Run the agent using LangGraph messages format
         try:
-            result = self.agent_executor.invoke({"input": input_text})
-            output_text = result.get("output", "")
+            # LangGraph agents use messages format
+            result = self.agent_executor.invoke({
+                "messages": [("user", input_text)]
+            })
+
+            # Extract the output from the messages
+            messages = result.get("messages", [])
+            if not messages:
+                raise RuntimeError("Agent returned no messages")
+
+            # The last message should be the agent's response
+            last_message = messages[-1]
+            output_text = last_message.content if hasattr(last_message, 'content') else str(last_message)
+
+            # DEBUG: Print messages
+            print(f"\n{'='*80}")
+            print(f"CHECKLIST AGENT MESSAGES ({len(messages)} messages):")
+            print(f"{'='*80}")
+            for i, msg in enumerate(messages, 1):
+                msg_content = msg.content if hasattr(msg, 'content') else str(msg)
+                msg_type = msg.type if hasattr(msg, 'type') else type(msg).__name__
+                print(f"\nMessage {i} ({msg_type}):")
+                print(f"  Content Preview: {msg_content[:200]}..." if len(msg_content) > 200 else f"  Content: {msg_content}")
+            print(f"{'='*80}\n")
 
             # Parse the JSON response
+            # Note: The agent may return double braces {{ }} due to template escaping
+            # Replace double braces with single braces
+            output_text = output_text.replace('{{', '{').replace('}}', '}')
+
+            # Strip "Final Answer:" prefix if present
+            if "Final Answer:" in output_text:
+                output_text = output_text.split("Final Answer:", 1)[1].strip()
+
+            # Extract JSON from markdown code blocks if present
+            if "```json" in output_text:
+                json_block_start = output_text.find("```json") + 7
+                json_block_end = output_text.find("```", json_block_start)
+                if json_block_end != -1:
+                    output_text = output_text[json_block_start:json_block_end].strip()
+            elif "```" in output_text:
+                # Handle plain code blocks
+                json_block_start = output_text.find("```") + 3
+                json_block_end = output_text.find("```", json_block_start)
+                if json_block_end != -1:
+                    output_text = output_text[json_block_start:json_block_end].strip()
+
             json_start = output_text.find('{')
             json_end = output_text.rfind('}') + 1
 
@@ -284,3 +211,84 @@ class ChecklistAgent:
                 total_items=0,
                 summary=f"Error during checklist generation: {str(e)}"
             )
+
+    async def generate_checklist_streaming(
+        self,
+        request: ChecklistRequest
+    ) -> AsyncGenerator[dict, None]:
+        """
+        Generate a compliance checklist with streaming updates.
+
+        Args:
+            request: Checklist request with risk level and system type
+
+        Yields:
+            Dict with streaming updates (tasks, progress, final result)
+        """
+        # Build input for the agent
+        input_text = f"""Risk Level: {request.risk_level}"""
+
+        if request.system_type:
+            input_text += f"\nSystem Type: {request.system_type}"
+
+        if request.system_description:
+            input_text += f"\nSystem Description: {request.system_description}"
+
+        input_text += "\n\nGenerate a comprehensive compliance checklist for this AI system."
+
+        try:
+            # Send initial task status
+            yield {
+                "type": "task",
+                "status": "in_progress",
+                "title": "Generating compliance checklist",
+                "description": "Analyzing requirements"
+            }
+
+            # Run the agent using the same proven logic as generate_checklist()
+            # Use run_in_executor to run the synchronous method in a thread pool
+            import asyncio
+            from functools import partial
+
+            loop = asyncio.get_event_loop()
+            checklist_response = await loop.run_in_executor(
+                None,
+                partial(self.generate_checklist, request)
+            )
+
+            # Yield completion task
+            yield {
+                "type": "task",
+                "status": "completed",
+                "title": "Checklist generation complete",
+                "description": "Requirements analyzed"
+            }
+
+            # Convert the ChecklistResponse to a dict for the final result
+            response_data = {
+                "risk_level": checklist_response.risk_level,
+                "checklist_items": [
+                    {
+                        "requirement": item.requirement,
+                        "applicable_articles": item.applicable_articles,
+                        "priority": item.priority,
+                        "category": item.category
+                    }
+                    for item in checklist_response.checklist_items
+                ],
+                "total_items": checklist_response.total_items,
+                "summary": checklist_response.summary
+            }
+
+            # Yield final result
+            yield {
+                "type": "final_result",
+                "data": response_data
+            }
+
+        except Exception as e:
+            # Yield error
+            yield {
+                "type": "error",
+                "message": f"Error generating checklist: {str(e)}"
+            }
