@@ -22,9 +22,9 @@ def search_documents(payload: SearchRequest, request: Request):
     # Pass the retriever so the service can register a `search` tool the agent will call
     llmResponse = oa_service.generate_text(prompt=payload.query, history=payload.history, retriever=retriever, top_k=top_k)
 
-    # If the OpenAIService returned an error placeholder, return a 502 so clients get a meaningful status
+    # If the RAGAgent returned an error placeholder, return a 502 so clients get a meaningful status
     if llmResponse.content.startswith("OpenAI agent error:"):
-        logging.getLogger(__name__).error("OpenAIService reported an error: %s", llmResponse.content)
+        logging.getLogger(__name__).error("RAGAgent reported an error: %s", llmResponse.content)
         return JSONResponse(status_code=502, content={"detail": llmResponse.content})
 
     backend_elapsed_ms = (perf_counter() - backend_start) * 1000.0

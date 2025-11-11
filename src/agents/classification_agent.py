@@ -186,7 +186,7 @@ class ClassificationAgent:
             request: Classification request with AI system description
 
         Yields:
-            Dict with streaming updates (tasks, progress, final result)
+            Dict with streaming updates (tasks, progress, sources, final result)
         """
         # Build input for the agent
         input_text = f"""AI System Description: {request.ai_system_description}"""
@@ -194,38 +194,98 @@ class ClassificationAgent:
         if request.additional_info:
             input_text += f"\n\nAdditional Information: {json.dumps(request.additional_info, indent=2)}"
 
-        try:
-            # Stream agent output using the new LangChain 1.0 agent.stream API
-            # stream_mode='messages' yields (token, metadata) tuples
-            for token, metadata in self.agent.stream(
-                {"messages": [{"role": "user", "content": input_text}]},
-                stream_mode="messages",
-            ):
-                # Extract text content from the token
-                try:
-                    # Check for content_blocks first (new unified format)
-                    content_blocks = getattr(token, "content_blocks", None)
-                    if content_blocks:
-                        # Extract text from content blocks
-                        for block in content_blocks:
-                            if isinstance(block, dict) and block.get("type") == "text":
-                                text = block.get("text", "")
-                                if text:
-                                    yield {"type": "token", "token": text}
-                            elif isinstance(block, str):
-                                yield {"type": "token", "token": block}
-                    else:
-                        # Fall back to content attribute
-                        text = getattr(token, "content", "")
-                        if text:
-                            yield {"type": "token", "token": text}
-                except Exception:
-                    # Silently skip tokens we can't parse
-                    pass
+        # Track sources from tool calls
+        sources = []
 
-            # After stream completes, invoke once to get final structured result
-            result = self.agent.invoke({"messages": [{"role": "user", "content": input_text}]})
-            output_text = result.get("messages", [])[-1].content if result.get("messages") else ""
+        try:
+            # Use stream_mode="values" to get the full state at each step
+            # This allows us to see tool calls and their outputs
+            for step in self.agent.stream(
+                {"messages": [{"role": "user", "content": input_text}]},
+                stream_mode="values",
+            ):
+                messages = step.get("messages", [])
+                if not messages:
+                    continue
+
+                latest_message = messages[-1]
+                message_type = getattr(latest_message, "type", None)
+
+                # Check for AI message with tool calls
+                if message_type == "ai" or hasattr(latest_message, "tool_calls"):
+                    tool_calls = getattr(latest_message, "tool_calls", [])
+                    if tool_calls:
+                        for tool_call in tool_calls:
+                            tool_name = tool_call.get("name", "unknown")
+                            tool_args = tool_call.get("args", {})
+
+                            # Map tool names to user-friendly descriptions
+                            tool_descriptions = {
+                                "retrieve_eu_ai_act": "Searching EU AI Act database",
+                                "retrieve_risk_requirements": "Analyzing risk requirements",
+                                "retrieve_system_type_info": "Searching system-specific information"
+                            }
+
+                            description = tool_descriptions.get(tool_name, f"Running {tool_name}")
+                            query = tool_args.get("query", tool_args.get("risk_level", tool_args.get("system_type", "")))
+
+                            yield {
+                                "type": "task",
+                                "status": "in_progress",
+                                "title": description,
+                                "description": f"Query: {query[:100]}" if query else "Processing...",
+                                "tool": tool_name
+                            }
+
+                # Check for tool message (tool output)
+                elif message_type == "tool":
+                    tool_content = getattr(latest_message, "content", "")
+
+                    # Extract sources from tool output
+                    # Format: [1] Article X - Name\nContent\n\n
+                    if tool_content and "[" in tool_content:
+                        # Parse sources from the formatted output
+                        import re
+                        article_pattern = r'\[(\d+)\]\s*Article\s*([^\n-]+)(?:\s*-\s*([^\n(]+))?(?:\s*\([^)]+\))?\n([^\[]*)'
+                        matches = re.findall(article_pattern, tool_content)
+
+                        for match in matches:
+                            idx, article_num, article_name, content = match
+                            source = {
+                                "index": len(sources) + 1,
+                                "article_number": article_num.strip(),
+                                "article_name": article_name.strip() if article_name else "",
+                                "content": content.strip()[:500],  # Limit content length
+                                "metadata": {
+                                    "article_number": article_num.strip(),
+                                    "article_name": article_name.strip() if article_name else ""
+                                }
+                            }
+                            sources.append(source)
+
+                        # Count articles retrieved
+                        article_count = len(matches)
+                        yield {
+                            "type": "task",
+                            "status": "completed",
+                            "title": "Search completed",
+                            "description": f"Retrieved {article_count} relevant articles"
+                        }
+
+                # Stream AI response tokens
+                if message_type == "ai":
+                    content = getattr(latest_message, "content", "")
+                    if content:
+                        # Only stream if there are no tool calls (final response)
+                        tool_calls = getattr(latest_message, "tool_calls", [])
+                        if not tool_calls:
+                            # Stream token by token
+                            for char in content:
+                                yield {"type": "token", "token": char}
+
+            # Get final result from the last message
+            final_result = self.agent.invoke({"messages": [{"role": "user", "content": input_text}]})
+            output_text = final_result.get("messages", [])[-1].content if final_result.get("messages") else ""
 
             # Parse the JSON response
             json_start = output_text.find('{')
@@ -235,10 +295,14 @@ class ClassificationAgent:
                 json_str = output_text[json_start:json_end]
                 response_data = json.loads(json_str)
 
+                # Add sources to response
+                response_data["sources"] = sources
+
                 # Yield final result
                 yield {
                     "type": "final_result",
-                    "data": response_data
+                    "data": response_data,
+                    "sources": sources
                 }
             else:
                 # Yield error
