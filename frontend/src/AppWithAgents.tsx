@@ -1,10 +1,19 @@
 import {useEffect, useRef, useState} from "react";
-import {Card} from "@/components/ui/card";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar";
 import {Response} from "@/components/ui/shadcn-io/ai/response";
+import {Actions, Action} from "@/components/ui/shadcn-io/ai/actions";
+import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {
+    PromptInput,
+    PromptInputTextarea,
+    PromptInputToolbar,
+    PromptInputSubmit,
+} from "@/components/ui/shadcn-io/ai/prompt-input";
+import {Suggestions, Suggestion} from "@/components/ui/shadcn-io/ai/suggestion";
+import TypingText from "@/components/ui/shadcn-io/text/typing-text";
+import { cn } from "@/lib/utils";
+import {CopyIcon} from "lucide-react";
 import {
     InlineCitation,
     InlineCitationCard,
@@ -25,8 +34,8 @@ import {
     TaskTrigger,
     TaskContent,
     TaskItem,
-    TaskItemFile,
 } from '@/components/ui/shadcn-io/ai/task';
+import { Vortex } from "@/components/ui/vortex";
 
 type Source = { id: number | string; content: string; metadata?: Record<string, any> };
 type Task = { id: string; title: string; description: string; status: "in_progress" | "completed" | "error" };
@@ -41,7 +50,24 @@ type Msg = {
 };
 type ApiResponse = { result?: string; sources?: Source[] } | string[] | string | unknown;
 
-type Mode = "chat" | "classify" | "full-flow";
+type Mode = "chat" | "compliance-agents";
+
+const CopySuccessIcon = ({className}: {className?: string}) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={cn("lucide lucide-check-icon lucide-check", className)}
+    >
+        <path d="M20 6 9 17l-5-5"/>
+    </svg>
+);
 
 function toText(data: ApiResponse): string {
     if (typeof data === "string") return data;
@@ -65,7 +91,38 @@ export default function App() {
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
-    const [classificationResult, setClassificationResult] = useState<any>(null);
+    const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
+    const [inputFocused, setInputFocused] = useState(false);
+    const suggestionPresets: Record<Mode, {label: string; prompt: string}[]> = {
+        chat: [
+            {
+                label: "Airport facial ID",
+                prompt: "What EU AI Act requirements apply to facial recognition at airports?"
+            },
+            {
+                label: "Biometric obligations",
+                prompt: "How does the AI Act treat biometric identification systems?"
+            },
+            {
+                label: "Chatbot transparency",
+                prompt: "What transparency rules affect customer-facing chatbots?"
+            }
+        ],
+        "compliance-agents": [
+            {
+                label: "Classify airport FR",
+                prompt: "Classify a facial recognition system deployed in an airport."
+            },
+            {
+                label: "Credit scoring checklist",
+                prompt: "Generate a compliance checklist for an AI credit scoring tool."
+            },
+            {
+                label: "Medical diagnostics docs",
+                prompt: "What documentation is required for high-risk medical diagnostics AI?"
+            }
+        ]
+    };
 
     const endRef = useRef<HTMLDivElement>(null);
 
@@ -77,23 +134,18 @@ export default function App() {
     useEffect(() => {
         if (mode === "chat") {
             setMessages([{role: "assistant", content: "Hi! Ask me anything about the EU AI Act."}]);
-        } else if (mode === "classify") {
-            setMessages([{
-                role: "assistant",
-                content: "I'll help classify your AI system. Please describe your AI system in detail."
-            }]);
-        } else if (mode === "full-flow") {
+        } else if (mode === "compliance-agents") {
             setMessages([{
                 role: "assistant",
                 content: "I'll classify your AI system and generate a compliance checklist. Please describe your AI system."
             }]);
         }
         setInput("");
-        setClassificationResult(null);
     }, [mode]);
 
-    async function send() {
-        const text = input.trim();
+    async function send(overrideText?: string) {
+        const rawText = overrideText ?? input;
+        const text = rawText.trim();
         if (!text || loading) return;
 
         const next: Msg[] = [...messages, {role: "user" as const, content: text}];
@@ -104,9 +156,7 @@ export default function App() {
         try {
             if (mode === "chat") {
                 await sendChat(text, next);
-            } else if (mode === "classify") {
-                await sendClassify(text);
-            } else if (mode === "full-flow") {
+            } else if (mode === "compliance-agents") {
                 await sendFullFlow(text);
             }
         } catch (e: any) {
@@ -130,165 +180,6 @@ export default function App() {
             {role: "assistant", content: "", taskOnly: true},
             {role: "assistant", content: answer, sources}
         ]);
-    }
-
-    async function sendClassify(description: string) {
-        // Add initial loading message with empty tasks - capture the ACTUAL index
-        let taskMessageIndex = -1;
-        setMessages(m => {
-            taskMessageIndex = m.length;  // Capture correct index from state
-            return [...m, {role: "assistant", content: "", taskOnly: true, tasks: []}];
-        });
-
-        let taskIdCounter = 0;
-        let responseMessageIndex = -1;
-        let streamingText = "";
-
-        const res = await fetch("/api/classify/stream", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ai_system_description: description}),
-        });
-
-        if (!res.ok) throw new Error("Failed to start classification stream");
-        if (!res.body) throw new Error("No response body");
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let finalData: any = null;
-
-        try {
-            while (true) {
-                const {done, value} = await reader.read();
-                if (done) break;
-
-                buffer += decoder.decode(value, {stream: true});
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || "";
-
-                for (const line of lines) {
-                    if (!line.trim() || !line.startsWith('data: ')) continue;
-
-                    const data = JSON.parse(line.substring(6));
-
-                    if (data.type === "task") {
-                        // Add or update task using functional state update
-                        setMessages(m => {
-                            const newMessages = [...m];
-                            const currentTasks = newMessages[taskMessageIndex].tasks || [];
-
-                            // Find existing task
-                            const existingIndex = currentTasks.findIndex((t: Task) => t.title === data.title);
-
-                            let updatedTasks: Task[];
-                            if (existingIndex >= 0) {
-                                // Update existing task
-                                updatedTasks = [...currentTasks];
-                                updatedTasks[existingIndex] = {
-                                    ...updatedTasks[existingIndex],
-                                    status: data.status,
-                                    description: data.description
-                                };
-                            } else {
-                                // Add new task
-                                updatedTasks = [...currentTasks, {
-                                    id: `task-${taskIdCounter++}`,
-                                    title: data.title,
-                                    description: data.description,
-                                    status: data.status
-                                }];
-                            }
-
-                            // Update the message with new tasks
-                            newMessages[taskMessageIndex] = {
-                                ...newMessages[taskMessageIndex],
-                                tasks: updatedTasks
-                            };
-
-                            return newMessages;
-                        });
-
-                    } else if (data.type === "token") {
-                        // Stream LLM tokens
-                        streamingText += data.token;
-
-                        // Create or update streaming response message
-                        if (responseMessageIndex === -1) {
-                            setMessages(m => {
-                                responseMessageIndex = m.length;
-                                return [...m, {role: "assistant", content: streamingText}];
-                            });
-                        } else {
-                            setMessages(m => {
-                                const newMessages = [...m];
-                                newMessages[responseMessageIndex] = {
-                                    ...newMessages[responseMessageIndex],
-                                    content: streamingText
-                                };
-                                return newMessages;
-                            });
-                        }
-
-                    } else if (data.type === "final_result") {
-                        console.log("Received final_result:", data.data);
-                        finalData = data.data;
-                    } else if (data.type === "error") {
-                        throw new Error(data.message);
-                    }
-                }
-            }
-        } finally {
-            reader.releaseLock();
-        }
-
-        // Process final result - replace streaming text with formatted response
-        console.log("After streaming loop, finalData:", finalData);
-        if (finalData) {
-            setClassificationResult(finalData);
-
-            let response = "";
-            let sources: Source[] | undefined = undefined;
-
-            if (finalData.needs_more_info) {
-                response = `I need more information to classify your system.\n\n**Questions:**\n${finalData.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}`;
-            } else {
-                response = `**Classification Result**\n\n`;
-                response += `**Risk Level:** ${finalData.risk_level}\n`;
-                response += `**System Type:** ${finalData.system_type}\n`;
-                response += `**Confidence:** ${(finalData.confidence * 100).toFixed(0)}%\n\n`;
-                response += `**Reasoning:** ${finalData.reasoning}\n\n`;
-                if (finalData.relevant_articles && finalData.relevant_articles.length > 0) {
-                    response += `**Relevant Articles:** ${finalData.relevant_articles.join(", ")}`;
-                }
-
-                // Convert relevant_articles to sources format (preserve main functionality)
-                if (finalData.relevant_articles && finalData.relevant_articles.length > 0) {
-                    sources = finalData.relevant_articles.map((article: string, idx: number) => ({
-                        id: `article-${idx}`,
-                        content: `Referenced in classification: ${article}`,
-                        metadata: { id: article, type: 'article' }
-                    }));
-                }
-            }
-
-            // Replace the streaming message with formatted response
-            if (responseMessageIndex !== -1) {
-                setMessages(m => {
-                    const newMessages = [...m];
-                    newMessages[responseMessageIndex] = {
-                        ...newMessages[responseMessageIndex],
-                        content: response,
-                        sources,  // Add sources here
-                        metadata: finalData
-                    };
-                    return newMessages;
-                });
-            } else {
-                // No streaming happened, add new message
-                setMessages(m => [...m, {role: "assistant", content: response, sources, metadata: finalData}]);
-            }
-        }
     }
 
     async function sendFullFlow(description: string) {
@@ -565,81 +456,166 @@ export default function App() {
         }
     }
 
-    function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            send();
+    const handleCopy = async (content: string, index: number) => {
+        if (typeof navigator === "undefined" || !navigator.clipboard) {
+            return;
         }
-    }
+        try {
+            await navigator.clipboard.writeText(content);
+            setCopiedMessageIndex(index);
+            setTimeout(() => {
+                setCopiedMessageIndex((current) => (current === index ? null : current));
+            }, 2000);
+        } catch (error) {
+            console.error("Failed to copy response", error);
+        }
+    };
+
 
     return (
-        <div className="h-screen w-full p-4">
-            <div className="mx-auto max-w-3xl h-full min-h-0 space-y-3">
-                {/* Logo */}
-                <div className="flex items-center gap-3">
-                    <img
-                        src="/regulaid_logo.png"
-                        alt="RegulAId"
-                        className="h-12 w-auto object-contain"
-                    />
+        <Vortex
+            backgroundColor="#03060d"
+            particleCount={600}
+            baseHue={220}
+            rangeHue={80}
+            baseSpeed={0.00002}
+            rangeSpeed={0.0003}
+            className="h-screen w-full"
+        >
+        <div className="mx-auto flex h-full w-full max-w-5xl flex-col px-4">
+            {/* Header with logo and tabs */}
+            <div className="flex items-center gap-6 p-4 border-b">
+                <img
+                    src="/regulaid_logo.png"
+                    alt="RegulAId"
+                    className="h-10 w-auto object-contain"
+                />
+                <Tabs value={mode} onValueChange={(value) => setMode(value as Mode)}>
+                    <TabsList>
+                        <TabsTrigger value="chat">Q&A Chat</TabsTrigger>
+                        <TabsTrigger value="compliance-agents">Compliance Agents</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+            </div>
+
+            {/* Main chat area */}
+            <div className="flex-1 flex flex-col min-h-0">
+                <div className="flex-1 min-h-0">
+                    <ScrollArea className="h-full">
+                        <div className="mx-auto max-w-3xl p-4 space-y-3">
+                                {messages.map((m, i) => {
+                                    const showCopy = !m.taskOnly && m.role === "assistant" && Boolean(m.content?.trim());
+                                    return (
+                                        <div key={i} className="space-y-2">
+                                            <Bubble
+                                                role={m.role}
+                                                content={m.content}
+                                                sources={m.sources}
+                                                taskOnly={m.taskOnly}
+                                                mode={mode}
+                                                tasks={m.tasks}
+                                            />
+                                            {showCopy && (
+                                                <div className="flex items-start gap-3 justify-start">
+                                                    <div className="h-8 w-8 flex-shrink-0" aria-hidden="true" />
+                                                    <div className="max-w-[80%] flex justify-end">
+                                                        <Actions className="justify-end">
+                                                            <Action
+                                                                label={copiedMessageIndex === i ? "Copied" : "Copy"}
+                                                                tooltip={copiedMessageIndex === i ? "Copied" : "Copy response"}
+                                                                onClick={() => {
+                                                                    void handleCopy(m.content as string, i);
+                                                                }}
+                                                            >
+                                                                {copiedMessageIndex === i ? (
+                                                                    <CopySuccessIcon className="size-4 text-emerald-500" />
+                                                                ) : (
+                                                                    <CopyIcon className="size-4" />
+                                                                )}
+                                                            </Action>
+                                                        </Actions>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            {loading && mode === "chat" && <LoadingBubble/>}
+                            <div ref={endRef}/>
+                        </div>
+                    </ScrollArea>
                 </div>
 
-                {/* Mode selector */}
-                <div className="flex gap-2 justify-center">
-                    <Button
-                        variant={mode === "chat" ? "default" : "outline"}
-                        onClick={() => setMode("chat")}
-                    >
-                        Q&A Chat
-                    </Button>
-                    <Button
-                        variant={mode === "classify" ? "default" : "outline"}
-                        onClick={() => setMode("classify")}
-                    >
-                        Classification
-                    </Button>
-                    <Button
-                        variant={mode === "full-flow" ? "default" : "outline"}
-                        onClick={() => setMode("full-flow")}
-                    >
-                        Full Compliance Flow
-                    </Button>
-                </div>
-
-                <Card className="h-[calc(80vh-7rem)] grid grid-rows-[1fr_auto] overflow-hidden">
-                    <div className="min-h-0">
-                        <ScrollArea className="h-full">
-                            <div className="p-4 space-y-3">
-                                {messages.map((m, i) => <Bubble key={i} role={m.role} content={m.content}
-                                                                sources={m.sources} showTask={m.showTask} taskOnly={m.taskOnly} mode={mode} tasks={m.tasks}/>)}
-                                {loading && mode === "chat" && <LoadingBubble mode={mode}/>}
-                                <div ref={endRef}/>
+                {/* Input area */}
+                <div className="mx-auto w-full max-w-3xl px-4 pb-4 space-y-3">
+                    <Suggestions>
+                        {suggestionPresets[mode].map(({label, prompt}) => (
+                            <Suggestion
+                                key={prompt}
+                                suggestion={prompt}
+                                onClick={() => setInput(prompt)}
+                            >
+                                {label}
+                            </Suggestion>
+                        ))}
+                    </Suggestions>
+                    <PromptInput
+                        className="divide-y-0"
+                        onSubmit={(e) => {
+                        e.preventDefault();
+                        send();
+                    }}>
+                        <div className="relative">
+                            <PromptInputTextarea
+                                value={input}
+                                onChange={(e) => setInput(e.currentTarget.value)}
+                                placeholder=" "
+                                className="placeholder-transparent"
+                                onFocus={() => setInputFocused(true)}
+                                onBlur={() => setInputFocused(false)}
+                            />
+                            <div
+                                className={cn(
+                                    "pointer-events-none absolute inset-x-3 top-3 text-sm transition-opacity",
+                                    input || inputFocused ? "opacity-0" : "opacity-100"
+                                )}
+                            >
+                                <TypingText
+                                    text={mode === "chat"
+                                        ? [
+                                            "Ask about airport facial recognition",
+                                            "Clarify biometric identification rules",
+                                            "Check chatbot transparency duties"
+                                        ]
+                                        : [
+                                            "Classify your AI system",
+                                            "Request a compliance checklist",
+                                            "List documents for high-risk AI"
+                                        ]}
+                                    typingSpeed={75}
+                                    pauseDuration={1500}
+                                    showCursor={true}
+                                    cursorCharacter="|"
+                                    className="text-muted-foreground"
+                                    textColors={['#3b82f6', '#8b5cf6', '#06b6d4']}
+                                    variableSpeed={{ min: 50, max: 120 }}
+                                />
                             </div>
-                        </ScrollArea>
-                    </div>
-
-                    <div className="border-t p-3 flex gap-2">
-                        <Input
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={onKey}
-                            placeholder={
-                                mode === "chat"
-                                    ? "Ask a question about EU AI Act..."
-                                    : "Describe your AI system..."
-                            }
-                        />
-                        <Button onClick={send} disabled={loading || !input.trim()}>Send</Button>
-                    </div>
-                </Card>
+                        </div>
+                        <PromptInputToolbar className="justify-end">
+                            <PromptInputSubmit disabled={loading || !input.trim()} />
+                        </PromptInputToolbar>
+                    </PromptInput>
+                </div>
             </div>
         </div>
+        </Vortex>
     );
 
-    function LoadingBubble({mode}: { mode: Mode }) {
+    function LoadingBubble() {
         // Only used for chat mode (non-streaming)
         return (
-            <div className="mb-1 flex items-start gap-3 justify-start">
+            <div className="mb-4 flex items-start gap-3 justify-start">
                 <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>
                 <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm bg-muted">
                     <Task>
@@ -654,19 +630,27 @@ export default function App() {
     }
 
     function Bubble({
-                        role, content, muted, sources, showTask, taskOnly, mode, tasks
-                    }: { role: "user" | "assistant"; content: string; muted?: boolean; sources?: Source[]; showTask?: boolean; taskOnly?: boolean; mode?: Mode; tasks?: Task[] }) {
+                        role, content, muted, sources, taskOnly, mode, tasks
+                    }: {
+        role: "user" | "assistant";
+        content: string;
+        muted?: boolean;
+        sources?: Source[];
+        taskOnly?: boolean;
+        mode?: Mode;
+        tasks?: Task[];
+    }) {
         const isUser = role === "user";
 
         // If taskOnly is true, only render the Task component
         if (taskOnly && !isUser) {
             return (
-                <div className="mb-1 flex items-start gap-3 justify-start">
+                <div className="flex items-start gap-3 justify-start">
                     <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>
                     <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm bg-muted">
                         {/* Render dynamic tasks from streaming */}
                         <Task>
-                            <TaskTrigger title={mode === "classify" ? "Classifying AI system" : mode === "full-flow" ? "Running full compliance workflow" : "Processing your request"}/>
+                            <TaskTrigger title={mode === "compliance-agents" ? "Running full compliance workflow" : "Processing your request"}/>
                             <TaskContent>
                                 {tasks && tasks.length > 0 ? (
                                     tasks.map((task) => (
@@ -684,10 +668,10 @@ export default function App() {
                     </div>
                 </div>
             );
-        }
+    }
 
-        return (
-            <div className={`mb-1 flex items-start gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
+    return (
+            <div className={`flex items-start gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
                 {!isUser && <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>}
                 <div
                     className={[
