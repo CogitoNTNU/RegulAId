@@ -1,3 +1,5 @@
+"""RAG Agent for EU AI Act question answering using LangChain."""
+
 import os
 from dotenv import load_dotenv
 import logging
@@ -18,8 +20,8 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
-class OpenAIService:
-    """Wrapper that uses a LangChain agent and a `search` tool backed by the project's retriever."""
+class RAGAgent:
+    """RAG Agent that uses a LangChain agent and a `search` tool backed by the project's retriever."""
 
     def __init__(self, api_key: str | None = None, model: str = "gpt-5") -> None:
         # Accepts 'model' kwarg to match caller in src/api/main.py
@@ -35,7 +37,7 @@ class OpenAIService:
             model=self.model,
             temperature=0.1,
             max_tokens=1000,
-            api_key=self.api_key,
+            api_key= self.api_key,
             timeout=30)
 
     def generate_text(self, prompt: str, history, retriever, top_k: int = 5) -> LLMResponse:
@@ -182,6 +184,6 @@ class OpenAIService:
 
         result = agent_response['messages'][-1].content
 
-        logger.info("OpenAIService.generate_text (agent): agent call took %.2f ms", openai_elapsed_ms)
+        logger.info("RAGAgent.generate_text: agent call took %.2f ms", openai_elapsed_ms)
         # Return any captured sources from tool calls so routers can expose them to clients
         return LLMResponse(content=result, openai_elapsed_ms=openai_elapsed_ms, sources=captured_sources)

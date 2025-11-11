@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from src.api.routers import health, search, classify, checklist
-from src.api.services.openai_service import OpenAIService
+from src.api.services.rag_agent import RAGAgent
 from src.api.config import OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K
 from src.retrievers import BM25Retriever, VectorRetriever
 from src.agents import ClassificationAgent, ChecklistAgent
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Init services
     logger.info("Initializing services...")
-    app.state.openai = OpenAIService(model=OPENAI_MODEL)
+    app.state.openai = RAGAgent(model=OPENAI_MODEL)
 
     # Initialize retriever based on config
     if RETRIEVER_TYPE == "bm25":
@@ -42,14 +42,14 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing Classification Agent...")
     app.state.classification_agent = ClassificationAgent(
         retriever=app.state.retriever,
-        OPENAI_KEY=OPENAI_KEY,
+        openai_api_key=OPENAI_KEY,
         model=OPENAI_MODEL
     )
 
     logger.info("Initializing Checklist Agent...")
     app.state.checklist_agent = ChecklistAgent(
         retriever=app.state.retriever,
-        OPENAI_KEY=OPENAI_KEY,
+        openai_api_key=OPENAI_KEY,
         model=OPENAI_MODEL
     )
 

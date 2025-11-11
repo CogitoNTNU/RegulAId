@@ -5,6 +5,7 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar";
 import {Response} from "@/components/ui/shadcn-io/ai/response";
+import {Badge} from "@/components/ui/badge";
 import {
     InlineCitation,
     InlineCitationCard,
@@ -20,9 +21,25 @@ import {
     InlineCitationSource,
     InlineCitationText,
 } from '@/components/ui/shadcn-io/ai/inline-citation';
+import {
+    Task,
+    TaskTrigger,
+    TaskContent,
+    TaskItem,
+    TaskItemFile,
+} from '@/components/ui/shadcn-io/ai/task';
 
 type Source = { id: number | string; content: string; metadata?: Record<string, any> };
-type Msg = { role: "user" | "assistant"; content: string; sources?: Source[]; metadata?: any };
+type Task = { id: string; title: string; description: string; status: "in_progress" | "completed" | "error" };
+type Msg = {
+    role: "user" | "assistant";
+    content: string;
+    sources?: Source[];
+    metadata?: any;
+    showTask?: boolean;
+    taskOnly?: boolean;
+    tasks?: Task[];  // NEW: Dynamic tasks
+};
 type ApiResponse = { result?: string; sources?: Source[] } | string[] | string | unknown;
 
 type Mode = "chat" | "classify" | "full-flow";
@@ -110,152 +127,380 @@ export default function App() {
         if (!res.ok) throw new Error(toText(data));
         const answer = toText(data);
         const sources = toSources(data);
-        setMessages(m => [...m, {role: "assistant", content: answer, sources}]);
+        setMessages(m => [...m,
+            {role: "assistant", content: "", taskOnly: true},
+            {role: "assistant", content: answer, sources}
+        ]);
     }
 
     async function sendClassify(description: string) {
-        const res = await fetch("/api/classify/", {
+        // Add initial loading message with empty tasks - capture the ACTUAL index
+        let taskMessageIndex = -1;
+        setMessages(m => {
+            taskMessageIndex = m.length;  // Capture correct index from state
+            return [...m, {role: "assistant", content: "", taskOnly: true, tasks: []}];
+        });
+
+        let taskIdCounter = 0;
+        let responseMessageIndex = -1;
+        let streamingText = "";
+
+        const res = await fetch("/api/classify/stream", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ai_system_description: description}),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(JSON.stringify(data));
 
-        setClassificationResult(data);
+        if (!res.ok) throw new Error("Failed to start classification stream");
+        if (!res.body) throw new Error("No response body");
 
-        // Format response
-        let response = "";
-        let sources: Source[] | undefined = undefined;
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let finalData: any = null;
 
-        if (data.needs_more_info) {
-            response = `I need more information to classify your system.\n\n**Questions:**\n${data.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}`;
-        } else {
-            response = `**Classification Result**\n\n`;
-            response += `**Risk Level:** ${data.risk_level}\n`;
-            response += `**System Type:** ${data.system_type}\n`;
-            response += `**Confidence:** ${(data.confidence * 100).toFixed(0)}%\n\n`;
-            response += `**Reasoning:** ${data.reasoning}`;
+        try {
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
 
-            // Convert relevant_articles to sources format
-            if (data.relevant_articles && data.relevant_articles.length > 0) {
-                sources = data.relevant_articles.map((article: string, idx: number) => ({
-                    id: `article-${idx}`,
-                    content: `Referenced in classification: ${article}`,
-                    metadata: { id: article, type: 'article' }
-                }));
+                buffer += decoder.decode(value, {stream: true});
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                    if (!line.trim() || !line.startsWith('data: ')) continue;
+
+                    const data = JSON.parse(line.substring(6));
+
+                    if (data.type === "task") {
+                        // Add or update task using functional state update
+                        setMessages(m => {
+                            const newMessages = [...m];
+                            const currentTasks = newMessages[taskMessageIndex].tasks || [];
+
+                            // Find existing task
+                            const existingIndex = currentTasks.findIndex((t: Task) => t.title === data.title);
+
+                            let updatedTasks: Task[];
+                            if (existingIndex >= 0) {
+                                // Update existing task
+                                updatedTasks = [...currentTasks];
+                                updatedTasks[existingIndex] = {
+                                    ...updatedTasks[existingIndex],
+                                    status: data.status,
+                                    description: data.description
+                                };
+                            } else {
+                                // Add new task
+                                updatedTasks = [...currentTasks, {
+                                    id: `task-${taskIdCounter++}`,
+                                    title: data.title,
+                                    description: data.description,
+                                    status: data.status
+                                }];
+                            }
+
+                            // Update the message with new tasks
+                            newMessages[taskMessageIndex] = {
+                                ...newMessages[taskMessageIndex],
+                                tasks: updatedTasks
+                            };
+
+                            return newMessages;
+                        });
+
+                    } else if (data.type === "token") {
+                        // Stream LLM tokens
+                        streamingText += data.token;
+
+                        // Create or update streaming response message
+                        if (responseMessageIndex === -1) {
+                            setMessages(m => {
+                                responseMessageIndex = m.length;
+                                return [...m, {role: "assistant", content: streamingText}];
+                            });
+                        } else {
+                            setMessages(m => {
+                                const newMessages = [...m];
+                                newMessages[responseMessageIndex] = {
+                                    ...newMessages[responseMessageIndex],
+                                    content: streamingText
+                                };
+                                return newMessages;
+                            });
+                        }
+
+                    } else if (data.type === "final_result") {
+                        finalData = data.data;
+                    } else if (data.type === "error") {
+                        throw new Error(data.message);
+                    }
+                }
             }
+        } finally {
+            reader.releaseLock();
         }
 
-        setMessages(m => [...m, {role: "assistant", content: response, sources, metadata: data}]);
+        // Process final result - replace streaming text with formatted response
+        if (finalData) {
+            setClassificationResult(finalData);
+
+            let response = "";
+            if (finalData.needs_more_info) {
+                response = `I need more information to classify your system.\n\n**Questions:**\n${finalData.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}`;
+            } else {
+                response = `**Classification Result**\n\n`;
+                response += `**Risk Level:** ${finalData.risk_level}\n`;
+                response += `**System Type:** ${finalData.system_type}\n`;
+                response += `**Confidence:** ${(finalData.confidence * 100).toFixed(0)}%\n\n`;
+                response += `**Reasoning:** ${finalData.reasoning}\n\n`;
+                if (finalData.relevant_articles && finalData.relevant_articles.length > 0) {
+                    response += `**Relevant Articles:** ${finalData.relevant_articles.join(", ")}`;
+                }
+            }
+
+            // Replace the streaming message with formatted response
+            if (responseMessageIndex !== -1) {
+                setMessages(m => {
+                    const newMessages = [...m];
+                    newMessages[responseMessageIndex] = {
+                        ...newMessages[responseMessageIndex],
+                        content: response,
+                        metadata: finalData
+                    };
+                    return newMessages;
+                });
+            } else {
+                // No streaming happened, add new message
+                setMessages(m => [...m, {role: "assistant", content: response, metadata: finalData}]);
+            }
+        }
     }
 
     async function sendFullFlow(description: string) {
-        // Step 1: Classify
-        setMessages(m => [...m, {role: "assistant", content: "Step 1: Classifying your AI system..."}]);
-
-        const classifyRes = await fetch("/api/classify/", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ai_system_description: description}),
+        // Add initial loading message with empty tasks - capture the ACTUAL index
+        let taskMessageIndex = -1;
+        setMessages(m => {
+            taskMessageIndex = m.length;  // Capture correct index from state
+            return [...m, {role: "assistant", content: "", taskOnly: true, tasks: []}];
         });
-        const classifyData = await classifyRes.json();
-        if (!classifyRes.ok) throw new Error(JSON.stringify(classifyData));
 
-        if (classifyData.needs_more_info) {
-            let response = `I need more information before I can classify your system.\n\n**Questions:**\n${classifyData.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\n\nPlease provide more details.`;
+        let taskIdCounter = 0;
+
+        // Helper function to add/update task - uses functional state update
+        const handleTask = (data: any) => {
             setMessages(m => {
                 const newMessages = [...m];
-                newMessages[newMessages.length - 1] = {role: "assistant", content: response};
+
+                if (!newMessages[taskMessageIndex]) {
+                    console.error("[FULL-FLOW] ERROR: Message at index", taskMessageIndex, "does not exist!");
+                    return m;
+                }
+
+                const currentTasks = newMessages[taskMessageIndex].tasks || [];
+
+                // Find existing task
+                const existingIndex = currentTasks.findIndex((t: Task) => t.title === data.title);
+
+                let updatedTasks: Task[];
+                if (existingIndex >= 0) {
+                    // Update existing task
+                    updatedTasks = [...currentTasks];
+                    updatedTasks[existingIndex] = {
+                        ...updatedTasks[existingIndex],
+                        status: data.status,
+                        description: data.description
+                    };
+                } else {
+                    // Add new task
+                    updatedTasks = [...currentTasks, {
+                        id: `task-${taskIdCounter++}`,
+                        title: data.title,
+                        description: data.description,
+                        status: data.status
+                    }];
+                }
+
+                // Update the message with new tasks
+                newMessages[taskMessageIndex] = {
+                    ...newMessages[taskMessageIndex],
+                    tasks: updatedTasks
+                };
+
                 return newMessages;
             });
-            return;
-        }
+        };
 
-        // Show classification
-        let classifyResponse = `**Classification Complete**\n\n`;
-        classifyResponse += `**Risk Level:** ${classifyData.risk_level}\n`;
-        classifyResponse += `**System Type:** ${classifyData.system_type}\n`;
-        classifyResponse += `**Confidence:** ${(classifyData.confidence * 100).toFixed(0)}%\n\n`;
-        classifyResponse += `**Reasoning:** ${classifyData.reasoning}`;
+        // Helper function to stream from endpoint with streaming text support
+        const streamFromEndpoint = async (url: string, body: any, stepTitle: string) => {
+            let responseMessageIndex = -1;
+            let streamingText = "";
 
-        // Convert relevant_articles to sources
-        let classifySources: Source[] | undefined = undefined;
-        if (classifyData.relevant_articles && classifyData.relevant_articles.length > 0) {
-            classifySources = classifyData.relevant_articles.map((article: string, idx: number) => ({
-                id: `article-${idx}`,
-                content: `Referenced in classification: ${article}`,
-                metadata: { id: article, type: 'article' }
-            }));
-        }
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(body),
+            });
 
-        setMessages(m => {
-            const newMessages = [...m];
-            newMessages[newMessages.length - 1] = {role: "assistant", content: classifyResponse, sources: classifySources};
-            return newMessages;
-        });
+            if (!res.ok) throw new Error(`Failed to start stream: ${url}`);
+            if (!res.body) throw new Error("No response body");
 
-        // Step 2: Generate checklist
-        setMessages(m => [...m, {role: "assistant", content: "Step 2: Generating compliance checklist..."}]);
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+            let finalData: any = null;
 
-        const checklistRes = await fetch("/api/checklist/", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-                risk_level: classifyData.risk_level,
-                system_type: classifyData.system_type,
-                system_description: description
-            }),
-        });
-        const checklistData = await checklistRes.json();
-        if (!checklistRes.ok) throw new Error(JSON.stringify(checklistData));
+            try {
+                while (true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
 
-        // Format checklist
-        let checklistResponse = `**Compliance Checklist (${checklistData.total_items} items)**\n\n`;
-        checklistResponse += `${checklistData.summary}\n\n`;
-        checklistResponse += `**Requirements:**\n\n`;
+                    buffer += decoder.decode(value, {stream: true});
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || "";
 
-        // Collect all unique articles from checklist items
-        const allArticles = new Set<string>();
-        const articleToRequirements = new Map<string, string[]>();
+                    for (const line of lines) {
+                        if (!line.trim() || !line.startsWith('data: ')) continue;
+                        const data = JSON.parse(line.substring(6));
 
-        checklistData.checklist_items.forEach((item: any, idx: number) => {
-            checklistResponse += `**${idx + 1}. ${item.requirement}**\n`;
-            checklistResponse += `   - Priority: ${item.priority}\n`;
-            checklistResponse += `   - Category: ${item.category}\n`;
-            if (item.applicable_articles && item.applicable_articles.length > 0) {
-                checklistResponse += `   - Articles: ${item.applicable_articles.join(", ")}\n`;
+                        if (data.type === "task") {
+                            handleTask(data);
+                        } else if (data.type === "token") {
+                            // Stream LLM tokens into a separate message
+                            streamingText += data.token;
 
-                // Track articles and their requirements
-                item.applicable_articles.forEach((article: string) => {
-                    allArticles.add(article);
-                    if (!articleToRequirements.has(article)) {
-                        articleToRequirements.set(article, []);
+                            // Create or update streaming response message
+                            if (responseMessageIndex === -1) {
+                                setMessages(m => {
+                                    responseMessageIndex = m.length;
+                                    return [...m, {role: "assistant", content: `**${stepTitle}**\n\n${streamingText}`}];
+                                });
+                            } else {
+                                setMessages(m => {
+                                    const newMessages = [...m];
+                                    newMessages[responseMessageIndex] = {
+                                        ...newMessages[responseMessageIndex],
+                                        content: `**${stepTitle}**\n\n${streamingText}`
+                                    };
+                                    return newMessages;
+                                });
+                            }
+                        } else if (data.type === "final_result") {
+                            finalData = data.data;
+                        } else if (data.type === "error") {
+                            throw new Error(data.message);
+                        }
                     }
-                    articleToRequirements.get(article)!.push(item.requirement);
+                }
+            } finally {
+                reader.releaseLock();
+            }
+
+            return {finalData, responseMessageIndex};
+        };
+
+        try {
+            // Step 1: Classification (streams in real-time)
+            const {finalData: classifyData, responseMessageIndex: classifyMsgIndex} = await streamFromEndpoint(
+                "/api/classify/stream",
+                {ai_system_description: description},
+                "Step 1: Classification Results"
+            );
+
+            if (!classifyData) {
+                throw new Error("No classification data received");
+            }
+
+            if (classifyData.needs_more_info) {
+                let response = `I need more information before I can classify your system.\n\n**Questions:**\n${classifyData.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\n\nPlease provide more details.`;
+
+                // Replace streaming message with formatted response
+                if (classifyMsgIndex !== -1) {
+                    setMessages(m => {
+                        const newMessages = [...m];
+                        newMessages[classifyMsgIndex] = {
+                            ...newMessages[classifyMsgIndex],
+                            content: response
+                        };
+                        return newMessages;
+                    });
+                } else {
+                    setMessages(m => [...m, {role: "assistant", content: response}]);
+                }
+                return;
+            }
+
+            // Format Step 1 result
+            let step1Response = `**Step 1: Classification Results**\n\n`;
+            step1Response += `**Risk Level:** ${classifyData.risk_level}\n`;
+            step1Response += `**System Type:** ${classifyData.system_type}\n`;
+            step1Response += `**Confidence:** ${(classifyData.confidence * 100).toFixed(0)}%\n\n`;
+            step1Response += `**Reasoning:** ${classifyData.reasoning}\n\n`;
+            if (classifyData.relevant_articles && classifyData.relevant_articles.length > 0) {
+                step1Response += `**Relevant Articles:** ${classifyData.relevant_articles.join(", ")}`;
+            }
+
+            // Replace streaming message with formatted Step 1
+            if (classifyMsgIndex !== -1) {
+                setMessages(m => {
+                    const newMessages = [...m];
+                    newMessages[classifyMsgIndex] = {
+                        ...newMessages[classifyMsgIndex],
+                        content: step1Response,
+                        metadata: classifyData
+                    };
+                    return newMessages;
                 });
             }
-            checklistResponse += `\n`;
-        });
 
-        // Convert articles to sources format
-        let checklistSources: Source[] | undefined = undefined;
-        if (allArticles.size > 0) {
-            checklistSources = Array.from(allArticles).map((article, idx) => {
-                const requirements = articleToRequirements.get(article) || [];
-                return {
-                    id: `checklist-article-${idx}`,
-                    content: `${article} - Applies to: ${requirements.join('; ')}`,
-                    metadata: { id: article, type: 'article', requirements }
-                };
+            // Step 2: Checklist generation (streams in real-time as separate message)
+            const {finalData: checklistData, responseMessageIndex: checklistMsgIndex} = await streamFromEndpoint(
+                "/api/checklist/stream",
+                {
+                    risk_level: classifyData.risk_level,
+                    system_type: classifyData.system_type,
+                    system_description: description
+                },
+                "Step 2: Compliance Checklist"
+            );
+
+            if (!checklistData) {
+                throw new Error("No checklist data received");
+            }
+
+            // Format Step 2 result
+            let step2Response = `**Step 2: Compliance Checklist**\n\n`;
+            step2Response += `**Total Items:** ${checklistData.total_items}\n\n`;
+            step2Response += `${checklistData.summary}\n\n`;
+            step2Response += `**Requirements:**\n\n`;
+
+            checklistData.checklist_items.forEach((item: any, idx: number) => {
+                step2Response += `**${idx + 1}. ${item.requirement}**\n`;
+                step2Response += `   - Priority: ${item.priority}\n`;
+                step2Response += `   - Category: ${item.category}\n`;
+                if (item.applicable_articles && item.applicable_articles.length > 0) {
+                    step2Response += `   - Articles: ${item.applicable_articles.join(", ")}\n`;
+                }
+                step2Response += `\n`;
             });
-        }
 
-        setMessages(m => {
-            const newMessages = [...m];
-            newMessages[newMessages.length - 1] = {role: "assistant", content: checklistResponse, sources: checklistSources, metadata: checklistData};
-            return newMessages;
-        });
+            // Replace streaming message with formatted Step 2
+            if (checklistMsgIndex !== -1) {
+                setMessages(m => {
+                    const newMessages = [...m];
+                    newMessages[checklistMsgIndex] = {
+                        ...newMessages[checklistMsgIndex],
+                        content: step2Response,
+                        metadata: checklistData
+                    };
+                    return newMessages;
+                });
+            }
+
+        } catch (error: any) {
+            throw error;
+        }
     }
 
     function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -268,15 +513,6 @@ export default function App() {
     return (
         <div className="h-screen w-full p-4">
             <div className="mx-auto max-w-3xl h-full min-h-0 space-y-3">
-                {/* Logo */}
-                <div className="flex items-center gap-3">
-                    <img
-                        src="/regulaid_logo.png"
-                        alt="RegulAId"
-                        className="h-12 w-auto object-contain"
-                    />
-                </div>
-
                 {/* Mode selector */}
                 <div className="flex gap-2 justify-center">
                     <Button
@@ -299,13 +535,13 @@ export default function App() {
                     </Button>
                 </div>
 
-                <Card className="h-[calc(80vh-7rem)] grid grid-rows-[1fr_auto] overflow-hidden">
+                <Card className="h-[calc(80vh-3rem)] grid grid-rows-[1fr_auto] overflow-hidden">
                     <div className="min-h-0">
                         <ScrollArea className="h-full">
                             <div className="p-4 space-y-3">
                                 {messages.map((m, i) => <Bubble key={i} role={m.role} content={m.content}
-                                                                sources={m.sources}/>)}
-                                {loading && <Bubble role="assistant" content="…thinking" muted/>}
+                                                                sources={m.sources} showTask={m.showTask} taskOnly={m.taskOnly} mode={mode} tasks={m.tasks}/>)}
+                                {loading && mode === "chat" && <LoadingBubble mode={mode}/>}
                                 <div ref={endRef}/>
                             </div>
                         </ScrollArea>
@@ -329,10 +565,55 @@ export default function App() {
         </div>
     );
 
+    function LoadingBubble({mode}: { mode: Mode }) {
+        // Only used for chat mode (non-streaming)
+        return (
+            <div className="mb-1 flex items-start gap-3 justify-start">
+                <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>
+                <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm bg-muted">
+                    <Task>
+                        <TaskTrigger title="Processing your request"/>
+                        <TaskContent>
+                            <TaskItem>Retrieving relevant information</TaskItem>
+                        </TaskContent>
+                    </Task>
+                </div>
+            </div>
+        );
+    }
+
     function Bubble({
-                        role, content, muted, sources,
-                    }: { role: "user" | "assistant"; content: string; muted?: boolean; sources?: Source[] }) {
+                        role, content, muted, sources, showTask, taskOnly, mode, tasks
+                    }: { role: "user" | "assistant"; content: string; muted?: boolean; sources?: Source[]; showTask?: boolean; taskOnly?: boolean; mode?: Mode; tasks?: Task[] }) {
         const isUser = role === "user";
+
+        // If taskOnly is true, only render the Task component
+        if (taskOnly && !isUser) {
+            return (
+                <div className="mb-1 flex items-start gap-3 justify-start">
+                    <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>
+                    <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm bg-muted">
+                        {/* Render dynamic tasks from streaming */}
+                        <Task>
+                            <TaskTrigger title={mode === "classify" ? "Classifying AI system" : mode === "full-flow" ? "Running full compliance workflow" : "Processing your request"}/>
+                            <TaskContent>
+                                {tasks && tasks.length > 0 ? (
+                                    tasks.map((task) => (
+                                        <TaskItem key={task.id}>
+                                            {task.status === "completed" ? "✓ " : task.status === "error" ? "✗ " : "⏳ "}
+                                            {task.title}
+                                            {task.description && ` - ${task.description}`}
+                                        </TaskItem>
+                                    ))
+                                ) : (
+                                    <TaskItem>⏳ Initializing...</TaskItem>
+                                )}
+                            </TaskContent>
+                        </Task>
+                    </div>
+                </div>
+            );
+        }
 
         return (
             <div className={`mb-1 flex items-start gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
@@ -350,35 +631,32 @@ export default function App() {
                         <>
                             <Response>{content}</Response>
                             {sources && sources.length > 0 && (
-                                <InlineCitationCard>
-                                    <InlineCitationCardTrigger sources={["http://eu-ai-act"]}>
-                                        <InlineCitation>
-                                            <InlineCitationText logo="/eu-aia-ct.png">
-                                                Sources
-                                            </InlineCitationText>
-                                        </InlineCitation>
-                                    </InlineCitationCardTrigger>
-                                    <InlineCitationCardBody>
-                                        <InlineCitationCarousel>
-                                            <InlineCitationCarouselHeader>
-                                                <InlineCitationCarouselPrev/>
-                                                <InlineCitationCarouselNext/>
-                                                <InlineCitationCarouselIndex/>
-                                            </InlineCitationCarouselHeader>
-                                            <InlineCitationCarouselContent>
-                                                {sources.map((src, idx) => (
-                                                    <InlineCitationCarouselItem key={src.id ?? idx}>
-                                                        <InlineCitationSource
-                                                            title={`${src.metadata?.id || 'EU AI ACT'}`}
-                                                            url="#"
-                                                            description={src.content}
-                                                        />
-                                                    </InlineCitationCarouselItem>
-                                                ))}
-                                            </InlineCitationCarouselContent>
-                                        </InlineCitationCarousel>
-                                    </InlineCitationCardBody>
-                                </InlineCitationCard>
+                                <InlineCitation>
+                                    <InlineCitationText>Sources</InlineCitationText>
+                                    <InlineCitationCard>
+                                        <InlineCitationCardTrigger sources={[]}/>
+                                        <InlineCitationCardBody>
+                                            <InlineCitationCarousel>
+                                                <InlineCitationCarouselHeader>
+                                                    <InlineCitationCarouselPrev/>
+                                                    <InlineCitationCarouselNext/>
+                                                    <InlineCitationCarouselIndex/>
+                                                </InlineCitationCarouselHeader>
+                                                <InlineCitationCarouselContent>
+                                                    {sources.map((src, idx) => (
+                                                        <InlineCitationCarouselItem key={src.id ?? idx}>
+                                                            <InlineCitationSource
+                                                                title={`Source ${idx + 1} (${src.metadata?.id})`}
+                                                                url="#"
+                                                                description={src.content}
+                                                            />
+                                                        </InlineCitationCarouselItem>
+                                                    ))}
+                                                </InlineCitationCarouselContent>
+                                            </InlineCitationCarousel>
+                                        </InlineCitationCardBody>
+                                    </InlineCitationCard>
+                                </InlineCitation>
                             )}
                         </>
                     )}
