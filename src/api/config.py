@@ -10,4 +10,4 @@ SYSTEM_PROMPT = (
 # Options: "bm25" for keyword search, "vector" for semantic search
 # TODO: add hybrid retriever
 RETRIEVER_TYPE = "bm25"
-RETRIEVER_TOP_K = 5  # Number of documents to retrieve
+RETRIEVER_TOP_K = 10  # Number of documents to retrieve

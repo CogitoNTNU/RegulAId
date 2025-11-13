@@ -1,9 +1,11 @@
 """Classification endpoint for AI system risk assessment."""
 
 from fastapi import APIRouter, Request
+from fastapi.responses import StreamingResponse
 from src.schemas.agent_schemas import ClassificationRequest, ClassificationResponse
 from time import perf_counter
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -44,3 +46,45 @@ def classify_ai_system(payload: ClassificationRequest, request: Request):
     print(f"Classification completed in {backend_elapsed_s:.2f} s")
 
     return result
+
+
+@router.post("/stream", summary="Classify AI System with Streaming")
+async def classify_ai_system_stream(payload: ClassificationRequest, request: Request):
+    """
+    Classify an AI system with real-time streaming updates.
+
+    This endpoint streams task updates as the agent works:
+    - Searching EU AI Act database
+    - Analyzing risk requirements
+    - Computing classification
+
+    Returns Server-Sent Events (SSE) with updates.
+    """
+    classification_agent = request.app.state.classification_agent
+
+    async def event_generator():
+        """Generate SSE events from agent streaming updates."""
+        try:
+            logger.info("Starting streaming classification")
+
+            async for update in classification_agent.classify_streaming(payload):
+                # Format as Server-Sent Event
+                event_data = json.dumps(update)
+                yield f"data: {event_data}\n\n"
+
+            logger.info("Streaming classification completed")
+
+        except Exception as e:
+            logger.error(f"Error in streaming classification: {str(e)}")
+            error_data = json.dumps({"type": "error", "message": str(e)})
+            yield f"data: {error_data}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Disable nginx buffering
+        }
+    )

@@ -16,10 +16,13 @@
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
+    "@react-three/fiber": "^8.18.0",
     "ai": "^5.0.76",
     "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.23.24",
     "harden-react-markdown": "^1.1.5",
     "katex": "^0.16.25",
     "lucide-react": "^0.545.0",
@@ -31,6 +34,7 @@
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "shiki": "^3.13.0",
+    "three": "^0.165.0",
     "use-stick-to-bottom": "^1.1.1"
   },
   "devDependencies": {

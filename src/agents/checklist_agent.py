@@ -1,10 +1,8 @@
 """Checklist Agent for EU AI Act compliance requirements."""
 
 import json
-from typing import Any, List
-from langchain_openai import ChatOpenAI
-from langchain.agents import AgentExecutor, create_react_agent
-from langchain.prompts import PromptTemplate
+from typing import Any, List, AsyncGenerator
+
 from src.agents.tools import create_retrieval_tools
 from src.schemas.agent_schemas import ChecklistRequest, ChecklistResponse, ChecklistItem
 
@@ -78,13 +76,13 @@ Thought:{agent_scratchpad}"""
 class ChecklistAgent:
     """Agent for generating compliance checklists based on AI system classification."""
 
-    def __init__(self, retriever: Any, openai_api_key: str, model: str = "gpt-4o"):
+    def __init__(self, retriever: Any, OPENAI_KEY: str, model: str = "gpt-4o"):
         """
         Initialize the Checklist Agent.
 
         Args:
             retriever: The retriever instance (BM25, Vector, or Hybrid)
-            openai_api_key: OpenAI API key
+            OPENAI_KEY: OpenAI API key
             model: OpenAI model to use (default: gpt-4o)
         """
         self.retriever = retriever
@@ -93,31 +91,23 @@ class ChecklistAgent:
         # Create LangChain tools using the retriever
         self.tools = create_retrieval_tools(retriever, top_k=10)
 
+        # Import LangChain classes - using LangChain 1.0+ create_agent
+        from langchain_openai import ChatOpenAI
+        from langchain.agents import create_agent
+
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=model,
-            api_key=openai_api_key,
+            api_key=OPENAI_KEY,
             temperature=0.1  # Low temperature for consistent, factual responses
         )
 
-        # Create prompt
-        self.prompt = PromptTemplate.from_template(CHECKLIST_SYSTEM_PROMPT)
-
-        # Create agent
-        self.agent = create_react_agent(
-            llm=self.llm,
-            tools=self.tools,
-            prompt=self.prompt
-        )
-
-        # Create agent executor
-        self.agent_executor = AgentExecutor(
-            agent=self.agent,
-            tools=self.tools,
-            verbose=True,
-            max_iterations=15,
-            handle_parsing_errors=True,
-            return_intermediate_steps=False
+        # Create agent using LangChain 1.0+ recommended approach
+        # create_agent returns a LangGraph runnable
+        self.agent_executor = create_agent(
+            self.llm,
+            self.tools,
+            system_prompt=CHECKLIST_SYSTEM_PROMPT
         )
 
     def generate_checklist(self, request: ChecklistRequest) -> ChecklistResponse:
@@ -141,12 +131,55 @@ class ChecklistAgent:
 
         input_text += "\n\nGenerate a comprehensive compliance checklist for this AI system."
 
-        # Run the agent
+        # Run the agent using LangGraph messages format
         try:
-            result = self.agent_executor.invoke({"input": input_text})
-            output_text = result.get("output", "")
+            # LangGraph agents use messages format
+            result = self.agent_executor.invoke({
+                "messages": [("user", input_text)]
+            })
+
+            # Extract the output from the messages
+            messages = result.get("messages", [])
+            if not messages:
+                raise RuntimeError("Agent returned no messages")
+
+            # The last message should be the agent's response
+            last_message = messages[-1]
+            output_text = last_message.content if hasattr(last_message, 'content') else str(last_message)
+
+            # DEBUG: Print messages
+            print(f"\n{'='*80}")
+            print(f"CHECKLIST AGENT MESSAGES ({len(messages)} messages):")
+            print(f"{'='*80}")
+            for i, msg in enumerate(messages, 1):
+                msg_content = msg.content if hasattr(msg, 'content') else str(msg)
+                msg_type = msg.type if hasattr(msg, 'type') else type(msg).__name__
+                print(f"\nMessage {i} ({msg_type}):")
+                print(f"  Content Preview: {msg_content[:200]}..." if len(msg_content) > 200 else f"  Content: {msg_content}")
+            print(f"{'='*80}\n")
 
             # Parse the JSON response
+            # Note: The agent may return double braces {{ }} due to template escaping
+            # Replace double braces with single braces
+            output_text = output_text.replace('{{', '{').replace('}}', '}')
+
+            # Strip "Final Answer:" prefix if present
+            if "Final Answer:" in output_text:
+                output_text = output_text.split("Final Answer:", 1)[1].strip()
+
+            # Extract JSON from markdown code blocks if present
+            if "```json" in output_text:
+                json_block_start = output_text.find("```json") + 7
+                json_block_end = output_text.find("```", json_block_start)
+                if json_block_end != -1:
+                    output_text = output_text[json_block_start:json_block_end].strip()
+            elif "```" in output_text:
+                # Handle plain code blocks
+                json_block_start = output_text.find("```") + 3
+                json_block_end = output_text.find("```", json_block_start)
+                if json_block_end != -1:
+                    output_text = output_text[json_block_start:json_block_end].strip()
+
             json_start = output_text.find('{')
             json_end = output_text.rfind('}') + 1
 
@@ -178,3 +211,84 @@ class ChecklistAgent:
                 total_items=0,
                 summary=f"Error during checklist generation: {str(e)}"
             )
+
+    async def generate_checklist_streaming(
+        self,
+        request: ChecklistRequest
+    ) -> AsyncGenerator[dict, None]:
+        """
+        Generate a compliance checklist with streaming updates.
+
+        Args:
+            request: Checklist request with risk level and system type
+
+        Yields:
+            Dict with streaming updates (tasks, progress, final result)
+        """
+        # Build input for the agent
+        input_text = f"""Risk Level: {request.risk_level}"""
+
+        if request.system_type:
+            input_text += f"\nSystem Type: {request.system_type}"
+
+        if request.system_description:
+            input_text += f"\nSystem Description: {request.system_description}"
+
+        input_text += "\n\nGenerate a comprehensive compliance checklist for this AI system."
+
+        try:
+            # Send initial task status
+            yield {
+                "type": "task",
+                "status": "in_progress",
+                "title": "Generating compliance checklist",
+                "description": "Analyzing requirements"
+            }
+
+            # Run the agent using the same proven logic as generate_checklist()
+            # Use run_in_executor to run the synchronous method in a thread pool
+            import asyncio
+            from functools import partial
+
+            loop = asyncio.get_event_loop()
+            checklist_response = await loop.run_in_executor(
+                None,
+                partial(self.generate_checklist, request)
+            )
+
+            # Yield completion task
+            yield {
+                "type": "task",
+                "status": "completed",
+                "title": "Checklist generation complete",
+                "description": "Requirements analyzed"
+            }
+
+            # Convert the ChecklistResponse to a dict for the final result
+            response_data = {
+                "risk_level": checklist_response.risk_level,
+                "checklist_items": [
+                    {
+                        "requirement": item.requirement,
+                        "applicable_articles": item.applicable_articles,
+                        "priority": item.priority,
+                        "category": item.category
+                    }
+                    for item in checklist_response.checklist_items
+                ],
+                "total_items": checklist_response.total_items,
+                "summary": checklist_response.summary
+            }
+
+            # Yield final result
+            yield {
+                "type": "final_result",
+                "data": response_data
+            }
+
+        except Exception as e:
+            # Yield error
+            yield {
+                "type": "error",
+                "message": f"Error generating checklist: {str(e)}"
+            }
