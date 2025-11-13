@@ -4,8 +4,12 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from src.api.routers import health, search, classify, checklist
 from src.api.services.openai_service import OpenAIService
-from src.api.config import OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K
-from src.retrievers import BM25Retriever, VectorRetriever
+from src.api.config import (
+    OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K,
+    HYBRID_BM25_TOP_K, HYBRID_VECTOR_TOP_K, HYBRID_BM25_WEIGHT,
+    HYBRID_VECTOR_WEIGHT, HYBRID_RRF_K
+)
+from src.retrievers import BM25Retriever, VectorRetriever, HybridRetriever
 from src.agents import ClassificationAgent, ChecklistAgent
 import logging
 import os
@@ -29,8 +33,17 @@ async def lifespan(app: FastAPI):
     elif RETRIEVER_TYPE == "vector":
         app.state.retriever = VectorRetriever()
         logger.info("Initialized Vector (semantic) retriever")
+    elif RETRIEVER_TYPE == "hybrid":
+        app.state.retriever = HybridRetriever(
+            bm25_top_k=HYBRID_BM25_TOP_K,
+            vector_top_k=HYBRID_VECTOR_TOP_K,
+            bm25_weight=HYBRID_BM25_WEIGHT,
+            vector_weight=HYBRID_VECTOR_WEIGHT,
+            rrf_k=HYBRID_RRF_K
+        )
+        logger.info("Initialized Hybrid retriever (BM25 + Vector with RRF)")
     else:
-        raise ValueError(f"Unknown RETRIEVER_TYPE: {RETRIEVER_TYPE}. Use 'bm25' or 'vector'")
+        raise ValueError(f"Unknown RETRIEVER_TYPE: {RETRIEVER_TYPE}. Use 'bm25', 'vector', or 'hybrid'")
 
     app.state.top_k = RETRIEVER_TOP_K
 

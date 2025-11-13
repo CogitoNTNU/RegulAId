@@ -245,18 +245,63 @@ class ChecklistAgent:
                 "description": "Analyzing requirements"
             }
 
-            # Run the agent using the same proven logic as generate_checklist()
-            # Use run_in_executor to run the synchronous method in a thread pool
-            import asyncio
-            from functools import partial
+            # Use LangGraph's astream to get real-time updates
+            final_messages = []
 
-            loop = asyncio.get_event_loop()
-            checklist_response = await loop.run_in_executor(
-                None,
-                partial(self.generate_checklist, request)
-            )
+            async for event in self.agent_executor.astream(
+                {"messages": [("user", input_text)]}
+            ):
+                # DEBUG: Print event structure
+                print(f"\n{'='*80}")
+                print(f"CHECKLIST STREAM EVENT: {list(event.keys())}")
+                print(f"{'='*80}\n")
 
-            # Yield completion task
+                # Check what type of event this is
+                if "agent" in event:
+                    # Agent is thinking or responding
+                    agent_messages = event["agent"].get("messages", [])
+                    if agent_messages:
+                        last_message = agent_messages[-1]
+                        # Check if this is a tool call
+                        if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+                            tool_call = last_message.tool_calls[0]
+                            tool_name = tool_call.get('name', 'unknown')
+
+                            # Map tool names to user-friendly descriptions
+                            tool_descriptions = {
+                                "retrieve_eu_ai_act": "Searching EU AI Act database",
+                                "retrieve_risk_requirements": "Analyzing risk-specific requirements",
+                                "retrieve_system_type_info": "Retrieving system-specific requirements"
+                            }
+
+                            yield {
+                                "type": "task",
+                                "status": "in_progress",
+                                "title": tool_descriptions.get(tool_name, f"Using {tool_name}"),
+                                "description": "Gathering compliance requirements"
+                            }
+
+                elif "tools" in event:
+                    # Tool execution completed
+                    tool_messages = event["tools"].get("messages", [])
+                    if tool_messages:
+                        # Count articles retrieved
+                        output = str(tool_messages[-1].content) if tool_messages else ""
+                        article_count = output.count("Article ") if "Article " in output else 0
+
+                        yield {
+                            "type": "task",
+                            "status": "completed",
+                            "title": "Requirements retrieved",
+                            "description": f"Found {article_count} relevant article(s)" if article_count > 0 else "Retrieved compliance information"
+                        }
+
+                # Collect all messages for final parsing
+                for node_data in event.values():
+                    if "messages" in node_data:
+                        final_messages.extend(node_data["messages"])
+
+            # Yield completion
             yield {
                 "type": "task",
                 "status": "completed",
@@ -264,30 +309,85 @@ class ChecklistAgent:
                 "description": "Requirements analyzed"
             }
 
-            # Convert the ChecklistResponse to a dict for the final result
-            response_data = {
-                "risk_level": checklist_response.risk_level,
-                "checklist_items": [
-                    {
-                        "requirement": item.requirement,
-                        "applicable_articles": item.applicable_articles,
-                        "priority": item.priority,
-                        "category": item.category
-                    }
-                    for item in checklist_response.checklist_items
-                ],
-                "total_items": checklist_response.total_items,
-                "summary": checklist_response.summary
-            }
+            # Parse the final result from the last agent message
+            if final_messages:
+                last_message = final_messages[-1]
+                output_text = last_message.content if hasattr(last_message, 'content') else str(last_message)
 
-            # Yield final result
-            yield {
-                "type": "final_result",
-                "data": response_data
-            }
+                # DEBUG: Print final output
+                print(f"\n{'='*80}")
+                print(f"CHECKLIST FINAL OUTPUT FROM AGENT:")
+                print(f"Output preview: {output_text[:500]}")
+                print(f"{'='*80}\n")
+
+                # Parse the JSON response (same logic as generate_checklist())
+                output_text = output_text.replace('{{', '{').replace('}}', '}')
+
+                if "Final Answer:" in output_text:
+                    output_text = output_text.split("Final Answer:", 1)[1].strip()
+
+                # Extract JSON from markdown code blocks if present
+                if "```json" in output_text:
+                    json_block_start = output_text.find("```json") + 7
+                    json_block_end = output_text.find("```", json_block_start)
+                    if json_block_end != -1:
+                        output_text = output_text[json_block_start:json_block_end].strip()
+                elif "```" in output_text:
+                    json_block_start = output_text.find("```") + 3
+                    json_block_end = output_text.find("```", json_block_start)
+                    if json_block_end != -1:
+                        output_text = output_text[json_block_start:json_block_end].strip()
+
+                json_start = output_text.find('{')
+                json_end = output_text.rfind('}') + 1
+
+                if json_start != -1 and json_end > json_start:
+                    json_str = output_text[json_start:json_end]
+                    try:
+                        response_data = json.loads(json_str)
+
+                        # Convert checklist items if needed
+                        if 'checklist_items' in response_data:
+                            response_data['checklist_items'] = [
+                                {
+                                    "requirement": item.get("requirement", ""),
+                                    "applicable_articles": item.get("applicable_articles", []),
+                                    "priority": item.get("priority", "medium"),
+                                    "category": item.get("category", "general")
+                                }
+                                for item in response_data['checklist_items']
+                            ]
+
+                        # Yield final result
+                        yield {
+                            "type": "final_result",
+                            "data": response_data
+                        }
+                    except json.JSONDecodeError as e:
+                        yield {
+                            "type": "error",
+                            "message": f"Failed to parse agent response: {str(e)}"
+                        }
+                else:
+                    yield {
+                        "type": "error",
+                        "message": "Agent did not return valid JSON response"
+                    }
+            else:
+                yield {
+                    "type": "error",
+                    "message": "No response from agent"
+                }
 
         except Exception as e:
             # Yield error
+            import traceback
+            print(f"\n{'='*80}")
+            print(f"ERROR in generate_checklist_streaming:")
+            print(f"Error: {str(e)}")
+            traceback.print_exc()
+            print(f"{'='*80}\n")
+
             yield {
                 "type": "error",
                 "message": f"Error generating checklist: {str(e)}"

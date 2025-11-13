@@ -35,7 +35,7 @@ def create_retrieval_tools(retriever: Any, top_k: int = 5):
             k: Number of documents to retrieve (default: 5)
 
         Returns:
-            Formatted string with retrieved articles and their metadata
+            Formatted string with redoestrieved articles and their metadata
         """
         results = retriever.search(query=query, k=k)
 

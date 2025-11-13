@@ -257,18 +257,63 @@ class ClassificationAgent:
                 "description": "Starting classification process"
             }
 
-            # Run the agent using the same proven logic as classify()
-            # Use run_in_executor to run the synchronous classify in a thread pool
-            import asyncio
-            from functools import partial
+            # Use LangGraph's astream to get real-time updates
+            final_messages = []
 
-            loop = asyncio.get_event_loop()
-            classification_response = await loop.run_in_executor(
-                None,
-                partial(self.classify, request)
-            )
+            async for event in self.agent_executor.astream(
+                {"messages": [("user", input_text)]}
+            ):
+                # DEBUG: Print event structure
+                print(f"\n{'='*80}")
+                print(f"STREAM EVENT: {list(event.keys())}")
+                print(f"{'='*80}\n")
 
-            # Yield completion task
+                # Check what type of event this is
+                if "agent" in event:
+                    # Agent is thinking or responding
+                    agent_messages = event["agent"].get("messages", [])
+                    if agent_messages:
+                        last_message = agent_messages[-1]
+                        # Check if this is a tool call
+                        if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+                            tool_call = last_message.tool_calls[0]
+                            tool_name = tool_call.get('name', 'unknown')
+
+                            # Map tool names to user-friendly descriptions
+                            tool_descriptions = {
+                                "retrieve_eu_ai_act": "Searching EU AI Act database",
+                                "retrieve_risk_requirements": "Analyzing risk requirements",
+                                "retrieve_system_type_info": "Searching system-specific information"
+                            }
+
+                            yield {
+                                "type": "task",
+                                "status": "in_progress",
+                                "title": tool_descriptions.get(tool_name, f"Using {tool_name}"),
+                                "description": "Retrieving relevant articles and regulations"
+                            }
+
+                elif "tools" in event:
+                    # Tool execution completed
+                    tool_messages = event["tools"].get("messages", [])
+                    if tool_messages:
+                        # Count articles retrieved
+                        output = str(tool_messages[-1].content) if tool_messages else ""
+                        article_count = output.count("Article ") if "Article " in output else 0
+
+                        yield {
+                            "type": "task",
+                            "status": "completed",
+                            "title": "Information retrieved",
+                            "description": f"Found {article_count} relevant article(s)" if article_count > 0 else "Retrieved information"
+                        }
+
+                # Collect all messages for final parsing
+                for node_data in event.values():
+                    if "messages" in node_data:
+                        final_messages.extend(node_data["messages"])
+
+            # Yield completion
             yield {
                 "type": "task",
                 "status": "completed",
@@ -276,32 +321,73 @@ class ClassificationAgent:
                 "description": "Analysis finished"
             }
 
-            # Convert the ClassificationResponse to a dict for the final result
-            response_data = {
-                "risk_level": classification_response.risk_level,
-                "system_type": classification_response.system_type,
-                "confidence": classification_response.confidence,
-                "reasoning": classification_response.reasoning,
-                "needs_more_info": classification_response.needs_more_info,
-                "questions": classification_response.questions,
-                "relevant_articles": classification_response.relevant_articles
-            }
+            # Parse the final result from the last agent message
+            if final_messages:
+                last_message = final_messages[-1]
+                output_text = last_message.content if hasattr(last_message, 'content') else str(last_message)
 
-            # Yield final result
-            print(f"\n{'='*80}")
-            print(f"YIELDING FINAL RESULT:")
-            print(f"Response data keys: {response_data.keys()}")
-            print(f"Risk level: {response_data.get('risk_level')}")
-            print(f"Needs more info: {response_data.get('needs_more_info')}")
-            print(f"{'='*80}\n")
+                # DEBUG: Print final output
+                print(f"\n{'='*80}")
+                print(f"FINAL OUTPUT FROM AGENT:")
+                print(f"Output preview: {output_text[:500]}")
+                print(f"{'='*80}\n")
 
-            yield {
-                "type": "final_result",
-                "data": response_data
-            }
+                # Parse the JSON response (same logic as classify())
+                output_text = output_text.replace('{{', '{').replace('}}', '}')
+
+                if "Final Answer:" in output_text:
+                    output_text = output_text.split("Final Answer:", 1)[1].strip()
+
+                # Extract JSON from markdown code blocks if present
+                if "```json" in output_text:
+                    json_block_start = output_text.find("```json") + 7
+                    json_block_end = output_text.find("```", json_block_start)
+                    if json_block_end != -1:
+                        output_text = output_text[json_block_start:json_block_end].strip()
+                elif "```" in output_text:
+                    json_block_start = output_text.find("```") + 3
+                    json_block_end = output_text.find("```", json_block_start)
+                    if json_block_end != -1:
+                        output_text = output_text[json_block_start:json_block_end].strip()
+
+                json_start = output_text.find('{')
+                json_end = output_text.rfind('}') + 1
+
+                if json_start != -1 and json_end > json_start:
+                    json_str = output_text[json_start:json_end]
+                    try:
+                        response_data = json.loads(json_str)
+
+                        # Yield final result
+                        yield {
+                            "type": "final_result",
+                            "data": response_data
+                        }
+                    except json.JSONDecodeError as e:
+                        yield {
+                            "type": "error",
+                            "message": f"Failed to parse agent response: {str(e)}"
+                        }
+                else:
+                    yield {
+                        "type": "error",
+                        "message": "Agent did not return valid JSON response"
+                    }
+            else:
+                yield {
+                    "type": "error",
+                    "message": "No response from agent"
+                }
 
         except Exception as e:
             # Yield error
+            import traceback
+            print(f"\n{'='*80}")
+            print(f"ERROR in classify_streaming:")
+            print(f"Error: {str(e)}")
+            traceback.print_exc()
+            print(f"{'='*80}\n")
+
             yield {
                 "type": "error",
                 "message": f"Error during classification: {str(e)}"

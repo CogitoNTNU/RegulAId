@@ -2,7 +2,13 @@
 OPENAI_MODEL = "gpt-4o"
 
 # Retriever configuration
-# Options: "bm25" for keyword search, "vector" for semantic search
-# TODO: add hybrid retriever
-RETRIEVER_TYPE = "bm25"
+# Options: "bm25" (keyword), "vector" (semantic), "hybrid" (combines both with RRF)
+RETRIEVER_TYPE = "hybrid" 
 RETRIEVER_TOP_K = 10  # Number of documents to retrieve
+
+# Hybrid retriever configuration (only used if RETRIEVER_TYPE = "hybrid")
+HYBRID_BM25_TOP_K = 100  # Number of candidates from BM25
+HYBRID_VECTOR_TOP_K = 100  # Number of candidates from vector search
+HYBRID_BM25_WEIGHT = 1.0  # Weight for BM25 contribution
+HYBRID_VECTOR_WEIGHT = 1.0  # Weight for vector contribution
+HYBRID_RRF_K = 60.0  # RRF constant (lower = more aggressive re-ranking)
