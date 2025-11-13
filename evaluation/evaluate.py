@@ -4,7 +4,7 @@ import time
 import traceback
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor, wait, ALL_COMPLETED
-from multiprocessing import cpu_count
+from multiprocessing import cpu_count  # kept for potential future use
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -42,14 +42,22 @@ from scipy import stats
 # =========================
 # Configuration (edit here)
 # =========================
+# Grid search parameters for hybrid retriever
+HYBRID_GRID_SEARCH = True  # Set to False to disable grid search
+HYBRID_GRID_PARAMS = {
+    'bm25_weight': [0.5, 1.0, 1.5],
+    'vector_weight': [0.05, 0.1, 0.2],
+    'rrf_k': [10.0, 15.0, 30.0]  # Reduced from 4 to 3 values for fewer combinations
+}
+
 EVALUATE_METHODS: List[str] = [
     "bm25_retrieval_only",
     "semantic_retrieval_only",
     "hybrid_retrieval",
-    "bm25_rag",
-    "semantic_rag",
-    "hybrid_rag",
-    "llm_only",
+    # "bm25_rag",
+    # "semantic_rag",
+    # "hybrid_rag",
+    # "llm_only",
 ]
 RUN_TAG: str = "retrieval_only_test"
 RAGAS_METRICS = [
@@ -100,6 +108,170 @@ class VectorRAG_API(_APIRAGBase):
 class HybridRAG_API(_APIRAGBase):
     def __init__(self, **kwargs):
         super().__init__(HybridRetriever(), **kwargs)
+
+
+# Individual hybrid classes for grid search (module level for pickle compatibility)
+class Hybrid_b0_5_v0_05_k10:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=0.5, vector_weight=0.05, rrf_k=10.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b0_5_v0_05_k15:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=0.5, vector_weight=0.05, rrf_k=15.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b0_5_v0_05_k30:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=0.5, vector_weight=0.05, rrf_k=30.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b0_5_v0_1_k10:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=0.5, vector_weight=0.1, rrf_k=10.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b0_5_v0_1_k15:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=0.5, vector_weight=0.1, rrf_k=15.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b0_5_v0_1_k30:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=0.5, vector_weight=0.1, rrf_k=30.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b0_5_v0_2_k10:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=0.5, vector_weight=0.2, rrf_k=10.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b0_5_v0_2_k15:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=0.5, vector_weight=0.2, rrf_k=15.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b0_5_v0_2_k30:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=0.5, vector_weight=0.2, rrf_k=30.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_0_v0_05_k10:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.0, vector_weight=0.05, rrf_k=10.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_0_v0_05_k15:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.0, vector_weight=0.05, rrf_k=15.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_0_v0_05_k30:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.0, vector_weight=0.05, rrf_k=30.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_0_v0_1_k10:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.0, vector_weight=0.1, rrf_k=10.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_0_v0_1_k15:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.0, vector_weight=0.1, rrf_k=15.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_0_v0_1_k30:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.0, vector_weight=0.1, rrf_k=30.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_0_v0_2_k10:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.0, vector_weight=0.2, rrf_k=10.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_0_v0_2_k15:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.0, vector_weight=0.2, rrf_k=15.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_0_v0_2_k30:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.0, vector_weight=0.2, rrf_k=30.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_5_v0_05_k10:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.5, vector_weight=0.05, rrf_k=10.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_5_v0_05_k15:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.5, vector_weight=0.05, rrf_k=15.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_5_v0_05_k30:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.5, vector_weight=0.05, rrf_k=30.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_5_v0_1_k10:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.5, vector_weight=0.1, rrf_k=10.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_5_v0_1_k15:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.5, vector_weight=0.1, rrf_k=15.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_5_v0_1_k30:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.5, vector_weight=0.1, rrf_k=30.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_5_v0_2_k10:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.5, vector_weight=0.2, rrf_k=10.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_5_v0_2_k15:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.5, vector_weight=0.2, rrf_k=15.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
+
+class Hybrid_b1_5_v0_2_k30:
+    def __init__(self, **kwargs):
+        self.retriever = HybridRetriever(bm25_weight=1.5, vector_weight=0.2, rrf_k=30.0)
+    def retrieve(self, query: str, k: int = 5):
+        return self.retriever.retrieve(query, k)
 
 
 TEMPLATES: Dict[str, object] = {
@@ -525,13 +697,54 @@ def main() -> None:
         return
     templates_to_run = {name: TEMPLATES[name] for name in EVALUATE_METHODS if name in TEMPLATES}
 
+    # Add grid search combinations for hybrid retriever
+    if HYBRID_GRID_SEARCH and "hybrid_retrieval" in templates_to_run:
+        # Remove the original hybrid_retrieval
+        del templates_to_run["hybrid_retrieval"]
+
+        # Add all 27 predefined hybrid grid classes
+        grid_classes = {
+            "hybrid_b0.5_v0.05_k10.0": Hybrid_b0_5_v0_05_k10,
+            "hybrid_b0.5_v0.05_k15.0": Hybrid_b0_5_v0_05_k15,
+            "hybrid_b0.5_v0.05_k30.0": Hybrid_b0_5_v0_05_k30,
+            "hybrid_b0.5_v0.1_k10.0": Hybrid_b0_5_v0_1_k10,
+            "hybrid_b0.5_v0.1_k15.0": Hybrid_b0_5_v0_1_k15,
+            "hybrid_b0.5_v0.1_k30.0": Hybrid_b0_5_v0_1_k30,
+            "hybrid_b0.5_v0.2_k10.0": Hybrid_b0_5_v0_2_k10,
+            "hybrid_b0.5_v0.2_k15.0": Hybrid_b0_5_v0_2_k15,
+            "hybrid_b0.5_v0.2_k30.0": Hybrid_b0_5_v0_2_k30,
+            "hybrid_b1.0_v0.05_k10.0": Hybrid_b1_0_v0_05_k10,
+            "hybrid_b1.0_v0.05_k15.0": Hybrid_b1_0_v0_05_k15,
+            "hybrid_b1.0_v0.05_k30.0": Hybrid_b1_0_v0_05_k30,
+            "hybrid_b1.0_v0.1_k10.0": Hybrid_b1_0_v0_1_k10,
+            "hybrid_b1.0_v0.1_k15.0": Hybrid_b1_0_v0_1_k15,
+            "hybrid_b1.0_v0.1_k30.0": Hybrid_b1_0_v0_1_k30,
+            "hybrid_b1.0_v0.2_k10.0": Hybrid_b1_0_v0_2_k10,
+            "hybrid_b1.0_v0.2_k15.0": Hybrid_b1_0_v0_2_k15,
+            "hybrid_b1.0_v0.2_k30.0": Hybrid_b1_0_v0_2_k30,
+            "hybrid_b1.5_v0.05_k10.0": Hybrid_b1_5_v0_05_k10,
+            "hybrid_b1.5_v0.05_k15.0": Hybrid_b1_5_v0_05_k15,
+            "hybrid_b1.5_v0.05_k30.0": Hybrid_b1_5_v0_05_k30,
+            "hybrid_b1.5_v0.1_k10.0": Hybrid_b1_5_v0_1_k10,
+            "hybrid_b1.5_v0.1_k15.0": Hybrid_b1_5_v0_1_k15,
+            "hybrid_b1.5_v0.1_k30.0": Hybrid_b1_5_v0_1_k30,
+            "hybrid_b1.5_v0.2_k10.0": Hybrid_b1_5_v0_2_k10,
+            "hybrid_b1.5_v0.2_k15.0": Hybrid_b1_5_v0_2_k15,
+            "hybrid_b1.5_v0.2_k30.0": Hybrid_b1_5_v0_2_k30,
+        }
+
+        # Take first 18 combinations
+        grid_items = list(grid_classes.items())[:18]
+        templates_to_run.update(dict(grid_items))
+        print(f"Grid search: testing {len(grid_items)} hybrid parameter combinations")
+
     print("Templates requested:", EVALUATE_METHODS)
     print("Will run:", list(templates_to_run))
 
     # Run templates in parallel
     print("Running RAG templates in parallel...")
     template_results: Dict[str, List[Dict]] = {}
-    max_workers = max(1, min(cpu_count(), len(templates_to_run)))
+    max_workers = max(1, min(4, len(templates_to_run)))  # Limit to 4 workers to avoid issues
     with ProcessPoolExecutor(max_workers=max_workers) as pool:
         futures = [pool.submit(run_template_worker, name, cls, df) for name, cls in templates_to_run.items()]
         done, _ = wait(futures, return_when=ALL_COMPLETED)
@@ -549,7 +762,7 @@ def main() -> None:
     # Compute RAGAS in parallel
     print("Calculating RAGAS metrics in parallel...")
     template_ragas_scores: Dict[str, Dict[str, float]] = {}
-    with ProcessPoolExecutor(max_workers=max(1, min(cpu_count(), len(template_results)))) as pool:
+    with ProcessPoolExecutor(max_workers=max(1, min(4, len(template_results)))) as pool:
         ragas_futures = [pool.submit(run_ragas_worker, name, results, RAGAS_METRICS) for name, results in template_results.items()]
         done, _ = wait(ragas_futures, return_when=ALL_COMPLETED)
         for fut in done:

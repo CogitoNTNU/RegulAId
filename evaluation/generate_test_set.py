@@ -26,8 +26,8 @@ from ragas.testset.synthesizers.prompts import ThemesPersonasInput, ThemesPerson
 DOCS_DIR = "../data/processed/aiact-chunks.json"
 OUTPUT_DIR = "../data/processed"
 OUTPUT_FILE = "testset.json"
-NUM_SINGLE_HOP = 5  # TODO: adjust sample counts
-NUM_MULTI_HOP = 5   # TODO: adjust sample counts
+NUM_SINGLE_HOP = 25  
+NUM_MULTI_HOP = 25   
 LLM_MODEL = os.getenv("OPENAI_MODEL")
 EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME")
 OPENAI_KEY = os.getenv("OPENAI_KEY")
