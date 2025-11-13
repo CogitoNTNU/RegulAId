@@ -97,15 +97,16 @@ export default function App() {
     }
 
     return (
-        <div className="h-screen w-full p-4">
-            <div className="mx-auto max-w-3xl h-full min-h-0">
+        <div className="min-h-screen w-full bg-background text-foreground p-4">
+            <div className="mx-auto max-w-3xl min-h-0">
                 <Card className="h-[80vh] grid grid-rows-[1fr_auto] overflow-hidden">
                     {/* row 1 must be min-h-0 so the viewport can scroll */}
                     <div className="min-h-0">
                         <ScrollArea className="h-full">
                             <div className="p-4 space-y-3">
-                                {messages.map((m, i) => <Bubble key={i} role={m.role} content={m.content}
-                                                                sources={m.sources}/>)}
+                                {messages.map((m, i) => (
+                                    <Bubble key={i} role={m.role} content={m.content} sources={m.sources}/>
+                                ))}
                                 {loading && <LoadingBubble/>}
                                 <div ref={endRef}/>
                             </div>

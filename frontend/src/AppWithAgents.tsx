@@ -35,7 +35,6 @@ import {
     TaskContent,
     TaskItem,
 } from '@/components/ui/shadcn-io/ai/task';
-import { Vortex } from "@/components/ui/vortex";
 
 type Source = { id: number | string; content: string; metadata?: Record<string, any> };
 type Task = { id: string; title: string; description: string; status: "in_progress" | "completed" | "error" };
@@ -471,18 +470,9 @@ export default function App() {
         }
     };
 
-
     return (
-        <Vortex
-            backgroundColor="#03060d"
-            particleCount={600}
-            baseHue={220}
-            rangeHue={80}
-            baseSpeed={0.00002}
-            rangeSpeed={0.0003}
-            className="h-screen w-full"
-        >
-        <div className="mx-auto flex h-full w-full max-w-5xl flex-col px-4">
+        <div className="min-h-screen w-full flex flex-col bg-gradient-to-b from-slate-50 via-white to-slate-100">
+        <div className="flex min-h-screen w-full flex-col px-4 py-8">
             {/* Header with logo and tabs */}
             <div className="flex items-center gap-6 p-4 border-b">
                 <img
@@ -609,7 +599,7 @@ export default function App() {
                 </div>
             </div>
         </div>
-        </Vortex>
+        </div>
     );
 
     function LoadingBubble() {
