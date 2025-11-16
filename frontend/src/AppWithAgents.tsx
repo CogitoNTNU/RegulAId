@@ -34,18 +34,44 @@ import {
     TaskTrigger,
     TaskContent,
     TaskItem,
+    TaskItemFile,
 } from '@/components/ui/shadcn-io/ai/task';
+import {
+    Tool,
+    ToolHeader,
+    ToolContent,
+    ToolInput,
+    ToolOutput,
+} from "@/components/ui/shadcn-io/ai/tool";
 
 type Source = { id: number | string; content: string; metadata?: Record<string, any> };
-type Task = { id: string; title: string; description: string; status: "in_progress" | "completed" | "error" };
+type ToolCall = {
+    id: string;
+    name: string;
+    input: any;
+    output?: string;
+    state: "input-streaming" | "input-available" | "output-available" | "output-error";
+    step?: "classification" | "checklist";  // Track which step this tool belongs to
+};
+type TaskInfo = {
+    title: string;
+    description?: string;
+    status: "in_progress" | "completed";
+    items?: string[];
+    tools?: ToolCall[];  // Tools shown inside the task
+    currentStep?: string;  // Current step name
+    // Track which step each tool belongs to
+    toolSteps?: Map<string, "classification" | "checklist">;  // Map tool ID to step
+};
+
 type Msg = {
     role: "user" | "assistant";
     content: string;
     sources?: Source[];
     metadata?: any;
-    showTask?: boolean;
-    taskOnly?: boolean;
-    tasks?: Task[];  // NEW: Dynamic tasks
+    tools?: ToolCall[];  // Tool calls for transparency
+    isProcessing?: boolean;  // Step is in progress
+    task?: TaskInfo;  // Task information for Task component
 };
 type ApiResponse = { result?: string; sources?: Source[] } | string[] | string | unknown;
 
@@ -182,277 +208,472 @@ export default function App() {
     }
 
     async function sendFullFlow(description: string) {
-        // Add initial loading message with empty tasks - capture the ACTUAL index
-        let taskMessageIndex = -1;
-        setMessages(m => {
-            taskMessageIndex = m.length;  // Capture correct index from state
-            return [...m, {role: "assistant", content: "", taskOnly: true, tasks: []}];
+        // Call the unified workflow endpoint and render events with tool visualization
+        // Note: user message is already added in send() function, so messages.length is the user message index + 1
+        // The task should be inserted right after the user message (at messages.length)
+
+        const res = await fetch("/api/compliance/workflow/stream", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ai_system_description: description}),
         });
 
-        let taskIdCounter = 0;
+        if (!res.ok) throw new Error("Failed to start workflow");
+        if (!res.body) throw new Error("No response body");
 
-        // Helper function to add/update task - uses functional state update
-        const handleTask = (data: any) => {
-            setMessages(m => {
-                const newMessages = [...m];
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
 
-                if (!newMessages[taskMessageIndex]) {
-                    console.error("[FULL-FLOW] ERROR: Message at index", taskMessageIndex, "does not exist!");
-                    return m;
-                }
-
-                const currentTasks = newMessages[taskMessageIndex].tasks || [];
-
-                // Find existing task
-                const existingIndex = currentTasks.findIndex((t: Task) => t.title === data.title);
-
-                let updatedTasks: Task[];
-                if (existingIndex >= 0) {
-                    // Update existing task
-                    updatedTasks = [...currentTasks];
-                    updatedTasks[existingIndex] = {
-                        ...updatedTasks[existingIndex],
-                        status: data.status,
-                        description: data.description
-                    };
-                } else {
-                    // Add new task
-                    updatedTasks = [...currentTasks, {
-                        id: `task-${taskIdCounter++}`,
-                        title: data.title,
-                        description: data.description,
-                        status: data.status
-                    }];
-                }
-
-                // Update the message with new tasks
-                newMessages[taskMessageIndex] = {
-                    ...newMessages[taskMessageIndex],
-                    tasks: updatedTasks
-                };
-
-                return newMessages;
-            });
-        };
-
-        // Helper function to stream from endpoint with streaming text support
-        const streamFromEndpoint = async (url: string, body: any, stepTitle: string) => {
-            let responseMessageIndex = -1;
-            let streamingText = "";
-
-            const res = await fetch(url, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(body),
-            });
-
-            if (!res.ok) throw new Error(`Failed to start stream: ${url}`);
-            if (!res.body) throw new Error("No response body");
-
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
-            let finalData: any = null;
-
-            try {
-                while (true) {
-                    const {done, value} = await reader.read();
-                    if (done) break;
-
-                    buffer += decoder.decode(value, {stream: true});
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || "";
-
-                    for (const line of lines) {
-                        if (!line.trim() || !line.startsWith('data: ')) continue;
-                        const data = JSON.parse(line.substring(6));
-
-                        if (data.type === "task") {
-                            handleTask(data);
-                        } else if (data.type === "token") {
-                            // Stream LLM tokens into a separate message
-                            streamingText += data.token;
-
-                            // Create or update streaming response message
-                            if (responseMessageIndex === -1) {
-                                setMessages(m => {
-                                    responseMessageIndex = m.length;
-                                    return [...m, {role: "assistant", content: `**${stepTitle}**\n\n${streamingText}`}];
-                                });
-                            } else {
-                                setMessages(m => {
-                                    const newMessages = [...m];
-                                    newMessages[responseMessageIndex] = {
-                                        ...newMessages[responseMessageIndex],
-                                        content: `**${stepTitle}**\n\n${streamingText}`
-                                    };
-                                    return newMessages;
-                                });
-                            }
-                        } else if (data.type === "final_result") {
-                            console.log(`${stepTitle} - Received final_result:`, data.data);
-                            finalData = data.data;
-                            // Don't create message here - we'll create it after streaming with the formatted content
-                        } else if (data.type === "error") {
-                            throw new Error(data.message);
-                        }
-                    }
-                }
-            } finally {
-                reader.releaseLock();
-            }
-
-            console.log(`${stepTitle} - Streaming complete. ResponseIndex: ${responseMessageIndex}, FinalData:`, finalData);
-            return {finalData, responseMessageIndex};
-        };
+        // Track current step to know which message to update
+        let classificationMessageIndex = -1;
+        let checklistMessageIndex = -1;
+        let currentTools: ToolCall[] = [];
+        let toolIdCounter = 0;
+        let streamingContent = "";
+        // Track which step is currently active for tool insertion
+        let currentStep: "classification" | "checklist" | null = null;
+        // Track the task message index (right after user message)
+        // User message is at messages.length - 1, so task goes at messages.length
+        let taskMessageIndex = -1;
+        // Track which step each tool belongs to
+        const toolStepMap = new Map<string, "classification" | "checklist">();
 
         try {
-            // Step 1: Classification (streams in real-time)
-            const {finalData: classifyData, responseMessageIndex: classifyMsgIndex} = await streamFromEndpoint(
-                "/api/classify/stream",
-                {ai_system_description: description},
-                "Step 1: Classification Results"
-            );
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
 
-            if (!classifyData) {
-                throw new Error("No classification data received");
-            }
+                buffer += decoder.decode(value, {stream: true});
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || "";
 
-            if (classifyData.needs_more_info) {
-                let response = `I need more information before I can classify your system.\n\n**Questions:**\n${classifyData.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\n\nPlease provide more details.`;
+                for (const line of lines) {
+                    if (!line.trim() || !line.startsWith('data: ')) continue;
+                    const event = JSON.parse(line.substring(6));
 
-                // Replace streaming message with formatted response
-                if (classifyMsgIndex !== -1) {
-                    setMessages(m => {
-                        const newMessages = [...m];
-                        newMessages[classifyMsgIndex] = {
-                            ...newMessages[classifyMsgIndex],
-                            content: response
+
+                    // Handle different event types
+                    if (event.type === "step_start") {
+                        // Step starting - update task with step info
+                        const stepName = event.step === "classification" ? "Classification" : "Checklist Generation";
+                        const agentName = event.step === "classification" ? "classification_agent" : "checklist_agent";
+                        currentTools = [];  // Reset tools for new step
+                        streamingContent = "";  // Reset streaming content
+                        currentStep = event.step;  // Track which step is active
+
+                        // Create or update task message right after user message
+                        setMessages(m => {
+                            const newMessages = [...m];
+                            
+                            // Calculate task message index (right after last user message)
+                            // Find the last user message index
+                            let lastUserIndex = -1;
+                            for (let i = newMessages.length - 1; i >= 0; i--) {
+                                if (newMessages[i].role === "user") {
+                                    lastUserIndex = i;
+                                    break;
+                                }
+                            }
+                            
+                            // Task should be right after the user message
+                            const targetTaskIndex = lastUserIndex >= 0 ? lastUserIndex + 1 : newMessages.length;
+                            
+                            // Create task message if it doesn't exist
+                            if (taskMessageIndex === -1 || taskMessageIndex >= newMessages.length) {
+                                taskMessageIndex = targetTaskIndex;
+                                // Insert right after user message
+                                newMessages.splice(taskMessageIndex, 0, {
+                                    role: "assistant",
+                                    content: "",
+                                    task: {
+                                        title: "Compliance Workflow",
+                                        status: "in_progress",
+                                        items: [`Using ${agentName}`],
+                                        tools: [],
+                                        currentStep: stepName
+                                    },
+                                    isProcessing: true
+                                });
+                                // Update other indices
+                                if (classificationMessageIndex >= taskMessageIndex) classificationMessageIndex++;
+                                if (checklistMessageIndex >= taskMessageIndex) checklistMessageIndex++;
+                            } else {
+                                // Update existing task - add step item only if it doesn't exist
+                                const taskMsg = newMessages[taskMessageIndex];
+                                const existingItems = taskMsg.task?.items || [];
+                                const stepItem = `Using ${agentName}`;
+                                
+                                // Only add if not already present
+                                if (!existingItems.includes(stepItem)) {
+                                    newMessages[taskMessageIndex] = {
+                                        ...taskMsg,
+                                        task: {
+                                            title: taskMsg.task?.title || "Compliance Workflow",
+                                            status: "in_progress",
+                                            items: [...existingItems, stepItem],
+                                            tools: taskMsg.task?.tools || [],
+                                            currentStep: stepName
+                                        }
+                                    };
+                                } else {
+                                    // Just update current step
+                                    newMessages[taskMessageIndex] = {
+                                        ...taskMsg,
+                                        task: {
+                                            ...taskMsg.task!,
+                                            currentStep: stepName
+                                        }
+                                    };
+                                }
+                            }
+                            
+                            // Create step message for content
+                            const newIndex = newMessages.length;
+                            if (event.step === "classification") classificationMessageIndex = newIndex;
+                            else checklistMessageIndex = newIndex;
+                            newMessages.push({
+                                role: "assistant",
+                                content: `**${stepName}**\n\nAnalyzing...`,
+                                isProcessing: true
+                            });
+                            
+                            return newMessages;
+                        });
+
+                    } else if (event.type === "tool_start") {
+                        // Tool started - add to task component
+                        const newTool: ToolCall = {
+                            id: `tool-${toolIdCounter++}`,
+                            name: event.tool_name,
+                            input: event.tool_input || {},
+                            state: "input-available",  // Tool is ready to execute
+                            step: currentStep || undefined  // Track which step this tool belongs to
                         };
-                        return newMessages;
-                    });
-                } else {
-                    setMessages(m => [...m, {role: "assistant", content: response}]);
-                }
-                return;
-            }
-
-            // Format Step 1 result
-            let step1Response = `**Step 1: Classification Results**\n\n`;
-            step1Response += `**Risk Level:** ${classifyData.risk_level}\n`;
-            step1Response += `**System Type:** ${classifyData.system_type}\n`;
-            step1Response += `**Confidence:** ${(classifyData.confidence * 100).toFixed(0)}%\n\n`;
-            step1Response += `**Reasoning:** ${classifyData.reasoning}\n\n`;
-            if (classifyData.relevant_articles && classifyData.relevant_articles.length > 0) {
-                step1Response += `**Relevant Articles:** ${classifyData.relevant_articles.join(", ")}`;
-            }
-
-            // Convert relevant_articles to sources (preserve main functionality)
-            let classifySources: Source[] | undefined = undefined;
-            if (classifyData.relevant_articles && classifyData.relevant_articles.length > 0) {
-                classifySources = classifyData.relevant_articles.map((article: string, idx: number) => ({
-                    id: `article-${idx}`,
-                    content: `Referenced in classification: ${article}`,
-                    metadata: { id: article, type: 'article' }
-                }));
-            }
-
-            // Replace streaming message with formatted Step 1
-            if (classifyMsgIndex !== -1) {
-                setMessages(m => {
-                    const newMessages = [...m];
-                    newMessages[classifyMsgIndex] = {
-                        ...newMessages[classifyMsgIndex],
-                        content: step1Response,
-                        sources: classifySources,  // Add sources here
-                        metadata: classifyData
-                    };
-                    return newMessages;
-                });
-            } else {
-                // No streaming message was created (no token events), create new message directly
-                console.log("Creating classification message directly (no token streaming)");
-                setMessages(m => [...m, {role: "assistant", content: step1Response, sources: classifySources, metadata: classifyData}]);
-            }
-
-            // Step 2: Checklist generation (streams in real-time as separate message)
-            const {finalData: checklistData, responseMessageIndex: checklistMsgIndex} = await streamFromEndpoint(
-                "/api/checklist/stream",
-                {
-                    risk_level: classifyData.risk_level,
-                    system_type: classifyData.system_type,
-                    system_description: description
-                },
-                "Step 2: Compliance Checklist"
-            );
-
-            if (!checklistData) {
-                throw new Error("No checklist data received");
-            }
-
-            // Format Step 2 result
-            let step2Response = `**Step 2: Compliance Checklist**\n\n`;
-            step2Response += `**Total Items:** ${checklistData.total_items}\n\n`;
-            step2Response += `${checklistData.summary}\n\n`;
-            step2Response += `**Requirements:**\n\n`;
-
-            // Collect all unique articles from checklist items (preserve main functionality)
-            const allArticles = new Set<string>();
-            const articleToRequirements = new Map<string, string[]>();
-
-            checklistData.checklist_items.forEach((item: any, idx: number) => {
-                step2Response += `**${idx + 1}. ${item.requirement}**\n`;
-                step2Response += `   - Priority: ${item.priority}\n`;
-                step2Response += `   - Category: ${item.category}\n`;
-                if (item.applicable_articles && item.applicable_articles.length > 0) {
-                    step2Response += `   - Articles: ${item.applicable_articles.join(", ")}\n`;
-
-                    // Track articles and their requirements
-                    item.applicable_articles.forEach((article: string) => {
-                        allArticles.add(article);
-                        if (!articleToRequirements.has(article)) {
-                            articleToRequirements.set(article, []);
+                        currentTools.push(newTool);
+                        
+                        // Track which step this tool belongs to
+                        if (currentStep) {
+                            toolStepMap.set(newTool.id, currentStep);
                         }
-                        articleToRequirements.get(article)!.push(item.requirement);
-                    });
+                        
+
+                        // Update task message with new tool
+                        setMessages(m => {
+                            const newMessages = [...m];
+                            if (taskMessageIndex >= 0 && taskMessageIndex < newMessages.length) {
+                                const taskMsg = newMessages[taskMessageIndex];
+                                const existingTools = taskMsg.task?.tools || [];
+                                
+                                // Insert tool in the right position based on step
+                                // Classification tools should come before checklist tools
+                                let insertIndex = existingTools.length;
+                                if (currentStep === "checklist") {
+                                    // Find the first checklist tool or append at end
+                                    for (let i = 0; i < existingTools.length; i++) {
+                                        const toolStep = toolStepMap.get(existingTools[i].id);
+                                        if (toolStep === "checklist") {
+                                            insertIndex = i;
+                                            break;
+                                        }
+                                    }
+                                } else if (currentStep === "classification") {
+                                    // Find where classification tools end (before first checklist tool)
+                                    for (let i = 0; i < existingTools.length; i++) {
+                                        const toolStep = toolStepMap.get(existingTools[i].id);
+                                        if (toolStep === "checklist") {
+                                            insertIndex = i;
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                const updatedTools = [...existingTools];
+                                updatedTools.splice(insertIndex, 0, newTool);
+                                
+                                newMessages[taskMessageIndex] = {
+                                    ...taskMsg,
+                                    task: {
+                                        ...taskMsg.task!,
+                                        tools: updatedTools,
+                                        status: "in_progress"
+                                    }
+                                };
+                            }
+                            return newMessages;
+                        });
+
+                    } else if (event.type === "tool_complete") {
+                        // Tool completed - update tool in task component
+
+                        setMessages(m => {
+                            const newMessages = [...m];
+                            if (taskMessageIndex >= 0 && taskMessageIndex < newMessages.length) {
+                                const taskMsg = newMessages[taskMessageIndex];
+                                const tools = taskMsg.task?.tools || [];
+                                
+                                // Find and update the tool
+                                const toolIndex = tools.findIndex(t => t.name === event.tool_name && !t.output);
+                                if (toolIndex !== -1) {
+                                    tools[toolIndex].output = event.tool_output || "";
+                                    tools[toolIndex].state = "output-available";
+                                } else {
+                                    // Tool not found - add it (tool_start was likely missed)
+                                    tools.push({
+                                        id: `tool-${toolIdCounter++}`,
+                                        name: event.tool_name,
+                                        input: event.tool_input || {},
+                                        output: event.tool_output || "",
+                                        state: "output-available",
+                                        step: currentStep || undefined  // Track which step this tool belongs to
+                                    });
+                                }
+                                
+                                newMessages[taskMessageIndex] = {
+                                    ...taskMsg,
+                                    task: {
+                                        ...taskMsg.task!,
+                                        tools: [...tools]
+                                    }
+                                };
+                            }
+                            return newMessages;
+                        });
+
+                    } else if (event.type === "task") {
+                        // Task status update - update the task message at the top
+                        setMessages(m => {
+                            const newMessages = [...m];
+                            
+                            // Calculate task message index (right after last user message)
+                            let lastUserIndex = -1;
+                            for (let i = newMessages.length - 1; i >= 0; i--) {
+                                if (newMessages[i].role === "user") {
+                                    lastUserIndex = i;
+                                    break;
+                                }
+                            }
+                            const targetTaskIndex = lastUserIndex >= 0 ? lastUserIndex + 1 : newMessages.length;
+                            
+                            // Create task message if it doesn't exist (right after user message)
+                            if (taskMessageIndex === -1 || taskMessageIndex >= newMessages.length) {
+                                taskMessageIndex = targetTaskIndex;
+                                // Insert right after user message
+                                newMessages.splice(taskMessageIndex, 0, {
+                                    role: "assistant",
+                                    content: "",
+                                    task: {
+                                        title: event.title || "Compliance Workflow",
+                                        description: event.description,
+                                        status: event.status || "in_progress",
+                                        items: event.items || [],
+                                        tools: [],
+                                        currentStep: currentStep === "classification" ? "Classification" : currentStep === "checklist" ? "Checklist Generation" : undefined
+                                    },
+                                    isProcessing: event.status === "in_progress"
+                                });
+                                // Update other indices
+                                if (classificationMessageIndex >= taskMessageIndex) classificationMessageIndex++;
+                                if (checklistMessageIndex >= taskMessageIndex) checklistMessageIndex++;
+                            } else {
+                                // Update existing task message
+                                const taskMsg = newMessages[taskMessageIndex];
+                                const existingItems = taskMsg.task?.items || [];
+                                const existingTools = taskMsg.task?.tools || [];
+                                
+                                newMessages[taskMessageIndex] = {
+                                    ...taskMsg,
+                                    task: {
+                                        title: event.title || taskMsg.task?.title || "Compliance Workflow",
+                                        description: event.description || taskMsg.task?.description,
+                                        status: event.status || "in_progress",
+                                        items: event.items 
+                                            ? [...existingItems, ...event.items]
+                                            : existingItems,
+                                        tools: existingTools,
+                                        currentStep: taskMsg.task?.currentStep
+                                    },
+                                    isProcessing: event.status === "in_progress"
+                                };
+                            }
+                            return newMessages;
+                        });
+
+                    } else if (event.type === "content_stream") {
+                        // Stream LLM content chunks
+                        streamingContent += event.content;
+                        
+                        // Update current message with streaming content
+                        const currentIndex = checklistMessageIndex !== -1 && checklistMessageIndex > classificationMessageIndex
+                            ? checklistMessageIndex
+                            : classificationMessageIndex;
+
+                        setMessages(m => {
+                            const newMessages = [...m];
+                            if (currentIndex !== -1) {
+                                const currentMsg = newMessages[currentIndex];
+                                // Get base content (remove "Analyzing..." placeholder)
+                                const baseContent = (currentMsg.content || "").replace(/Analyzing\.\.\./g, "").replace(/\*\*.*?\*\*\n\n/g, "");
+                                const stepName = classificationMessageIndex === currentIndex ? "Classification" : "Checklist Generation";
+                                newMessages[currentIndex] = {
+                                    ...currentMsg,
+                                    content: `**${stepName}**\n\n${baseContent}${streamingContent}`,
+                                    isProcessing: true
+                                };
+                            }
+                            return newMessages;
+                        });
+
+                    } else if (event.type === "step_complete") {
+                        // Step complete - format and display result
+                        const {step, data} = event;
+                        streamingContent = "";  // Reset streaming content
+                        currentTools = [];  // Clear tools array
+
+                        // Update task status if checklist is complete (workflow done)
+                        if (step === "checklist") {
+                            setMessages(m => {
+                                const newMessages = [...m];
+                                if (taskMessageIndex >= 0 && taskMessageIndex < newMessages.length) {
+                                    const taskMsg = newMessages[taskMessageIndex];
+                                    newMessages[taskMessageIndex] = {
+                                        ...taskMsg,
+                                        task: {
+                                            ...taskMsg.task!,
+                                            status: "completed"
+                                        }
+                                    };
+                                }
+                                return newMessages;
+                            });
+                        }
+
+                        if (step === "classification") {
+                            const formatted = formatClassification(data);
+                            const sources = extractClassificationSources(data);
+
+                            setMessages(m => {
+                                const newMessages = [...m];
+                                // Update the step message
+                                newMessages[classificationMessageIndex] = {
+                                    role: "assistant",
+                                    content: formatted,
+                                    sources,
+                                    metadata: data,
+                                    isProcessing: false
+                                };
+                                return newMessages;
+                            });
+
+                        } else if (step === "checklist") {
+                            const formatted = formatChecklist(data);
+                            const sources = extractChecklistSources(data);
+
+                            setMessages(m => {
+                                const newMessages = [...m];
+                                // Update the step message
+                                newMessages[checklistMessageIndex] = {
+                                    role: "assistant",
+                                    content: formatted,
+                                    sources,
+                                    metadata: data,
+                                    isProcessing: false
+                                };
+                                return newMessages;
+                            });
+                        }
+
+                    } else if (event.type === "workflow_pause") {
+                        // Workflow paused - needs more info
+                        const response = `I need more information before I can classify your system.\n\n**Questions:**\n${event.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\n\nPlease provide more details.`;
+
+                        setMessages(m => {
+                            const newMessages = [...m];
+                            newMessages[classificationMessageIndex] = {
+                                role: "assistant",
+                                content: response,
+                                isProcessing: false
+                            };
+                            return newMessages;
+                        });
+
+                    } else if (event.type === "error") {
+                        throw new Error(event.message);
+                    }
                 }
-                step2Response += `\n`;
-            });
-
-            // Convert articles to sources format (preserve main functionality)
-            let checklistSources: Source[] | undefined = undefined;
-            if (allArticles.size > 0) {
-                checklistSources = Array.from(allArticles).map((article, idx) => {
-                    const requirements = articleToRequirements.get(article) || [];
-                    return {
-                        id: `checklist-article-${idx}`,
-                        content: `${article} - Applies to: ${requirements.join('; ')}`,
-                        metadata: { id: article, type: 'article', requirements }
-                    };
-                });
             }
-
-            // Replace streaming message with formatted Step 2
-            if (checklistMsgIndex !== -1) {
-                setMessages(m => {
-                    const newMessages = [...m];
-                    newMessages[checklistMsgIndex] = {
-                        ...newMessages[checklistMsgIndex],
-                        content: step2Response,
-                        sources: checklistSources,  // Add sources here
-                        metadata: checklistData
-                    };
-                    return newMessages;
-                });
-            } else {
-                // No streaming message was created (no token events), create new message directly
-                console.log("Creating checklist message directly (no token streaming)");
-                setMessages(m => [...m, {role: "assistant", content: step2Response, sources: checklistSources, metadata: checklistData}]);
-            }
-
-        } catch (error: any) {
-            throw error;
+        } finally {
+            reader.releaseLock();
         }
+    }
+
+    // Helper functions to format results
+    function formatClassification(data: any): string {
+        let result = `**Classification Results**\n\n`;
+        result += `**Risk Level:** ${data.risk_level}\n`;
+        result += `**System Type:** ${data.system_type}\n`;
+        result += `**Confidence:** ${(data.confidence * 100).toFixed(0)}%\n\n`;
+        result += `**Reasoning:** ${data.reasoning}\n\n`;
+        if (data.relevant_articles && data.relevant_articles.length > 0) {
+            result += `**Relevant Articles:** ${data.relevant_articles.join(", ")}`;
+        }
+        return result;
+    }
+
+    function extractClassificationSources(data: any): Source[] | undefined {
+        if (!data.relevant_articles || data.relevant_articles.length === 0) return undefined;
+        return data.relevant_articles.map((article: string, idx: number) => ({
+            id: `article-${idx}`,
+            content: `Referenced in classification: ${article}`,
+            metadata: { id: article, type: 'article' }
+        }));
+    }
+
+    function formatChecklist(data: any): string {
+        let result = `**Compliance Checklist**\n\n`;
+        result += `**Total Items:** ${data.total_items}\n\n`;
+        result += `${data.summary}\n\n`;
+        result += `**Requirements:**\n\n`;
+
+        data.checklist_items.forEach((item: any, idx: number) => {
+            result += `**${idx + 1}. ${item.requirement}**\n`;
+            result += `   - Priority: ${item.priority}\n`;
+            result += `   - Category: ${item.category}\n`;
+            if (item.applicable_articles && item.applicable_articles.length > 0) {
+                result += `   - Articles: ${item.applicable_articles.join(", ")}\n`;
+            }
+            result += `\n`;
+        });
+
+        return result;
+    }
+
+    function extractChecklistSources(data: any): Source[] | undefined {
+        const allArticles = new Set<string>();
+        const articleToRequirements = new Map<string, string[]>();
+
+        data.checklist_items.forEach((item: any) => {
+            if (item.applicable_articles) {
+                item.applicable_articles.forEach((article: string) => {
+                    allArticles.add(article);
+                    if (!articleToRequirements.has(article)) {
+                        articleToRequirements.set(article, []);
+                    }
+                    articleToRequirements.get(article)!.push(item.requirement);
+                });
+            }
+        });
+
+        if (allArticles.size === 0) return undefined;
+
+        return Array.from(allArticles).map((article, idx) => {
+            const requirements = articleToRequirements.get(article) || [];
+            return {
+                id: `checklist-article-${idx}`,
+                content: `${article} - Applies to: ${requirements.join('; ')}`,
+                metadata: { id: article, type: 'article', requirements }
+            };
+        });
     }
 
     const handleCopy = async (content: string, index: number) => {
@@ -494,16 +715,15 @@ export default function App() {
                     <ScrollArea className="h-full">
                         <div className="mx-auto max-w-3xl p-4 space-y-3">
                                 {messages.map((m, i) => {
-                                    const showCopy = !m.taskOnly && m.role === "assistant" && Boolean(m.content?.trim());
+                                    const showCopy = m.role === "assistant" && Boolean(m.content?.trim()) && !m.isProcessing;
                                     return (
                                         <div key={i} className="space-y-2">
                                             <Bubble
                                                 role={m.role}
                                                 content={m.content}
                                                 sources={m.sources}
-                                                taskOnly={m.taskOnly}
-                                                mode={mode}
-                                                tasks={m.tasks}
+                                                tools={m.tools}
+                                                task={m.task}
                                             />
                                             {showCopy && (
                                                 <div className="flex items-start gap-3 justify-start">
@@ -620,61 +840,170 @@ export default function App() {
     }
 
     function Bubble({
-                        role, content, muted, sources, taskOnly, mode, tasks
+                        role, content, sources, tools, task
                     }: {
         role: "user" | "assistant";
         content: string;
-        muted?: boolean;
         sources?: Source[];
-        taskOnly?: boolean;
-        mode?: Mode;
-        tasks?: Task[];
+        tools?: ToolCall[];
+        task?: TaskInfo;
     }) {
         const isUser = role === "user";
+        const isToolOnly = !isUser && tools && tools.length > 0 && (!content || !content.trim());
 
-        // If taskOnly is true, only render the Task component
-        if (taskOnly && !isUser) {
+
+        // Render tool-only messages without bubble/avatar
+        if (isToolOnly) {
             return (
-                <div className="flex items-start gap-3 justify-start">
-                    <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>
-                    <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm bg-muted">
-                        {/* Render dynamic tasks from streaming */}
-                        <Task>
-                            <TaskTrigger title={mode === "compliance-agents" ? "Running full compliance workflow" : "Processing your request"}/>
-                            <TaskContent>
-                                {tasks && tasks.length > 0 ? (
-                                    tasks.map((task) => (
-                                        <TaskItem key={task.id}>
-                                            {task.status === "completed" ? "✓ " : task.status === "error" ? "✗ " : "⏳ "}
-                                            {task.title}
-                                            {task.description && ` - ${task.description}`}
-                                        </TaskItem>
-                                    ))
-                                ) : (
-                                    <TaskItem>⏳ Initializing...</TaskItem>
-                                )}
-                            </TaskContent>
-                        </Task>
-                    </div>
+                <div className="w-full">
+                    {tools.map((tool) => {
+                        const toolType = tool.name.startsWith('tool-') ? tool.name : `tool-${tool.name}`;
+                        
+                        return (
+                            <Tool key={tool.id} defaultOpen={false}>
+                                <ToolHeader
+                                    type={toolType as any}
+                                    state={tool.state}
+                                />
+                                <ToolContent>
+                                    <ToolInput input={tool.input} />
+                                    {((tool.state === 'input-streaming') || (tool.state === 'input-available' && !tool.output)) && (
+                                        <div className="mt-3 text-sm text-muted-foreground animate-pulse">
+                                            {tool.state === 'input-streaming' ? 'Receiving parameters...' : 'Executing tool...'}
+                                        </div>
+                                    )}
+                                    {tool.output && tool.state === 'output-available' && (
+                                        <ToolOutput
+                                            output={
+                                                <Response>
+                                                    {typeof tool.output === 'string' 
+                                                        ? (tool.output.length > 2000 
+                                                            ? tool.output.substring(0, 2000) + '\n\n... (truncated, showing first 2000 characters)' 
+                                                            : tool.output)
+                                                        : (typeof tool.output === 'object'
+                                                            ? JSON.stringify(tool.output, null, 2)
+                                                            : String(tool.output))}
+                                                </Response>
+                                            }
+                                            errorText={tool.state === "output-error" ? "Tool execution failed" : undefined}
+                                        />
+                                    )}
+                                </ToolContent>
+                            </Tool>
+                        );
+                    })}
                 </div>
             );
-    }
+        }
 
-    return (
+        // Regular message with bubble
+        return (
             <div className={`flex items-start gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
                 {!isUser && <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>}
                 <div
                     className={[
-                        "max-w-[80%] rounded-2xl px-3 py-2 text-sm",
+                        "max-w-[80%] rounded-2xl px-3 py-2 text-sm space-y-3",
                         isUser ? "bg-primary text-primary-foreground" : "bg-muted",
-                        muted ? "opacity-60" : "",
                     ].join(" ")}
                 >
                     {isUser ? (
                         <span className="whitespace-pre-wrap break-words break-normal">{content}</span>
                     ) : (
                         <>
-                            <Response>{content}</Response>
+                            {/* Render Task component if task info is available */}
+                            {task && (
+                                <div className={content && content.trim() ? "mb-3" : ""}>
+                                    <Task>
+                                        <TaskTrigger title={task.title} />
+                                        <TaskContent>
+                                            {/* Show current step */}
+                                            {task.currentStep && (
+                                                <TaskItem>
+                                                    Current step: <TaskItemFile>{task.currentStep}</TaskItemFile>
+                                                </TaskItem>
+                                            )}
+                                            
+                                            {/* Show step items and their associated tools grouped together */}
+                                            {task.items && task.items.length > 0 && (
+                                                task.items.map((item, idx) => {
+                                                    const isClassification = item.includes("classification_agent");
+                                                    const isChecklist = item.includes("checklist_agent");
+                                                    
+                                                    // Get tools for this step using the step property
+                                                    const relevantTools = task.tools?.filter(tool => {
+                                                        if (isClassification) {
+                                                            return tool.step === "classification";
+                                                        } else if (isChecklist) {
+                                                            return tool.step === "checklist";
+                                                        }
+                                                        return false;
+                                                    }) || [];
+                                                    
+                                                    return (
+                                                        <div key={`item-${idx}`} className="space-y-2">
+                                                            <TaskItem>{item}</TaskItem>
+                                                            {/* Show tools for this step */}
+                                                            {relevantTools.length > 0 && (
+                                                                <div className="space-y-2 ml-4">
+                                                                    {relevantTools.map((tool, toolIdx) => {
+                                                                        const toolType = tool.name.startsWith('tool-') ? tool.name : `tool-${tool.name}`;
+                                                                        return (
+                                                                            <Tool key={`tool-${tool.id || toolIdx}`} defaultOpen={false}>
+                                                                                <ToolHeader
+                                                                                    type={toolType as any}
+                                                                                    state={tool.state}
+                                                                                />
+                                                                                <ToolContent>
+                                                                                    <ToolInput input={tool.input} />
+                                                                                    {((tool.state === 'input-streaming') || (tool.state === 'input-available' && !tool.output)) && (
+                                                                                        <div className="mt-3 text-sm text-muted-foreground animate-pulse">
+                                                                                            {tool.state === 'input-streaming' ? 'Receiving parameters...' : 'Executing tool...'}
+                                                                                        </div>
+                                                                                    )}
+                                                                                    {tool.output && tool.state === 'output-available' && (
+                                                                                        <ToolOutput
+                                                                                            output={
+                                                                                                <Response>
+                                                                                                    {typeof tool.output === 'string' 
+                                                                                                        ? (tool.output.length > 2000 
+                                                                                                            ? tool.output.substring(0, 2000) + '\n\n... (truncated, showing first 2000 characters)' 
+                                                                                                            : tool.output)
+                                                                                                        : (typeof tool.output === 'object'
+                                                                                                            ? JSON.stringify(tool.output, null, 2)
+                                                                                                            : String(tool.output))}
+                                                                                                </Response>
+                                                                                            }
+                                                                                            errorText={tool.state === "output-error" ? "Tool execution failed" : undefined}
+                                                                                        />
+                                                                                    )}
+                                                                                </ToolContent>
+                                                                            </Tool>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                            
+                                            {/* Show description if no items or tools */}
+                                            {(!task.items || task.items.length === 0) && 
+                                             (!task.tools || task.tools.length === 0) && 
+                                             task.description && (
+                                                <TaskItem>{task.description}</TaskItem>
+                                            )}
+                                        </TaskContent>
+                                    </Task>
+                                </div>
+                            )}
+
+                            {/* Only show Response if there's actual content (not just "Analyzing..." or empty) */}
+                            {content && content.trim() && !content.match(/^(\*\*.*?\*\*)?\s*\n?\s*Analyzing\.\.\.?\s*$/i) && (
+                                <Response>{content}</Response>
+                            )}
+
+                            {/* Render sources */}
                             {sources && sources.length > 0 && (
                                 <InlineCitationCard>
                                     <InlineCitationCardTrigger sources={["http://eu-ai-act"]}>

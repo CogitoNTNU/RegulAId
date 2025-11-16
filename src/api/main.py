@@ -2,7 +2,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from src.api.routers import health, search, classify, checklist
+from src.api.routers import health, search, classify, checklist, compliance
 from src.api.services.openai_service import OpenAIService
 from src.api.config import (
     OPENAI_MODEL, RETRIEVER_TYPE, RETRIEVER_TOP_K,
@@ -11,6 +11,7 @@ from src.api.config import (
 )
 from src.retrievers import BM25Retriever, VectorRetriever, HybridRetriever
 from src.agents import ClassificationAgent, ChecklistAgent
+from src.agents.compliance_workflow import ComplianceWorkflow
 import logging
 import os
 from time import perf_counter
@@ -66,6 +67,12 @@ async def lifespan(app: FastAPI):
         model=OPENAI_MODEL
     )
 
+    logger.info("Initializing Compliance Workflow (LangGraph)...")
+    app.state.compliance_workflow = ComplianceWorkflow(
+        classification_agent=app.state.classification_agent,
+        checklist_agent=app.state.checklist_agent
+    )
+
     logger.info("All services initialized successfully!")
 
     try:
@@ -110,6 +117,7 @@ app.include_router(health.router)
 app.include_router(search.router)
 app.include_router(classify.router)
 app.include_router(checklist.router)
+app.include_router(compliance.router)
 
 if __name__ == "__main__":
     import uvicorn

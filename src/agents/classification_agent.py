@@ -1,10 +1,13 @@
 """Classification Agent for EU AI Act risk assessment."""
 
 import json
+import logging
 from typing import Any, AsyncGenerator
 
 from src.agents.tools import create_retrieval_tools
 from src.schemas.agent_schemas import ClassificationRequest, ClassificationResponse
+
+logger = logging.getLogger(__name__)
 
 
 CLASSIFICATION_SYSTEM_PROMPT = """You are an expert EU AI Act compliance advisor specializing in classifying AI systems according to their risk level.
@@ -94,11 +97,12 @@ class ClassificationAgent:
         from langchain_openai import ChatOpenAI
         from langchain.agents import create_agent
 
-        # Initialize LLM
+        # Initialize LLM with streaming enabled
         self.llm = ChatOpenAI(
             model=model,
             api_key=OPENAI_KEY,
-            temperature=0.1  # Low temperature for consistent, factual responses
+            temperature=0.1,  # Low temperature for consistent, factual responses
+            streaming=True  # Enable token streaming
         )
 
         # Create agent using LangChain 1.0+ recommended approach
@@ -172,12 +176,7 @@ class ClassificationAgent:
                     response_data = json.loads(json_str)
                     return ClassificationResponse(**response_data)
                 except json.JSONDecodeError as e:
-                    print(f"\n{'='*80}")
-                    print(f"JSON PARSING ERROR:")
-                    print(f"Error: {str(e)}")
-                    print(f"Attempted to parse:")
-                    print(json_str[:500])
-                    print(f"{'='*80}\n")
+                    logger.error(f"JSON parsing error: {str(e)}")
                     return ClassificationResponse(
                         risk_level=None,
                         reasoning=f"Failed to parse JSON: {str(e)}",
@@ -186,11 +185,7 @@ class ClassificationAgent:
                         relevant_articles=[]
                     )
             else:
-                print(f"\n{'='*80}")
-                print(f"NO JSON FOUND IN OUTPUT:")
-                print(f"Full output text:")
-                print(output_text[:500])
-                print(f"{'='*80}\n")
+                logger.warning("No JSON found in agent output")
                 return ClassificationResponse(
                     risk_level=None,
                     reasoning="Failed to parse agent response. The agent did not return valid JSON.",
@@ -200,16 +195,7 @@ class ClassificationAgent:
                 )
 
         except Exception as e:
-            # Print detailed error for debugging
-            import traceback
-            print(f"\n{'='*80}")
-            print(f"ERROR during classification:")
-            print(f"Error type: {type(e).__name__}")
-            print(f"Error message: {str(e)}")
-            print(f"Full traceback:")
-            traceback.print_exc()
-            print(f"{'='*80}\n")
-
+            logger.error(f"Error during classification: {type(e).__name__}: {str(e)}", exc_info=True)
             return ClassificationResponse(
                 risk_level=None,
                 reasoning=f"Error during classification: {type(e).__name__}: {str(e)}",
@@ -248,50 +234,184 @@ class ClassificationAgent:
 
             # Use LangGraph's astream to get real-time updates
             final_messages = []
+            current_tool_call = None
+            accumulated_content = ""
+            emitted_tool_calls = set()  # Track emitted tool calls to avoid duplicates
 
             async for event in self.agent_executor.astream(
                 {"messages": [("user", input_text)]}
             ):
-
                 # Check what type of event this is
                 if "agent" in event:
                     # Agent is thinking or responding
                     agent_messages = event["agent"].get("messages", [])
                     if agent_messages:
                         last_message = agent_messages[-1]
-                        # Check if this is a tool call
-                        if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
-                            tool_call = last_message.tool_calls[0]
-                            tool_name = tool_call.get('name', 'unknown')
 
-                            # Map tool names to user-friendly descriptions
-                            tool_descriptions = {
-                                "retrieve_eu_ai_act": "Searching EU AI Act database",
-                                "retrieve_risk_requirements": "Analyzing risk requirements",
-                                "retrieve_system_type_info": "Searching system-specific information"
-                            }
+                        # Check if this is a tool call - try multiple ways to access tool_calls
+                        tool_calls = None
+                        try:
+                            # Try direct attribute access
+                            if hasattr(last_message, 'tool_calls'):
+                                tool_calls = last_message.tool_calls
+                            
+                            # Try get method
+                            if not tool_calls and hasattr(last_message, 'get') and callable(last_message.get):
+                                tool_calls = last_message.get('tool_calls')
+                            
+                            # Try dict access
+                            if not tool_calls and isinstance(last_message, dict):
+                                tool_calls = last_message.get('tool_calls')
+                            
+                            # Try accessing via additional_kwargs (some LangChain versions)
+                            if not tool_calls and hasattr(last_message, 'additional_kwargs'):
+                                additional = last_message.additional_kwargs
+                                if isinstance(additional, dict) and 'tool_calls' in additional:
+                                    tool_calls = additional['tool_calls']
+                            
+                            # Check message type - might be AIMessage with tool_calls
+                            message_type = type(last_message).__name__
+                            
+                            # For AIMessage, tool_calls might be a list property
+                            if message_type == 'AIMessage' and not tool_calls:
+                                try:
+                                    # Try to access as property
+                                    if hasattr(last_message, 'tool_calls'):
+                                        val = getattr(last_message, 'tool_calls', None)
+                                        if val:
+                                            tool_calls = val
+                                except Exception:
+                                    pass
+                            
+                        except Exception as e:
+                            logger.error(f"Error checking tool_calls: {e}", exc_info=True)
 
-                            yield {
-                                "type": "task",
-                                "status": "in_progress",
-                                "title": tool_descriptions.get(tool_name, f"Using {tool_name}"),
-                                "description": "Retrieving relevant articles and regulations"
-                            }
+                        if tool_calls and len(tool_calls) > 0:
+                            # Handle both dict and object tool calls
+                            tool_call = tool_calls[0]
+                            
+                            if isinstance(tool_call, dict):
+                                tool_name = tool_call.get('name') or tool_call.get('function', {}).get('name', 'unknown')
+                                tool_input = tool_call.get('args') or tool_call.get('function', {}).get('arguments', {})
+                                # If arguments is a string, try to parse it as JSON
+                                if isinstance(tool_input, str):
+                                    try:
+                                        tool_input = json.loads(tool_input)
+                                    except:
+                                        tool_input = {"input": tool_input}
+                            else:
+                                # Object access
+                                tool_name = getattr(tool_call, 'name', None) or getattr(tool_call, 'function', {}).get('name', 'unknown') if hasattr(tool_call, 'function') else 'unknown'
+                                tool_input = getattr(tool_call, 'args', None) or getattr(tool_call, 'arguments', {})
+                                # If it's a function object, try to get name and arguments
+                                if hasattr(tool_call, 'function'):
+                                    func = tool_call.function
+                                    if hasattr(func, 'name'):
+                                        tool_name = func.name
+                                    if hasattr(func, 'arguments'):
+                                        args = func.arguments
+                                        if isinstance(args, str):
+                                            try:
+                                                tool_input = json.loads(args)
+                                            except:
+                                                tool_input = {"input": args}
+                                        else:
+                                            tool_input = args
+                            
+                            # Create a unique key for this tool call to avoid duplicates
+                            tool_key = f"{tool_name}_{hash(str(tool_input))}"
+                            
+                            # Only emit if we haven't already emitted this tool call
+                            if tool_key not in emitted_tool_calls:
+                                emitted_tool_calls.add(tool_key)
+                                current_tool_call = tool_name
+                                
+                                # Emit tool_start event
+                                yield {
+                                    "type": "tool_start",
+                                    "tool_name": tool_name,
+                                    "tool_input": tool_input
+                                }
+                                
+                                # Also update task with tool call info
+                                tool_query = tool_input.get('query', tool_input.get('input', str(tool_input)))
+                                if isinstance(tool_query, dict):
+                                    tool_query = tool_query.get('query', str(tool_query))
+                                yield {
+                                    "type": "task",
+                                    "status": "in_progress",
+                                    "title": "Analyzing your AI system",
+                                    "description": f"Using {tool_name} to retrieve information",
+                                    "items": [f"Calling {tool_name}: {str(tool_query)[:100]}"]
+                                }
+                        else:
+                            # This might be a content chunk from the LLM
+                            content = None
+                            try:
+                                if hasattr(last_message, 'content'):
+                                    content = last_message.content
+                                elif isinstance(last_message, dict):
+                                    content = last_message.get('content', '')
+                                
+                                # Only stream if it's actual content (not empty or just whitespace)
+                                if content and isinstance(content, str) and content.strip() and not content.startswith('Thought:'):
+                                    # Stream content chunks
+                                    accumulated_content += content
+                                    yield {
+                                        "type": "content_stream",
+                                        "content": content
+                                    }
+                            except Exception as e:
+                                logger.debug(f"Error processing content: {e}")
 
                 elif "tools" in event:
                     # Tool execution completed
                     tool_messages = event["tools"].get("messages", [])
                     if tool_messages:
-                        # Count articles retrieved
+                        # Get the tool name from the message or use current_tool_call
+                        tool_name = current_tool_call or "unknown"
+                        tool_input = {}  # Default empty input
+                        
+                        # Try to get tool name and input from the message
+                        if tool_messages:
+                            last_tool_msg = tool_messages[-1]
+                            if hasattr(last_tool_msg, 'name'):
+                                tool_name = last_tool_msg.name
+                            elif isinstance(last_tool_msg, dict) and 'name' in last_tool_msg:
+                                tool_name = last_tool_msg['name']
+                            
+                            # Try to get input from the tool message
+                            if hasattr(last_tool_msg, 'input'):
+                                tool_input = last_tool_msg.input
+                            elif isinstance(last_tool_msg, dict) and 'input' in last_tool_msg:
+                                tool_input = last_tool_msg['input']
+                            # Also check for tool_call_id which might have the original call info
+                            if hasattr(last_tool_msg, 'tool_call_id'):
+                                # Try to find the original tool call in agent messages
+                                for node_data in event.values():
+                                    if "messages" in node_data:
+                                        for msg in node_data["messages"]:
+                                            if hasattr(msg, 'tool_calls'):
+                                                for tc in msg.tool_calls:
+                                                    tc_id = getattr(tc, 'id', None) or (tc.get('id') if isinstance(tc, dict) else None)
+                                                    if tc_id and hasattr(last_tool_msg, 'tool_call_id') and tc_id == last_tool_msg.tool_call_id:
+                                                        # Found matching tool call, extract input
+                                                        if isinstance(tc, dict):
+                                                            tool_input = tc.get('args', {})
+                                                        else:
+                                                            tool_input = getattr(tc, 'args', {})
+                                                        break
+                        
                         output = str(tool_messages[-1].content) if tool_messages else ""
-                        article_count = output.count("Article ") if "Article " in output else 0
 
+                        # Emit tool_complete event with input for frontend
                         yield {
-                            "type": "task",
-                            "status": "completed",
-                            "title": "Information retrieved",
-                            "description": f"Found {article_count} relevant article(s)" if article_count > 0 else "Retrieved information"
+                            "type": "tool_complete",
+                            "tool_name": tool_name,
+                            "tool_input": tool_input,  # Include input so frontend can create tool if tool_start was missed
+                            "tool_output": output  # Show full output, frontend can truncate if needed
                         }
+                        current_tool_call = None
 
                 # Collect all messages for final parsing
                 for node_data in event.values():
@@ -359,14 +479,7 @@ class ClassificationAgent:
                 }
 
         except Exception as e:
-            # Yield error
-            import traceback
-            print(f"\n{'='*80}")
-            print(f"ERROR in classify_streaming:")
-            print(f"Error: {str(e)}")
-            traceback.print_exc()
-            print(f"{'='*80}\n")
-
+            logger.error(f"Error in classify_streaming: {str(e)}", exc_info=True)
             yield {
                 "type": "error",
                 "message": f"Error during classification: {str(e)}"
