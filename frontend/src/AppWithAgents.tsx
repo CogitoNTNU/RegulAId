@@ -53,6 +53,33 @@ type ToolCall = {
     state: "input-streaming" | "input-available" | "output-available" | "output-error";
     step?: "classification" | "checklist";  // Track which step this tool belongs to
 };
+
+// Map tool names to shorter, readable display names
+function getToolDisplayName(toolName: string): string {
+    // Remove "tool-" prefix if present
+    const cleanName = toolName.replace(/^tool-/, '');
+    
+    // Map to shorter names
+    const nameMap: Record<string, string> = {
+        'retrieve_eu_ai_act': 'Search Regulations',
+        'retrieve_risk_requirements': 'Risk Requirements',
+        'retrieve_system_type_info': 'System Info',
+    };
+    
+    // Return mapped name or format the name nicely
+    if (nameMap[cleanName]) {
+        return nameMap[cleanName];
+    }
+    
+    // Fallback: convert snake_case to Title Case and take first 2-3 words
+    const words = cleanName
+        .split('_')
+        .filter(w => w && w !== 'retrieve' && w !== 'tool')
+        .slice(0, 3)
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1));
+    
+    return words.join(' ') || cleanName;
+}
 type TaskInfo = {
     title: string;
     description?: string;
@@ -73,7 +100,6 @@ type Msg = {
     isProcessing?: boolean;  // Step is in progress
     task?: TaskInfo;  // Task information for Task component
 };
-type ApiResponse = { result?: string; sources?: Source[] } | string[] | string | unknown;
 
 type Mode = "chat" | "compliance-agents";
 
@@ -94,20 +120,6 @@ const CopySuccessIcon = ({className}: {className?: string}) => (
     </svg>
 );
 
-function toText(data: ApiResponse): string {
-    if (typeof data === "string") return data;
-    if (Array.isArray(data)) return data.map(String).join("\n");
-    if (data && typeof data === "object" && "result" in data && typeof (data as any).result === "string")
-        return (data as any).result;
-    return JSON.stringify(data);
-}
-
-function toSources(data: ApiResponse): Source[] | undefined {
-    if (data && typeof data === "object" && "sources" in data && Array.isArray((data as any).sources)) {
-        return (data as any).sources;
-    }
-    return undefined;
-}
 
 export default function App() {
     const [mode, setMode] = useState<Mode>("chat");
@@ -192,19 +204,90 @@ export default function App() {
     }
 
     async function sendChat(text: string, history: Msg[]) {
-        const res = await fetch("/api/search/", {
+        const res = await fetch("/api/search/stream", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({query: text, history: history.map(m => m.content)}),
         });
-        const data: ApiResponse = await res.json();
-        if (!res.ok) throw new Error(toText(data));
-        const answer = toText(data);
-        const sources = toSources(data);
-        setMessages(m => [...m,
-            {role: "assistant", content: "", taskOnly: true},
-            {role: "assistant", content: answer, sources}
-        ]);
+
+        if (!res.ok) throw new Error("Failed to start streaming");
+        if (!res.body) throw new Error("No response body");
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let streamingContent = "";
+        let assistantMessageIndex = -1;
+
+        // Create initial assistant message for streaming
+        setMessages(m => {
+            const newMessages = [...m];
+            assistantMessageIndex = newMessages.length;
+            newMessages.push({
+                role: "assistant",
+                content: "",
+                isProcessing: true
+            });
+            console.log("Created assistant message at index", assistantMessageIndex);
+            return newMessages;
+        });
+
+        try {
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, {stream: true});
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                    if (!line.trim() || !line.startsWith('data: ')) continue;
+                    const event = JSON.parse(line.substring(6));
+                    console.log("Received event:", event.type, event);
+
+                    if (event.type === "content_stream") {
+                        // Stream content chunks
+                        streamingContent += event.content;
+                        console.log("Streaming chunk:", event.content.substring(0, 50), "Total:", streamingContent.length);
+                        
+                        setMessages(m => {
+                            const newMessages = [...m];
+                            if (assistantMessageIndex >= 0 && assistantMessageIndex < newMessages.length) {
+                                newMessages[assistantMessageIndex] = {
+                                    ...newMessages[assistantMessageIndex],
+                                    content: streamingContent,
+                                    isProcessing: true
+                                };
+                                console.log("Updated message at index", assistantMessageIndex, "with content length:", streamingContent.length);
+                            } else {
+                                console.warn("Message index out of bounds:", assistantMessageIndex, "messages length:", newMessages.length);
+                            }
+                            return newMessages;
+                        });
+                    } else if (event.type === "final_result") {
+                        // Final result - just mark as complete, content already streamed
+                        streamingContent = event.content || streamingContent;
+
+                        setMessages(m => {
+                            const newMessages = [...m];
+                            if (assistantMessageIndex >= 0 && assistantMessageIndex < newMessages.length) {
+                                newMessages[assistantMessageIndex] = {
+                                    role: "assistant",
+                                    content: streamingContent,
+                                    isProcessing: false
+                                };
+                            }
+                            return newMessages;
+                        });
+                    } else if (event.type === "error") {
+                        throw new Error(event.message);
+                    }
+                }
+            }
+        } finally {
+            reader.releaseLock();
+        }
     }
 
     async function sendFullFlow(description: string) {
@@ -500,34 +583,53 @@ export default function App() {
                         });
 
                     } else if (event.type === "content_stream") {
-                        // Stream LLM content chunks
+                        // Stream LLM content chunks - this is the key for live streaming!
                         streamingContent += event.content;
                         
-                        // Update current message with streaming content
-                        const currentIndex = checklistMessageIndex !== -1 && checklistMessageIndex > classificationMessageIndex
+                        // Determine which step message to update based on current step
+                        const currentIndex = currentStep === "checklist" && checklistMessageIndex !== -1
                             ? checklistMessageIndex
-                            : classificationMessageIndex;
+                            : (currentStep === "classification" && classificationMessageIndex !== -1
+                                ? classificationMessageIndex
+                                : (checklistMessageIndex !== -1 && checklistMessageIndex > classificationMessageIndex
+                                    ? checklistMessageIndex
+                                    : classificationMessageIndex));
 
                         setMessages(m => {
                             const newMessages = [...m];
-                            if (currentIndex !== -1) {
+                            if (currentIndex !== -1 && currentIndex < newMessages.length) {
                                 const currentMsg = newMessages[currentIndex];
-                                // Get base content (remove "Analyzing..." placeholder)
-                                const baseContent = (currentMsg.content || "").replace(/Analyzing\.\.\./g, "").replace(/\*\*.*?\*\*\n\n/g, "");
                                 const stepName = classificationMessageIndex === currentIndex ? "Classification" : "Checklist Generation";
+                                
+                                // Always use the accumulated streaming content for real-time display
+                                // This ensures we see the content as it streams
                                 newMessages[currentIndex] = {
                                     ...currentMsg,
-                                    content: `**${stepName}**\n\n${baseContent}${streamingContent}`,
+                                    content: `**${stepName}**\n\n${streamingContent}`,
                                     isProcessing: true
                                 };
+                            } else if (currentStep) {
+                                // Message doesn't exist yet, create it
+                                const stepName = currentStep === "classification" ? "Classification" : "Checklist Generation";
+                                const newIndex = newMessages.length;
+                                if (currentStep === "classification") {
+                                    classificationMessageIndex = newIndex;
+                                } else {
+                                    checklistMessageIndex = newIndex;
+                                }
+                                newMessages.push({
+                                    role: "assistant",
+                                    content: `**${stepName}**\n\n${streamingContent}`,
+                                    isProcessing: true
+                                });
                             }
                             return newMessages;
                         });
 
                     } else if (event.type === "step_complete") {
-                        // Step complete - format and display result
+                        // Step complete - add sources/metadata but PRESERVE streamed content
                         const {step, data} = event;
-                        streamingContent = "";  // Reset streaming content
+                        // DON'T reset streamingContent - we want to keep what was streamed!
                         currentTools = [];  // Clear tools array
 
                         // Update task status if checklist is complete (workflow done)
@@ -554,16 +656,25 @@ export default function App() {
 
                             setMessages(m => {
                                 const newMessages = [...m];
-                                // Update the step message
-                                newMessages[classificationMessageIndex] = {
-                                    role: "assistant",
-                                    content: formatted,
-                                    sources,
-                                    metadata: data,
-                                    isProcessing: false
-                                };
+                                if (classificationMessageIndex >= 0 && classificationMessageIndex < newMessages.length) {
+                                    // Preserve streamed content if it exists, otherwise use formatted
+                                    const hasStreamedContent = streamingContent && streamingContent.trim().length > 0;
+                                    const contentToUse = hasStreamedContent 
+                                        ? `**Classification**\n\n${streamingContent}` 
+                                        : formatted;
+                                    
+                                    newMessages[classificationMessageIndex] = {
+                                        role: "assistant",
+                                        content: contentToUse,
+                                        sources,
+                                        metadata: data,
+                                        isProcessing: false
+                                    };
+                                }
                                 return newMessages;
                             });
+                            // Reset streaming content for next step
+                            streamingContent = "";
 
                         } else if (step === "checklist") {
                             const formatted = formatChecklist(data);
@@ -571,16 +682,25 @@ export default function App() {
 
                             setMessages(m => {
                                 const newMessages = [...m];
-                                // Update the step message
-                                newMessages[checklistMessageIndex] = {
-                                    role: "assistant",
-                                    content: formatted,
-                                    sources,
-                                    metadata: data,
-                                    isProcessing: false
-                                };
+                                if (checklistMessageIndex >= 0 && checklistMessageIndex < newMessages.length) {
+                                    // Preserve streamed content if it exists, otherwise use formatted
+                                    const hasStreamedContent = streamingContent && streamingContent.trim().length > 0;
+                                    const contentToUse = hasStreamedContent 
+                                        ? `**Compliance Checklist**\n\n${streamingContent}` 
+                                        : formatted;
+                                    
+                                    newMessages[checklistMessageIndex] = {
+                                        role: "assistant",
+                                        content: contentToUse,
+                                        sources,
+                                        metadata: data,
+                                        isProcessing: false
+                                    };
+                                }
                                 return newMessages;
                             });
+                            // Reset streaming content for next step
+                            streamingContent = "";
                         }
 
                     } else if (event.type === "workflow_pause") {
@@ -720,10 +840,11 @@ export default function App() {
                                         <div key={i} className="space-y-2">
                                             <Bubble
                                                 role={m.role}
-                                                content={m.content}
+                                                content={m.content || ""}
                                                 sources={m.sources}
                                                 tools={m.tools}
                                                 task={m.task}
+                                                isProcessing={m.isProcessing}
                                             />
                                             {showCopy && (
                                                 <div className="flex items-start gap-3 justify-start">
@@ -750,7 +871,6 @@ export default function App() {
                                         </div>
                                     );
                                 })}
-                            {loading && mode === "chat" && <LoadingBubble/>}
                             <div ref={endRef}/>
                         </div>
                     </ScrollArea>
@@ -822,31 +942,16 @@ export default function App() {
         </div>
     );
 
-    function LoadingBubble() {
-        // Only used for chat mode (non-streaming)
-        return (
-            <div className="mb-4 flex items-start gap-3 justify-start">
-                <Avatar className="h-8 w-8"><AvatarFallback>AI</AvatarFallback></Avatar>
-                <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm bg-muted">
-                    <Task>
-                        <TaskTrigger title="Processing your request"/>
-                        <TaskContent>
-                            <TaskItem>Retrieving relevant information</TaskItem>
-                        </TaskContent>
-                    </Task>
-                </div>
-            </div>
-        );
-    }
 
     function Bubble({
-                        role, content, sources, tools, task
+                        role, content, sources, tools, task, isProcessing
                     }: {
         role: "user" | "assistant";
         content: string;
         sources?: Source[];
         tools?: ToolCall[];
         task?: TaskInfo;
+        isProcessing?: boolean;
     }) {
         const isUser = role === "user";
         const isToolOnly = !isUser && tools && tools.length > 0 && (!content || !content.trim());
@@ -857,12 +962,12 @@ export default function App() {
             return (
                 <div className="w-full">
                     {tools.map((tool) => {
-                        const toolType = tool.name.startsWith('tool-') ? tool.name : `tool-${tool.name}`;
+                        const toolDisplayName = getToolDisplayName(tool.name);
                         
                         return (
                             <Tool key={tool.id} defaultOpen={false}>
                                 <ToolHeader
-                                    type={toolType as any}
+                                    type={toolDisplayName as any}
                                     state={tool.state}
                                 />
                                 <ToolContent>
@@ -872,18 +977,20 @@ export default function App() {
                                             {tool.state === 'input-streaming' ? 'Receiving parameters...' : 'Executing tool...'}
                                         </div>
                                     )}
-                                    {tool.output && tool.state === 'output-available' && (
+                                    {((tool.output && tool.state === 'output-available') || tool.state === 'output-error') && (
                                         <ToolOutput
                                             output={
-                                                <Response>
-                                                    {typeof tool.output === 'string' 
-                                                        ? (tool.output.length > 2000 
-                                                            ? tool.output.substring(0, 2000) + '\n\n... (truncated, showing first 2000 characters)' 
-                                                            : tool.output)
-                                                        : (typeof tool.output === 'object'
-                                                            ? JSON.stringify(tool.output, null, 2)
-                                                            : String(tool.output))}
-                                                </Response>
+                                                tool.state === 'output-error' ? undefined : (
+                                                    <Response>
+                                                        {typeof tool.output === 'string' 
+                                                            ? (tool.output.length > 2000 
+                                                                ? tool.output.substring(0, 2000) + '\n\n... (truncated, showing first 2000 characters)' 
+                                                                : tool.output)
+                                                            : (typeof tool.output === 'object'
+                                                                ? JSON.stringify(tool.output, null, 2)
+                                                                : String(tool.output))}
+                                                    </Response>
+                                                )
                                             }
                                             errorText={tool.state === "output-error" ? "Tool execution failed" : undefined}
                                         />
@@ -946,11 +1053,11 @@ export default function App() {
                                                             {relevantTools.length > 0 && (
                                                                 <div className="space-y-2 ml-4">
                                                                     {relevantTools.map((tool, toolIdx) => {
-                                                                        const toolType = tool.name.startsWith('tool-') ? tool.name : `tool-${tool.name}`;
+                                                                        const toolDisplayName = getToolDisplayName(tool.name);
                                                                         return (
                                                                             <Tool key={`tool-${tool.id || toolIdx}`} defaultOpen={false}>
                                                                                 <ToolHeader
-                                                                                    type={toolType as any}
+                                                                                    type={toolDisplayName as any}
                                                                                     state={tool.state}
                                                                                 />
                                                                                 <ToolContent>
@@ -960,18 +1067,20 @@ export default function App() {
                                                                                             {tool.state === 'input-streaming' ? 'Receiving parameters...' : 'Executing tool...'}
                                                                                         </div>
                                                                                     )}
-                                                                                    {tool.output && tool.state === 'output-available' && (
+                                                                                    {((tool.output && tool.state === 'output-available') || tool.state === 'output-error') && (
                                                                                         <ToolOutput
                                                                                             output={
-                                                                                                <Response>
-                                                                                                    {typeof tool.output === 'string' 
-                                                                                                        ? (tool.output.length > 2000 
-                                                                                                            ? tool.output.substring(0, 2000) + '\n\n... (truncated, showing first 2000 characters)' 
-                                                                                                            : tool.output)
-                                                                                                        : (typeof tool.output === 'object'
-                                                                                                            ? JSON.stringify(tool.output, null, 2)
-                                                                                                            : String(tool.output))}
-                                                                                                </Response>
+                                                                                                tool.state === 'output-error' ? undefined : (
+                                                                                                    <Response>
+                                                                                                        {typeof tool.output === 'string' 
+                                                                                                            ? (tool.output.length > 2000 
+                                                                                                                ? tool.output.substring(0, 2000) + '\n\n... (truncated, showing first 2000 characters)' 
+                                                                                                                : tool.output)
+                                                                                                            : (typeof tool.output === 'object'
+                                                                                                                ? JSON.stringify(tool.output, null, 2)
+                                                                                                                : String(tool.output))}
+                                                                                                    </Response>
+                                                                                                )
                                                                                             }
                                                                                             errorText={tool.state === "output-error" ? "Tool execution failed" : undefined}
                                                                                         />
@@ -998,9 +1107,12 @@ export default function App() {
                                 </div>
                             )}
 
-                            {/* Only show Response if there's actual content (not just "Analyzing..." or empty) */}
-                            {content && content.trim() && !content.match(/^(\*\*.*?\*\*)?\s*\n?\s*Analyzing\.\.\.?\s*$/i) && (
-                                <Response>{content}</Response>
+                            {/* Always show Response for streaming content - it handles incomplete markdown intelligently */}
+                            {/* Show Response if there's content OR if we're processing (streaming might start with empty content) */}
+                            {(content || isProcessing) && (
+                                <Response parseIncompleteMarkdown={true}>
+                                    {content || ""}
+                                </Response>
                             )}
 
                             {/* Render sources */}
