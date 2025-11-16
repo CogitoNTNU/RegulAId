@@ -16,9 +16,8 @@ from datasets import Dataset
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# RAGAS
+# RAGAS - import everything (user wants RAGAS metrics)
 from ragas import evaluate
-from ragas.llms.base import llm_factory
 from ragas.embeddings.base import embedding_factory
 from ragas.metrics import (
     context_precision,
@@ -26,6 +25,20 @@ from ragas.metrics import (
     faithfulness,
     answer_relevancy,
 )
+
+RAGAS_METRICS = [
+    context_precision,
+    context_recall,
+    faithfulness,
+    answer_relevancy,
+]
+
+# Use USE_RAGAS_METRICS flag to control whether to compute RAGAS metrics
+# (they require LLM calls which are slower)
+USE_RAGAS_METRICS = True  # Set to False to skip RAGAS computation (faster, no LLM)
+
+from openai import OpenAI
+from langchain_openai import ChatOpenAI
 
 from src.retrievers.bm25 import BM25Retriever
 from src.retrievers.hybrid import HybridRetriever
@@ -43,29 +56,22 @@ from scipy import stats
 # Configuration (edit here)
 # =========================
 # Grid search parameters for hybrid retriever
-HYBRID_GRID_SEARCH = True  # Set to False to disable grid search
+HYBRID_GRID_SEARCH = False  # Disabled - using only one specific hybrid configuration
 HYBRID_GRID_PARAMS = {
     'bm25_weight': [0.5, 1.0, 1.5],
     'vector_weight': [0.05, 0.1, 0.2],
-    'rrf_k': [10.0, 15.0, 30.0]  # Reduced from 4 to 3 values for fewer combinations
+    'rrf_k': [10.0, 15.0, 30.0, 60.0]
 }
 
+# Three RAG methods + LLM-only baseline for evaluation (all use LLM, ready for RAGAS)
 EVALUATE_METHODS: List[str] = [
-    "bm25_retrieval_only",
-    "semantic_retrieval_only",
-    "hybrid_retrieval",
-    # "bm25_rag",
-    # "semantic_rag",
-    # "hybrid_rag",
-    # "llm_only",
+    "bm25_rag",
+    "semantic_rag",
+    "hybrid_b1.0_v0.05_k10.0_rag",  # Specific hybrid configuration with RAG
+    "llm_only",  # Baseline: LLM without retrieval
 ]
-RUN_TAG: str = "retrieval_only_test"
-RAGAS_METRICS = [
-    context_precision,
-    context_recall,
-    faithfulness,
-    answer_relevancy,
-]
+RUN_TAG: str = "rag_evaluation_with_baseline"
+# USE_RAGAS_METRICS is now defined at the top with imports to avoid LLM initialization
 # Leave placeholders; user will import their implementations.
 # Example:
 # from src.templates.hybrid_retrieval_only import HybridRetrievalOnly
@@ -87,9 +93,20 @@ class _APIRAGBase:
                 context += f"[{i}] {content}\n\n"
             context += "---\n\n"
         enhanced_query = (context + question) if context else question
-        llm_resp = self.llm.generate_text(prompt=enhanced_query, history=[])
+        
+        # For evaluation, use LLM directly without agent to avoid tool-calling overhead
+        # The agent would call search again even though we already have context
+        # This makes evaluation much faster (single LLM call instead of agent with multiple calls)
+        from langchain_core.messages import HumanMessage, SystemMessage
+        messages = [
+            SystemMessage(content=self.llm.system_prompt),
+            HumanMessage(content=enhanced_query)
+        ]
+        llm_response = self.llm.client_llm.invoke(messages)
+        answer = llm_response.content if hasattr(llm_response, 'content') else str(llm_response)
+        
         contexts = [str(d.get("content", "")) for d in docs if d.get("content")]
-        return {"answer": llm_resp.content, "context": contexts}
+        return {"answer": answer, "context": contexts}
 
     def run(self, question: str, reference_contexts=None):
         return self._run(question)
@@ -108,6 +125,13 @@ class VectorRAG_API(_APIRAGBase):
 class HybridRAG_API(_APIRAGBase):
     def __init__(self, **kwargs):
         super().__init__(HybridRetriever(), **kwargs)
+
+
+class HybridRAG_b1_0_v0_05_k10_API(_APIRAGBase):
+    """Hybrid RAG with specific parameters: bm25_weight=1.0, vector_weight=0.05, rrf_k=10.0"""
+    def __init__(self, **kwargs):
+        retriever = HybridRetriever(bm25_weight=1.0, vector_weight=0.05, rrf_k=10.0)
+        super().__init__(retriever, **kwargs)
 
 
 # Individual hybrid classes for grid search (module level for pickle compatibility)
@@ -274,6 +298,23 @@ class Hybrid_b1_5_v0_2_k30:
         return self.retriever.retrieve(query, k)
 
 
+class LLMOnly_API:
+    """LLM baseline: answer without any retrieval contexts."""
+    def __init__(self, **_):
+        self.llm = OpenAIService(model=OPENAI_MODEL, system_prompt=SYSTEM_PROMPT)
+
+    def run(self, question: str, reference_contexts=None):
+        # Use LLM directly without retrieval - no agent needed for baseline
+        from langchain_core.messages import HumanMessage, SystemMessage
+        messages = [
+            SystemMessage(content=self.llm.system_prompt),
+            HumanMessage(content=question)
+        ]
+        llm_response = self.llm.client_llm.invoke(messages)
+        answer = llm_response.content if hasattr(llm_response, 'content') else str(llm_response)
+        return {"answer": answer, "context": []}
+
+
 TEMPLATES: Dict[str, object] = {
     "bm25_retrieval_only": BM25Retriever,
     "semantic_retrieval_only": VectorRetriever,
@@ -282,23 +323,10 @@ TEMPLATES: Dict[str, object] = {
     "bm25_rag": BM25RAG_API,
     "semantic_rag": VectorRAG_API,
     "hybrid_rag": HybridRAG_API,
+    "hybrid_b1.0_v0.05_k10.0_rag": HybridRAG_b1_0_v0_05_k10_API,
     # Baseline: LLM without any retrieval
-    "llm_only": None,  # placeholder, class defined below
+    "llm_only": LLMOnly_API,
 }
-
-
-class LLMOnly_API:
-    """LLM baseline: answer without any retrieval contexts."""
-    def __init__(self, **_):
-        self.llm = OpenAIService(model=OPENAI_MODEL, system_prompt=SYSTEM_PROMPT)
-
-    def run(self, question: str, reference_contexts=None):
-        llm_resp = self.llm.generate_text(prompt=question, history=[])
-        return {"answer": llm_resp.content, "context": []}
-
-
-# Fill placeholder now that class exists
-TEMPLATES["llm_only"] = LLMOnly_API
 
 # Input files (relative to repo root)
 TESTSET_REL_PATH = os.path.join("data", "processed", "testset.json")
@@ -551,17 +579,33 @@ def run_template_worker(template_name: str,
     """Run one template over all questions inside a separate process.
     Tries to adapt to different constructor and run method signatures.
     """
-    llm = llm_factory()
-    embeddings = embedding_factory()
+    # Set up LLM and embeddings for RAG templates
+    # All three methods (bm25_rag, semantic_rag, hybrid_b1.0_v0.05_k10.0_rag) use LLM
+    llm = None
+    embeddings = None
+    
+    openai_api_key = os.getenv("OPENAI_KEY")
+    if openai_api_key:
+        try:
+            llm = ChatOpenAI(model=OPENAI_MODEL, api_key=openai_api_key, temperature=0)
+        except Exception:
+            pass  # llm will remain None if creation fails
+        # Create embeddings for RAG templates
+        try:
+            embeddings = embedding_factory()
+        except Exception:
+            pass  # embeddings will remain None if creation fails
 
     # Best-effort construction with fallbacks
     template = None
-    construct_attempts = [
-        {"llm": llm, "embeddings": embeddings},
-        {"embeddings": embeddings},
-        {"llm": llm},
-        {},
-    ]
+    construct_attempts = []
+    if llm and embeddings:
+        construct_attempts.append({"llm": llm, "embeddings": embeddings})
+    if embeddings:
+        construct_attempts.append({"embeddings": embeddings})
+    if llm:
+        construct_attempts.append({"llm": llm})
+    construct_attempts.append({})  # Always try with no args last
     last_exc = None
     for kwargs in construct_attempts:
         try:
@@ -574,10 +618,15 @@ def run_template_worker(template_name: str,
         raise last_exc if last_exc else RuntimeError(f"Failed to construct template {template_name}")
 
     results: List[Dict] = []
-    for _, row in questions_df.iterrows():
+    total_questions = len(questions_df)
+    worker_start_time = time.time()
+    print(f"[{template_name}] Starting evaluation of {total_questions} questions...", flush=True)
+    for idx, (_, row) in enumerate(questions_df.iterrows(), 1):
         start_time = time.time()
         answer = ""
         retrieved_context: List[str] = []
+        if idx % 5 == 0 or idx == 1:
+            print(f"[{template_name}] Processing question {idx}/{total_questions}: {row['question'][:60]}...", flush=True)
         try:
             # Try a 'run' method first
             if hasattr(template, "run"):
@@ -615,9 +664,11 @@ def run_template_worker(template_name: str,
                 raise AttributeError(f"Template {template_name} has neither run nor retrieve")
 
             response_time = time.time() - start_time
+            if idx % 5 == 0 or idx == 1:
+                print(f"[{template_name}] Question {idx}/{total_questions} completed in {response_time:.2f}s (retrieved {len(retrieved_context)} contexts, answer length: {len(answer)})", flush=True)
         except Exception as exc:
             response_time = 0.0
-            print(f"[{template_name}] Exception: {exc}")
+            print(f"[{template_name}] Question {idx}/{total_questions} Exception: {exc}", flush=True)
             traceback.print_exc()
             # keep defaults (empty answer/context)
 
@@ -629,6 +680,10 @@ def run_template_worker(template_name: str,
             "response_time": response_time,
             "ground_truths": row["ground_truths"],
         })
+    
+    total_time = time.time() - worker_start_time
+    avg_time = total_time / total_questions if total_questions > 0 else 0
+    print(f"[{template_name}] Completed all {total_questions} questions in {total_time:.1f}s (avg {avg_time:.2f}s per question)", flush=True)
 
     return template_name, results
 
@@ -637,6 +692,17 @@ def run_ragas_worker(template_name: str,
                      results: List[Dict],
                      ragas_metrics) -> Tuple[str, Dict[str, float]]:
     """Compute RAGAS metrics for a single template in a separate process."""
+    # Set up LLM and embeddings for RAGAS evaluation
+    # Use LangChain's ChatOpenAI directly - this is compatible with RAGAS
+    # DO NOT use llm_factory as it creates InstructorLLM which lacks agenerate_prompt
+    openai_api_key = os.getenv("OPENAI_KEY")
+    if not openai_api_key:
+        raise ValueError("OPENAI_KEY environment variable not set")
+    
+    # Use LangChain ChatOpenAI directly - this works with RAGAS
+    llm = ChatOpenAI(model=OPENAI_MODEL, api_key=openai_api_key, temperature=0)
+    embeddings = embedding_factory()
+    
     eval_data = {
         "question":     [r["question"] for r in results],
         "answer":       [r["answer"] for r in results],
@@ -654,16 +720,48 @@ def run_ragas_worker(template_name: str,
     elif not answers_present and contexts_present:
         # retrieval-only: only context metrics are meaningful
         metrics_to_use = [m for m in ragas_metrics if m.name in ("context_precision", "context_recall")]
+    
     try:
-        ragas_result = evaluate(ds, metrics=metrics_to_use)
+        # RAGAS evaluate - pass llm and embeddings explicitly
+        # RAGAS should use ChatOpenAI directly
+        ragas_result = evaluate(
+            dataset=ds,
+            metrics=metrics_to_use,
+            llm=llm,
+            embeddings=embeddings
+        )
         df_res = ragas_result.to_pandas()
-        scores = {m.name: float(df_res[m.name].mean()) for m in metrics_to_use}
-        # Ensure missing metrics are present with 0.0 for downstream code
+        
+        # Extract scores from the results
+        scores = {}
+        for m in metrics_to_use:
+            metric_name = m.name if hasattr(m, 'name') else str(m)
+            if metric_name in df_res.columns:
+                mean_val = df_res[metric_name].mean()
+                scores[metric_name] = float(mean_val) if not pd.isna(mean_val) else 0.0
+            else:
+                # Try to find column with similar name
+                found = False
+                for col in df_res.columns:
+                    if metric_name.lower().replace('_', '') in col.lower().replace('_', ''):
+                        mean_val = df_res[col].mean()
+                        scores[metric_name] = float(mean_val) if not pd.isna(mean_val) else 0.0
+                        found = True
+                        break
+                if not found:
+                    scores[metric_name] = 0.0
+                    print(f"[RAGAS-{template_name}] Warning: metric '{metric_name}' not found. Available columns: {list(df_res.columns)}")
+        
+        # Ensure all expected metrics are present
         for m in ragas_metrics:
-            scores.setdefault(m.name, 0.0)
+            metric_name = m.name if hasattr(m, 'name') else str(m)
+            scores.setdefault(metric_name, 0.0)
+            
     except Exception as exc:
         print(f"[RAGAS-{template_name}] Evaluation failed: {exc}")
-        scores = {m.name: 0.0 for m in ragas_metrics}
+        traceback.print_exc()
+        scores = {m.name if hasattr(m, 'name') else str(m): 0.0 for m in ragas_metrics}
+    
     return template_name, scores
 
 
@@ -742,36 +840,63 @@ def main() -> None:
     print("Will run:", list(templates_to_run))
 
     # Run templates in parallel
-    print("Running RAG templates in parallel...")
+    print(f"Running {len(templates_to_run)} RAG templates in parallel (max {max(1, min(4, len(templates_to_run)))} workers)...", flush=True)
     template_results: Dict[str, List[Dict]] = {}
     max_workers = max(1, min(4, len(templates_to_run)))  # Limit to 4 workers to avoid issues
     with ProcessPoolExecutor(max_workers=max_workers) as pool:
-        futures = [pool.submit(run_template_worker, name, cls, df) for name, cls in templates_to_run.items()]
-        done, _ = wait(futures, return_when=ALL_COMPLETED)
-        for fut in done:
-            try:
-                tpl_name, results = fut.result()
-                template_results[tpl_name] = results
-            except Exception as exc:
-                print(f"[main] Worker failed: {exc}")
+        futures = {pool.submit(run_template_worker, name, cls, df): name for name, cls in templates_to_run.items()}
+        print(f"Submitted {len(futures)} template evaluation jobs", flush=True)
+        
+        # Track progress with periodic updates
+        completed = 0
+        start_time = time.time()
+        while futures:
+            done, not_done = wait(list(futures.keys()), timeout=30, return_when=ALL_COMPLETED)
+            
+            for fut in done:
+                try:
+                    tpl_name, results = fut.result()
+                    template_results[tpl_name] = results
+                    completed += 1
+                    elapsed = time.time() - start_time
+                    print(f"[main] ✓ Template '{tpl_name}' completed ({completed}/{len(templates_to_run)}) - {len(results)} results in {elapsed:.1f}s", flush=True)
+                except Exception as exc:
+                    print(f"[main] ✗ Worker failed: {exc}", flush=True)
+                    traceback.print_exc()
+                finally:
+                    if fut in futures:
+                        del futures[fut]
+            
+            if not_done and len(not_done) > 0:
+                elapsed = time.time() - start_time
+                print(f"[main] Still waiting for {len(not_done)} template(s)... (elapsed: {elapsed:.1f}s)", flush=True)
+                # Show which templates are still running
+                for fut in not_done:
+                    if fut in futures:
+                        print(f"  - {futures[fut]} still running...", flush=True)
 
     if not template_results:
         print("No template results collected. Exiting.")
         return
 
-    # Compute RAGAS in parallel
-    print("Calculating RAGAS metrics in parallel...")
-    template_ragas_scores: Dict[str, Dict[str, float]] = {}
-    with ProcessPoolExecutor(max_workers=max(1, min(4, len(template_results)))) as pool:
-        ragas_futures = [pool.submit(run_ragas_worker, name, results, RAGAS_METRICS) for name, results in template_results.items()]
-        done, _ = wait(ragas_futures, return_when=ALL_COMPLETED)
-        for fut in done:
-            try:
-                name, scores = fut.result()
-                template_ragas_scores[name] = scores
-                print("  "+name+" RAGAS:", ", ".join(f"{k}={v:.3f}" for k, v in scores.items()))
-            except Exception as exc:
-                print(f"[main] RAGAS worker failed: {exc}")
+    # Compute RAGAS in parallel (skip for retrieval-only to avoid LLM calls)
+    if USE_RAGAS_METRICS:
+        print("Calculating RAGAS metrics in parallel...")
+        template_ragas_scores: Dict[str, Dict[str, float]] = {}
+        with ProcessPoolExecutor(max_workers=max(1, min(4, len(template_results)))) as pool:
+            ragas_futures = [pool.submit(run_ragas_worker, name, results, RAGAS_METRICS) for name, results in template_results.items()]
+            done, _ = wait(ragas_futures, return_when=ALL_COMPLETED)
+            for fut in done:
+                try:
+                    name, scores = fut.result()
+                    template_ragas_scores[name] = scores
+                    print("  "+name+" RAGAS:", ", ".join(f"{k}={v:.3f}" for k, v in scores.items()))
+                except Exception as exc:
+                    print(f"[main] RAGAS worker failed: {exc}")
+    else:
+        print("Skipping RAGAS metrics (USE_RAGAS_METRICS=False) - using only custom word-overlap metrics for faster evaluation")
+        # Initialize empty RAGAS scores for compatibility with downstream code
+        template_ragas_scores = {name: {m.name: 0.0 for m in RAGAS_METRICS} for name in template_results.keys()}
 
     # Additional metrics
     print("Calculating additional metrics...")
