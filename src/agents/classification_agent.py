@@ -141,17 +141,6 @@ class ClassificationAgent:
             last_message = messages[-1]
             output_text = last_message.content if hasattr(last_message, 'content') else str(last_message)
 
-            # DEBUG: Print messages
-            print(f"\n{'='*80}")
-            print(f"AGENT MESSAGES ({len(messages)} messages):")
-            print(f"{'='*80}")
-            for i, msg in enumerate(messages, 1):
-                msg_content = msg.content if hasattr(msg, 'content') else str(msg)
-                msg_type = msg.type if hasattr(msg, 'type') else type(msg).__name__
-                print(f"\nMessage {i} ({msg_type}):")
-                print(f"  Content Preview: {msg_content[:200]}..." if len(msg_content) > 200 else f"  Content: {msg_content}")
-            print(f"{'='*80}\n")
-
             # Parse the JSON response
             # Note: The agent may return double braces {{ }} due to template escaping
             # Replace double braces with single braces
@@ -263,10 +252,6 @@ class ClassificationAgent:
             async for event in self.agent_executor.astream(
                 {"messages": [("user", input_text)]}
             ):
-                # DEBUG: Print event structure
-                print(f"\n{'='*80}")
-                print(f"STREAM EVENT: {list(event.keys())}")
-                print(f"{'='*80}\n")
 
                 # Check what type of event this is
                 if "agent" in event:
@@ -325,12 +310,6 @@ class ClassificationAgent:
             if final_messages:
                 last_message = final_messages[-1]
                 output_text = last_message.content if hasattr(last_message, 'content') else str(last_message)
-
-                # DEBUG: Print final output
-                print(f"\n{'='*80}")
-                print(f"FINAL OUTPUT FROM AGENT:")
-                print(f"Output preview: {output_text[:500]}")
-                print(f"{'='*80}\n")
 
                 # Parse the JSON response (same logic as classify())
                 output_text = output_text.replace('{{', '{').replace('}}', '}')
