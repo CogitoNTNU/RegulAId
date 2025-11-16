@@ -2,6 +2,7 @@
 
 import os
 import sys
+import re
 import psycopg
 from typing import List, Dict, Any
 from dotenv import load_dotenv
@@ -42,8 +43,27 @@ class BM25Retriever:
 
         # Full text query condition
         if query is not None and str(query).strip() != "":
-            where_clauses.append(f"{self.column_name} @@@ %s")
-            params.append(query)
+            # Sanitize query for ParadeDB: extract only alphanumeric words
+            # ParadeDB's @@@ operator requires special characters to be escaped
+            # By extracting only words, we avoid all special character issues
+            query_text = str(query).strip()
+            # Extract words (alphanumeric sequences only - no apostrophes to avoid issues)
+            # Convert to lowercase for consistent matching
+            words = re.findall(r"\b[a-z0-9]+\b", query_text.lower())
+            # Join words with spaces - creates a clean query without any special syntax
+            sanitized_query = " ".join(words) if words else ""
+            
+            # If we have no words after extraction, try a fallback approach
+            if not sanitized_query:
+                # Remove all non-alphanumeric characters except spaces
+                sanitized_query = re.sub(r"[^a-z0-9\s]", "", query_text.lower())
+                sanitized_query = re.sub(r'\s+', ' ', sanitized_query).strip()
+            
+            # Only add query if we have something to search for
+            if sanitized_query:
+                # Use plain text search - ParadeDB's @@@ should handle plain space-separated words
+                where_clauses.append(f"{self.column_name} @@@ %s")
+                params.append(sanitized_query)
 
         # Build metadata where clauses using shared helper
         where_clauses.extend(build_where_clauses(filters or {}, params))
@@ -81,7 +101,43 @@ class BM25Retriever:
             return formatted_results
 
         except Exception as e:
-            print(f"ERROR in BM25 search: {str(e)}")
+            error_msg = str(e)
+            # If it's a parsing error, try a fallback with even simpler query
+            if "could not parse query" in error_msg.lower() and where_clauses:
+                # Try with just the first few words as a fallback
+                try:
+                    query_param_idx = 0
+                    for i, clause in enumerate(where_clauses):
+                        if "@@@" in clause:
+                            query_param_idx = i
+                            break
+                    
+                    if query_param_idx < len(params):
+                        original_query = params[query_param_idx]
+                        # Use only first 10 words as fallback
+                        words = original_query.split()[:10]
+                        fallback_query = " ".join(words)
+                        params[query_param_idx] = fallback_query
+                        
+                        # Retry with simplified query
+                        with psycopg.connect(get_psycopg_connection_string()) as conn:
+                            with conn.cursor() as cur:
+                                cur.execute(sql, tuple(params))
+                                results = cur.fetchall()
+                        
+                        formatted_results = []
+                        for row in results:
+                            formatted_results.append({
+                                "id": row[0],
+                                "content": row[1],
+                                "metadata": row[2],
+                                "score": row[3],
+                            })
+                        return formatted_results
+                except Exception:
+                    pass  # Fall through to return empty list
+            
+            print(f"ERROR in BM25 search: {error_msg}")
             return []
 
     def retrieve(self, query: str, k: int = 5) -> List[str]:
