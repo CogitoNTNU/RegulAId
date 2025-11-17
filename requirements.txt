@@ -1171,9 +1171,9 @@ termcolor==3.1.0 \
     --hash=sha256:591dd26b5c2ce03b9e43f391264626557873ce1d379019786f99b0c2bee140aa \
     --hash=sha256:6a6dd7fbee581909eeec6a756cff1d7f7c376063b14e4a298dc4980309e55970
     # via commitizen
-tifffile==2025.9.9 \
-    --hash=sha256:239247551fa10b5679036ee030cdbeb7762bc1b3f11b1ddaaf50759ef8b4eb26 \
-    --hash=sha256:6cf97ef548970eee9940cf8fc4203e57b4462a72e1e5e7a667ecdeb96113bc5f
+tifffile==2025.10.16 \
+    --hash=sha256:41463d979c1c262b0a5cdef2a7f95f0388a072ad82d899458b154a48609d759c \
+    --hash=sha256:425179ec7837ac0e07bc95d2ea5bea9b179ce854967c12ba07fc3f093e58efc1
     # via scikit-image
 tokenizers==0.22.0 \
     --hash=sha256:1626cb186e143720c62c6c6b5371e62bbc10af60481388c0da89bc903f37ea0c \
